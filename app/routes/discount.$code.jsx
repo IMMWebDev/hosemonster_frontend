@@ -12,11 +12,10 @@ import {redirect} from 'react-router';
  * ```
  * @param {Route.LoaderArgs}
  */
-export async function loader({request, context, params}) {
+export async function loader({context, params, url}) {
   const {cart} = context;
   const {code} = params;
 
-  const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
   let redirectParam =
     searchParams.get('redirect') || searchParams.get('return_to') || '/';

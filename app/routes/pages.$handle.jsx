@@ -26,7 +26,7 @@ export async function loader(args) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  * @param {Route.LoaderArgs}
  */
-async function loadCriticalData({context, request, params}) {
+async function loadCriticalData({context, params, url}) {
   if (!params.handle) {
     throw new Error('Missing page handle');
   }
@@ -44,7 +44,7 @@ async function loadCriticalData({context, request, params}) {
     throw new Response('Not Found', {status: 404});
   }
 
-  redirectIfHandleIsLocalized(request, {handle: params.handle, data: page});
+  redirectIfHandleIsLocalized(url, {handle: params.handle, data: page});
 
   return {
     page,

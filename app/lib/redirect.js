@@ -1,14 +1,14 @@
 import {redirect} from 'react-router';
 
 /**
- * @param {Request} request
+ * @param {URL} requestUrl - The normalized `url` loader/action arg (v8_passThroughRequests-safe)
  * @param {...Array<{
  *     handle: string;
  *     data: {handle: string} & unknown;
  *   }>} [localizedResources]
  */
-export function redirectIfHandleIsLocalized(request, ...localizedResources) {
-  const url = new URL(request.url);
+export function redirectIfHandleIsLocalized(requestUrl, ...localizedResources) {
+  const url = new URL(requestUrl);
   let shouldRedirect = false;
 
   localizedResources.forEach(({handle, data}) => {

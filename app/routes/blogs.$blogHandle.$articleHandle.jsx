@@ -27,7 +27,7 @@ export async function loader(args) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  * @param {Route.LoaderArgs}
  */
-async function loadCriticalData({context, request, params}) {
+async function loadCriticalData({context, params, url}) {
   const {blogHandle, articleHandle} = params;
 
   if (!articleHandle || !blogHandle) {
@@ -46,7 +46,7 @@ async function loadCriticalData({context, request, params}) {
   }
 
   redirectIfHandleIsLocalized(
-    request,
+    url,
     {
       handle: articleHandle,
       data: blog.articleByHandle,

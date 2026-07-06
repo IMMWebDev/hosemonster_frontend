@@ -28,7 +28,7 @@ export async function loader(args) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  * @param {Route.LoaderArgs}
  */
-async function loadCriticalData({context, request, params}) {
+async function loadCriticalData({context, request, params, url}) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 4,
   });
@@ -51,7 +51,7 @@ async function loadCriticalData({context, request, params}) {
     throw new Response('Not found', {status: 404});
   }
 
-  redirectIfHandleIsLocalized(request, {handle: params.blogHandle, data: blog});
+  redirectIfHandleIsLocalized(url, {handle: params.blogHandle, data: blog});
 
   return {blog};
 }
