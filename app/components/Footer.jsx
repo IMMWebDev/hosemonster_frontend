@@ -60,7 +60,6 @@ function FooterMenu({menu, primaryDomainUrl, publicStoreDomain}) {
           </NavLink>
         );
       })}
-      <p>TESTING</p>
     </nav>
   );
 }
