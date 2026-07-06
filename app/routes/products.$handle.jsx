@@ -43,7 +43,7 @@ export async function loader(args) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  * @param {Route.LoaderArgs}
  */
-async function loadCriticalData({context, params, request}) {
+async function loadCriticalData({context, params, request, url}) {
   const {handle} = params;
   const {storefront} = context;
 
@@ -63,7 +63,7 @@ async function loadCriticalData({context, params, request}) {
   }
 
   // The API handle might be localized, so redirect to the localized handle
-  redirectIfHandleIsLocalized(request, {handle, data: product});
+  redirectIfHandleIsLocalized(url, {handle, data: product});
 
   return {
     product,

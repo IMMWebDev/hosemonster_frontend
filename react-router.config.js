@@ -9,6 +9,12 @@ import {hydrogenPreset} from '@shopify/hydrogen/react-router-preset';
  */
 export default {
   presets: [hydrogenPreset()],
+  // Opt into React Router v8 behavior early (both become the default in v8).
+  // Merged with — not overriding — the Hydrogen preset's own future flags.
+  future: {
+    v8_passThroughRequests: true,
+    v8_trailingSlashAwareDataRequests: true,
+  },
 };
 
 /** @typedef {import('@react-router/dev/config').Config} Config */
