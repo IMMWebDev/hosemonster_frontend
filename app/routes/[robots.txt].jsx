@@ -20,6 +20,9 @@ export function loader({request}) {
  */
 function robotsTxtData({url}) {
   const sitemapUrl = url ? `${url}/sitemap.xml` : undefined;
+  // Strapi CMS pages aren't in Hydrogen's Shopify sitemap, so advertise their
+  // sitemap separately (crawlers accept multiple Sitemap directives).
+  const cmsSitemapUrl = url ? `${url}/sitemap-pages.xml` : undefined;
 
   return `
 User-agent: *
@@ -49,6 +52,7 @@ Crawl-Delay: 10
 
 User-agent: Pinterest
 Crawl-delay: 1
+${cmsSitemapUrl ? `Sitemap: ${cmsSitemapUrl}` : ''}
 `.trim();
 }
 

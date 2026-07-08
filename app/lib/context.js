@@ -1,15 +1,7 @@
-import {createHydrogenContext} from '@shopify/hydrogen';
+import {createHydrogenContext, createWithCache} from '@shopify/hydrogen';
 import {AppSession} from '~/lib/session';
 import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
-
-// Define the additional context object
-const additionalContext = {
-  // Additional context for custom properties, CMS clients, 3P SDKs, etc.
-  // These will be available as both context.propertyName and context.get(propertyContext)
-  // Example of complex objects that could be added:
-  // cms: await createCMSClient(env),
-  // reviews: await createReviewsClient(env),
-};
+import {createStrapiClient} from '~/lib/strapi';
 
 /**
  * Creates Hydrogen context for React Router 7.9.x
@@ -36,6 +28,14 @@ export async function createHydrogenRouterContext(
     AppSession.init(request, [env.SESSION_SECRET]),
   ]);
 
+  // Additional context: custom clients / 3P SDKs, available in loaders as
+  // `context.strapi`. The Strapi client shares Hydrogen's cache + waitUntil
+  // via createWithCache for cached CMS reads.
+  const withCache = createWithCache({cache, waitUntil, request});
+  const additionalContext = {
+    strapi: createStrapiClient({env, withCache}),
+  };
+
   const hydrogenContext = createHydrogenContext(
     {
       env,
@@ -54,5 +54,3 @@ export async function createHydrogenRouterContext(
 
   return hydrogenContext;
 }
-
-/** @typedef {Class<additionalContext>} AdditionalContextType */

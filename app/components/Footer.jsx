@@ -4,23 +4,33 @@ import {Await, NavLink} from 'react-router';
 /**
  * @param {FooterProps}
  */
-export function Footer({footer: footerPromise, header, publicStoreDomain}) {
+export function Footer({
+  footer: footerPromise,
+  header,
+  publicStoreDomain,
+  cmsFooter,
+}) {
   return (
-    <Suspense>
-      <Await resolve={footerPromise}>
-        {(footer) => (
-          <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
+    <footer className="footer">
+      {/* CMS footer text (Strapi `footer` single type). Renders immediately;
+          the Shopify footer menu still streams in below. */}
+      {cmsFooter?.header ? (
+        <p className="footer-cms-copy">{cmsFooter.header}</p>
+      ) : null}
+      <Suspense>
+        <Await resolve={footerPromise}>
+          {(footer) =>
+            footer?.menu && header.shop.primaryDomain?.url ? (
               <FooterMenu
                 menu={footer.menu}
                 primaryDomainUrl={header.shop.primaryDomain.url}
                 publicStoreDomain={publicStoreDomain}
               />
-            )}
-          </footer>
-        )}
-      </Await>
-    </Suspense>
+            ) : null
+          }
+        </Await>
+      </Suspense>
+    </footer>
   );
 }
 

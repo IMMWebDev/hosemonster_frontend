@@ -20,6 +20,8 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
+  cmsHeader,
+  cmsFooter,
 }) {
   return (
     <Aside.Provider>
@@ -32,6 +34,7 @@ export function PageLayout({
           cart={cart}
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
+          cmsHeader={cmsHeader}
         />
       )}
       <main>{children}</main>
@@ -39,6 +42,7 @@ export function PageLayout({
         footer={footer}
         header={header}
         publicStoreDomain={publicStoreDomain}
+        cmsFooter={cmsFooter}
       />
     </Aside.Provider>
   );

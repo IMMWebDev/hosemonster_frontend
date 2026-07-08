@@ -14,6 +14,7 @@ import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from './components/PageLayout';
+import NotFound from '~/components/cms/NotFound';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -95,19 +96,24 @@ export async function loader(args) {
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context}) {
-  const {storefront} = context;
+  const {storefront, strapi} = context;
 
-  const [header] = await Promise.all([
+  const [header, notFound, cmsHeader, cmsFooter] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
+    // CMS single types (Strapi). getSingle is CacheLong + null-safe, so these
+    // are cheap cached subrequests that never throw. `notFound` feeds the
+    // ErrorBoundary; `cmsHeader`/`cmsFooter` feed the site header/footer.
+    strapi.getSingle('page-not-found'),
+    strapi.getSingle('header'),
+    strapi.getSingle('footer'),
   ]);
 
-  return {header};
+  return {header, notFound, cmsHeader, cmsFooter};
 }
 
 /**
@@ -187,6 +193,7 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const rootData = useRouteLoaderData('root');
   let errorMessage = 'Unknown error';
   let errorStatus = 500;
 
@@ -195,6 +202,26 @@ export function ErrorBoundary() {
     errorStatus = error.status;
   } else if (error instanceof Error) {
     errorMessage = error.message;
+  }
+
+  // Render the CMS-driven 404 page for any 404 (global, like Next's
+  // not-found.jsx), wrapped in the site header/footer. rootData is available
+  // because 404s bubble up from child routes (the root loader succeeded); the
+  // header needs Analytics.Provider + PageLayout, same as the normal shell. If
+  // the root loader itself failed, render the bare 404 as a fallback.
+  if (errorStatus === 404) {
+    const notFound = <NotFound data={rootData?.notFound} />;
+    return rootData ? (
+      <Analytics.Provider
+        cart={rootData.cart}
+        shop={rootData.shop}
+        consent={rootData.consent}
+      >
+        <PageLayout {...rootData}>{notFound}</PageLayout>
+      </Analytics.Provider>
+    ) : (
+      notFound
+    );
   }
 
   return (

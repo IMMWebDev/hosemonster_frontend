@@ -6,12 +6,14 @@ import {useAside} from '~/components/Aside';
 /**
  * @param {HeaderProps}
  */
-export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
+export function Header({header, isLoggedIn, cart, publicStoreDomain, cmsHeader}) {
   const {shop, menu} = header;
   return (
     <header className="header">
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+        {/* CMS header text (Strapi `header` single type) falls back to the
+            Shopify shop name until the CMS field is populated. */}
+        <strong>{cmsHeader?.header ?? shop.name}</strong>
       </NavLink>
       <HeaderMenu
         menu={menu}
