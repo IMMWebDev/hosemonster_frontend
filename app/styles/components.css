@@ -55,6 +55,19 @@
     border-color var(--duration-fast) var(--ease-default);
 }
 
+/*
+ * Buttons are usually anchors, and reset.css underlines `a:hover`. That
+ * selector is element + pseudo-class (0,1,1), which outranks the single class
+ * `.btn` (0,1,0) — so the resting `text-decoration: none` above silently loses
+ * on hover. Cancelling it needs a selector of at least equal specificity;
+ * `.btn:hover` is (0,2,0). Do not fold this back into the `.btn` block.
+ */
+.btn:hover,
+.btn:focus,
+.btn:active {
+  text-decoration: none;
+}
+
 .btn:disabled,
 .btn[aria-disabled='true'] {
   opacity: 0.5;

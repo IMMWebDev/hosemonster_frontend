@@ -53,8 +53,23 @@
   --nav-rule: #e2e2df; /* Header bottom border */
   --nav-rule-utility: #ededed; /* Utility bar bottom border */
   --legal-ink: #9a9a9a; /* Footer legal/copyright line */
-  --hero-meta-ink: #b7b7b2; /* Hero trust bar ("FM Approved", …) */
-  --hero-meta-rule: #c4c4c4; /* Hero trust bar "·" separators */
+  --hero-meta-ink: #b7b7b2; /* Hero trust bar; also Discovery card description */
+  --hero-meta-rule: #c4c4c4; /* Hero trust separators; also Discovery tab dividers */
+  --muted-ink: #666666; /* Guided Discovery intro copy */
+
+  /* Guided Discovery card wash. Two stacked gradients over a 50%-opacity photo:
+   * a subtle bottom darkening, then a strong navy sweep from the left so the
+   * white title stays legible over the image. */
+  --discovery-card-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.24) 19%,
+      rgba(102, 102, 102, 0) 69%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(28, 58, 85, 0.98) 36%,
+      rgba(28, 58, 85, 0) 88%
+    );
 
   /* Hero image scrim. Left-to-right navy fade that keeps white text legible
    * over a photographic background. Figma fades to transparent BLACK; this
@@ -129,6 +144,9 @@
   --text-button: 1rem; /* 16px — Figma "H4" (Button) */
   --text-body: 0.875rem; /* 14px — Figma "B1" (Standard Body Copy) */
   --text-body-sm: 0.75rem; /* 12px — Figma "B2" (Small Body Copy) */
+  /* ⚠ Figma "B3" (Gopher Regular 16 / 1.7). Used by the Guided Discovery card
+   * but absent from the styleguide's Fonts page — flag for design. */
+  --text-body-lg: 1rem; /* 16px */
 
   /* Line heights — unitless, so they scale with font-size */
   --leading-h1: 0.98;

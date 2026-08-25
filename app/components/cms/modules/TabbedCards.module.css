@@ -1,0 +1,256 @@
+/*
+ * Tabbed Cards module — intro copy, a segmented tab bar, and a card that swaps
+ * with the tab. Page-agnostic; first used by the homepage's "Guided Discovery"
+ * section (Figma "Homepage" → Hifi → Main → Section 7:1546).
+ *
+ * The first interactive module, so it follows the ARIA tabs pattern rather than
+ * being a row of styled buttons.
+ */
+
+.section {
+  padding-block-start: var(--space-16);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-2);
+}
+
+/* Figma "H2" */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2);
+}
+
+/* Figma "B1", in the muted grey this module uses rather than navy */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--muted-ink);
+  max-width: 671px; /* from the design; narrower than the 920px container */
+  margin: 0 0 var(--space-4);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * TAB BAR
+ * -----------------------------------------------------------------------------
+ * One bordered pill containing equal-width segments. `overflow: hidden` lets
+ * the active segment's fill sit flush inside the rounded border.
+ */
+
+.tablist {
+  display: flex;
+  width: 100%;
+  border: var(--border-width-thick) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.tab {
+  flex: 1 1 0; /* equal widths regardless of label length */
+  min-width: 0;
+  padding: 9px var(--space-2); /* 9px is the design's exact value */
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-transform: capitalize;
+  text-align: center;
+  color: var(--nav-ink);
+  background: transparent;
+  border: 0;
+  /* Divider between segments. The last one is removed below so the pill's own
+   * border is not doubled. */
+  border-right: var(--border-width) solid var(--hero-meta-rule);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.tab:last-child {
+  border-right: 0;
+}
+
+.tab:hover:not([aria-selected='true']) {
+  background: var(--color-surface-subtle);
+}
+
+.tab[aria-selected='true'] {
+  background: var(--color-action);
+  color: var(--color-text-inverse);
+  border-right-color: transparent;
+}
+
+.tab:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: -4px; /* inset, so the pill's rounded corner is not clipped */
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CARD
+ * -----------------------------------------------------------------------------
+ */
+
+.card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: var(--space-16); /* 76px in the design, rounded to the scale */
+  align-items: center;
+  min-height: 168px;
+  margin-block-start: var(--space-3);
+  padding: var(--space-6) 33px; /* 33px is the design's exact inline padding */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--brand-navy); /* shows before the image loads */
+}
+
+/* Same positive-stack approach as the Hero: image 0, wash 1, content 2. */
+.cardImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  opacity: 0.5; /* from the design — the wash does the rest of the work */
+}
+
+.cardWash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--discovery-card-wash);
+  pointer-events: none;
+}
+
+.cardCopy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Figma "H2", reversed out */
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/* Figma "B3" — 16px Gopher Regular */
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+  max-width: 460px;
+  margin: 0;
+}
+
+.cardActions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame.
+ */
+
+/* tablet — the card stacks; four tabs no longer fit on one line, so the bar
+ * becomes a 2x2 grid rather than shrinking the labels to nothing. */
+@media (max-width: 1099px) {
+  .section {
+    padding-block-start: var(--space-12);
+  }
+
+  .tablist {
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    flex: 1 1 50%;
+  }
+
+  .tab:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    padding-inline: var(--space-6);
+  }
+
+  .cardActions {
+    justify-content: flex-start;
+  }
+}
+
+/* mdTablet — one tab per row; equal-width segments would be unreadable. */
+@media (max-width: 699px) {
+  .tab {
+    flex: 1 1 100%;
+    border-right: 0;
+    border-bottom: var(--border-width) solid var(--hero-meta-rule);
+  }
+
+  .tab:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* mobile */
+@media (max-width: 499px) {
+  .section {
+    padding-block-start: var(--space-8);
+  }
+
+  .cardActions {
+    width: 100%;
+  }
+
+  .cardActions > * {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}

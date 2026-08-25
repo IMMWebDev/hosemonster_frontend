@@ -1,4 +1,5 @@
 import Hero from '~/components/cms/modules/Hero';
+import TabbedCards from '~/components/cms/modules/TabbedCards';
 import Wysiwyg from '~/components/cms/modules/Wysiwyg';
 import ImageContent from '~/components/cms/modules/ImageContent';
 
@@ -29,6 +30,22 @@ export const MODULE_REGISTRY = {
         trustItems: true,
         primaryCTA: {populate: {pageLink: true}},
         secondaryCTA: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.tabbed-cards': {
+    Component: TabbedCards,
+    // Three levels: items -> image / CTAs -> pageLink. populate: '*' stops at
+    // `items` and would return each one with no image and no CTAs.
+    options: {
+      populate: {
+        items: {
+          populate: {
+            image: true,
+            primaryCTA: {populate: {pageLink: true}},
+            secondaryCTA: {populate: {pageLink: true}},
+          },
+        },
       },
     },
   },

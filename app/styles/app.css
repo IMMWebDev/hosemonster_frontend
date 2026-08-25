@@ -727,6 +727,13 @@ button.reset:hover:not(:has(> *)) {
     border-color var(--duration-fast) var(--ease-default);
 }
 
+/* Same specificity trap as .btn — see the note in components.css. */
+.cms-button:hover,
+.cms-button:focus,
+.cms-button:active {
+  text-decoration: none;
+}
+
 .cms-button--primary {
   background: var(--color-action);
   border-color: var(--color-action);
