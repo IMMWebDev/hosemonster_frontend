@@ -1,3 +1,4 @@
+import Hero from '~/components/cms/modules/Hero';
 import Wysiwyg from '~/components/cms/modules/Wysiwyg';
 import ImageContent from '~/components/cms/modules/ImageContent';
 
@@ -17,6 +18,20 @@ import ImageContent from '~/components/cms/modules/ImageContent';
  * @type {Record<string, {Component: import('react').ComponentType<any>, options: object}>}
  */
 export const MODULE_REGISTRY = {
+  'module.hero': {
+    Component: Hero,
+    // populate: '*' would return the media and link components as bare ids /
+    // scalars — backgroundImage.url and the CTA relations would be missing —
+    // so each nested piece is named explicitly.
+    options: {
+      populate: {
+        backgroundImage: true,
+        trustItems: true,
+        primaryCTA: {populate: {pageLink: true}},
+        secondaryCTA: {populate: {pageLink: true}},
+      },
+    },
+  },
   'module.wysiwyg': {
     Component: Wysiwyg,
     options: {

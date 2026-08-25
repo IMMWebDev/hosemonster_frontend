@@ -16,18 +16,18 @@ import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 export function PageLayout({
   cart,
   children = null,
-  footer,
   header,
   isLoggedIn,
   publicStoreDomain,
   cmsHeader,
   cmsFooter,
+  strapiBaseUrl,
 }) {
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
       <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+      <MobileMenuAside cmsHeader={cmsHeader} />
       {header && (
         <Header
           header={header}
@@ -35,14 +35,14 @@ export function PageLayout({
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
           cmsHeader={cmsHeader}
+          strapiBaseUrl={strapiBaseUrl}
         />
       )}
       <main>{children}</main>
       <Footer
-        footer={footer}
         header={header}
-        publicStoreDomain={publicStoreDomain}
         cmsFooter={cmsFooter}
+        strapiBaseUrl={strapiBaseUrl}
       />
     </Aside.Provider>
   );
@@ -153,19 +153,20 @@ function SearchAside() {
  *   publicStoreDomain: PageLayoutProps['publicStoreDomain'];
  * }}
  */
-function MobileMenuAside({header, publicStoreDomain}) {
+/**
+ * Mobile nav drawer. Driven by the same CMS nav as the desktop header, so the
+ * two cannot drift apart.
+ *
+ * @param {{cmsHeader?: Record<string, any>}}
+ */
+function MobileMenuAside({cmsHeader}) {
+  const mainNav = cmsHeader?.mainNav ?? [];
+  if (mainNav.length === 0) return null;
+
   return (
-    header.menu &&
-    header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
-        <HeaderMenu
-          menu={header.menu}
-          viewport="mobile"
-          primaryDomainUrl={header.shop.primaryDomain.url}
-          publicStoreDomain={publicStoreDomain}
-        />
-      </Aside>
-    )
+    <Aside type="mobile" heading="MENU">
+      <HeaderMenu mainNav={mainNav} />
+    </Aside>
   );
 }
 

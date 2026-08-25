@@ -1,0 +1,240 @@
+/*
+ * Footer — Figma "Web Styleguide" → Nav + Footer → Footer Only (27:1154)
+ *
+ * White background with navy text. Note this inverts the previous footer,
+ * which was a dark navy bar.
+ */
+
+.footer {
+  background: var(--color-surface);
+  margin-top: auto;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MAIN GRID
+ * -----------------------------------------------------------------------------
+ * Design is a 5-column grid: a wider brand column plus four link columns
+ * (1.5fr 1fr 1fr 1fr 1fr). The link-column count is CMS-driven, so the track
+ * count comes from --footer-columns, set inline by the component. Adding a
+ * fifth column in Strapi widens the grid without a CSS change.
+ */
+
+.inner {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(var(--footer-columns, 4), minmax(0, 1fr));
+  gap: var(--space-9);
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  /* Horizontal padding is the shared container gutter, NOT Figma's 44px, so the
+   * footer content aligns with the header and page sections. */
+  padding: var(--space-10) var(--container-gutter) var(--space-6);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * BRAND COLUMN
+ * -----------------------------------------------------------------------------
+ */
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.logo {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.logoImage {
+  display: block;
+  width: 185px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.logoFallback {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.contact {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Figma "B1" / Standard Body Copy */
+.contactLine {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  text-decoration: none;
+  margin: 0;
+  /* The CMS address field is multi-line free text; honour its line breaks
+   * rather than collapsing them into one run-on line. */
+  white-space: pre-line;
+}
+
+a.contactLine:hover {
+  text-decoration: underline;
+}
+
+.social {
+  display: flex;
+  gap: 9px; /* exact value from the design */
+  align-items: center;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  color: var(--color-text);
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.socialLink:hover {
+  color: var(--color-action);
+}
+
+.socialLink:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.socialIcon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * LINK COLUMNS
+ * -----------------------------------------------------------------------------
+ */
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Figma "H4" */
+.columnHeading {
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-transform: capitalize;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.columnLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* exact value from the design */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.columnLinks li {
+  margin: 0;
+}
+
+/* Figma "B2" / Small Body Copy */
+.columnLink {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.columnLink:hover {
+  color: var(--color-action);
+  text-decoration: underline;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * DIVIDER + LEGAL BAR
+ * -----------------------------------------------------------------------------
+ */
+
+.divider {
+  border: 0;
+  border-top: var(--border-width) solid var(--color-border-strong);
+  max-width: 1192px; /* narrower than the grid, per the design */
+  margin: 0 auto;
+}
+
+.legal {
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding: var(--space-4) var(--container-gutter) var(--space-6);
+}
+
+.legalText {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--legal-ink);
+  margin: 0;
+}
+
+.legalLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.legalLink:hover {
+  text-decoration: underline;
+}
+
+.legalSeparator {
+  user-select: none;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (see app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame. The grid collapses to
+ * two columns at tablet and one at mobile, brand column spanning full width.
+ */
+
+/* tablet (max-width: 1099px) */
+@media (max-width: 1099px) {
+  .inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-8);
+  }
+
+  .brand {
+    grid-column: 1 / -1;
+  }
+}
+
+/* mobile (max-width: 499px) */
+@media (max-width: 499px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

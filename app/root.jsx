@@ -10,8 +10,12 @@ import {
   useRouteLoaderData,
 } from 'react-router';
 import favicon from '~/assets/favicon.svg';
-import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
+import tokenStyles from '~/styles/tokens.css?url';
+import typographyStyles from '~/styles/typography.css?url';
+import layoutStyles from '~/styles/layout.css?url';
+import componentStyles from '~/styles/components.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from './components/PageLayout';
 import NotFound from '~/components/cms/NotFound';
@@ -109,11 +113,38 @@ async function loadCriticalData({context}) {
     // are cheap cached subrequests that never throw. `notFound` feeds the
     // ErrorBoundary; `cmsHeader`/`cmsFooter` feed the site header/footer.
     strapi.getSingle('page-not-found'),
-    strapi.getSingle('header'),
-    strapi.getSingle('footer'),
+    // Explicit populate: `populate: '*'` only goes one level deep, which would
+    // return the link components but NOT the `pageLink` relation nested inside
+    // each one — internal page links would silently resolve to '#'.
+    strapi.getSingle('header', {
+      populate: {
+        logo: true,
+        utilityLinks: {populate: {pageLink: true}},
+        mainNav: {populate: {pageLink: true}},
+      },
+    }),
+    // Three levels deep: footer → linkColumns → links → pageLink. `populate: '*'`
+    // would stop at linkColumns and return them with no links at all.
+    strapi.getSingle('footer', {
+      populate: {
+        logo: true,
+        socialLinks: true,
+        legalLinks: {populate: {pageLink: true}},
+        linkColumns: {populate: {links: {populate: {pageLink: true}}}},
+      },
+    }),
   ]);
 
-  return {header, notFound, cmsHeader, cmsFooter};
+  return {
+    header,
+    notFound,
+    cmsHeader,
+    cmsFooter,
+    // Needed by strapiMedia() to resolve relative upload paths. Harmless with
+    // the Cloudinary provider (absolute URLs pass through untouched), but
+    // required if the upload provider is ever switched back to local.
+    strapiBaseUrl: context.env.STRAPI_API_URL,
+  };
 }
 
 /**
@@ -123,25 +154,16 @@ async function loadCriticalData({context}) {
  * @param {Route.LoaderArgs}
  */
 function loadDeferredData({context}) {
-  const {storefront, customerAccount, cart} = context;
+  const {customerAccount, cart} = context;
 
-  // defer the footer query (below the fold)
-  const footer = storefront
-    .query(FOOTER_QUERY, {
-      cache: storefront.CacheLong(),
-      variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
-      },
-    })
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
+  // The Shopify FOOTER_QUERY used to be deferred here. The footer is now
+  // entirely CMS-driven (Strapi `footer` single type, fetched in
+  // loadCriticalData), so the query was firing on every page load with nothing
+  // reading the result. Restore it here and in PageLayout if the Shopify footer
+  // menu is ever needed again.
   return {
     cart: cart.get(),
     isLoggedIn: customerAccount.isLoggedIn(),
-    footer,
   };
 }
 
@@ -156,7 +178,15 @@ export function Layout({children}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        {/* Load order matters: tokens → reset → typography → layout →
+            components → app. tokens.css comes first because every other sheet
+            consumes var(--*), and app.css comes last so page-specific rules can
+            still override. */}
+        <link rel="stylesheet" href={tokenStyles}></link>
         <link rel="stylesheet" href={resetStyles}></link>
+        <link rel="stylesheet" href={typographyStyles}></link>
+        <link rel="stylesheet" href={layoutStyles}></link>
+        <link rel="stylesheet" href={componentStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
         <Meta />
         <Links />

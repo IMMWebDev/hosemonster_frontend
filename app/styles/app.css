@@ -1,15 +1,11 @@
-:root {
-  --aside-width: 400px;
-  --cart-aside-summary-height-with-discount: 300px;
-  --cart-aside-summary-height: 250px;
-  --grid-item-width: 355px;
-  --header-height: 64px;
-  --color-dark: #000;
-  --color-light: #fff;
-}
+/*
+ * Design tokens live in tokens.css — do not redeclare them here.
+ * This file holds page- and component-specific rules only, and should
+ * reference tokens via var(). No raw hex codes.
+ */
 
 img {
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /*
@@ -28,8 +24,8 @@ img {
 * --------------------------------------------------
 */
 .mock-shop-notice {
-  background: var(--color-light);
-  border: 1px solid var(--color-dark);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-strong);
   border-left-width: 0.5rem;
   margin: 1rem 0;
   padding: 0;
@@ -63,7 +59,7 @@ img {
 
   code {
     background: rgba(0, 0, 0, 0.06);
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
     padding: 0.1em 0.3em;
   }
 
@@ -85,7 +81,7 @@ img {
 }
 
 aside {
-  background: var(--color-light);
+  background: var(--color-surface);
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
   height: 100vh;
   width: min(var(--aside-width), 100vw);
@@ -97,7 +93,7 @@ aside {
 
 aside header {
   align-items: center;
-  border-bottom: 1px solid var(--color-dark);
+  border-bottom: var(--border-width) solid var(--color-border-strong);
   display: flex;
   height: var(--header-height);
   justify-content: space-between;
@@ -227,7 +223,7 @@ button.reset:hover:not(:has(> *)) {
 */
 .header {
   align-items: center;
-  background: #fff;
+  background: var(--color-surface);
   display: flex;
   height: var(--header-height);
   padding: 0 1rem;
@@ -275,26 +271,13 @@ button.reset:hover:not(:has(> *)) {
 
 /*
 * --------------------------------------------------
-* components/Footer
+* components/Footer — moved to Footer.module.css
 * --------------------------------------------------
+* The footer is now a CSS Module co-located with the component. The old rules
+* here (.footer, .footer-menu, .footer-cms-copy) styled a dark navy bar with a
+* Shopify menu; the design is a white multi-column footer, so they were removed
+* rather than left to fight the module.
 */
-.footer {
-  background: var(--color-dark);
-  margin-top: auto;
-}
-
-.footer-menu {
-  justify-content: center;
-  display: flex;
-  flex-wrap: wrap;
-  grid-gap: 1rem;
-  padding: 1rem;
-}
-
-.footer-menu a {
-  color: var(--color-light);
-  min-width: fit-content;
-}
 
 /*
 * --------------------------------------------------
@@ -331,8 +314,8 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .cart-summary-aside {
-  background: white;
-  border-top: 1px solid var(--color-dark);
+  background: var(--color-surface);
+  border-top: var(--border-width) solid var(--color-border-strong);
   bottom: 0;
   padding-top: 0.75rem;
   position: absolute;
@@ -369,7 +352,7 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .predictive-search-form {
-  background: var(--color-light);
+  background: var(--color-surface);
   position: sticky;
   top: 0;
 }
@@ -601,8 +584,8 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .order-search-fieldset {
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
   padding: 1rem;
 }
 
@@ -633,8 +616,8 @@ button.reset:hover:not(:has(> *)) {
 .order-search-input {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 1rem;
 }
 
@@ -690,7 +673,7 @@ button.reset:hover:not(:has(> *)) {
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 }
 
@@ -719,22 +702,51 @@ button.reset:hover:not(:has(> *)) {
   margin-top: 1.5rem;
 }
 
+/*
+ * Strapi-driven buttons. These match the Figma button components exactly —
+ * see .btn / .btn--primary / .btn--secondary in components.css, which is the
+ * canonical implementation. These classes exist only because the Strapi
+ * dynamic-zone markup emits .cms-button; prefer .btn in hand-written code.
+ */
 .cms-button {
-  display: inline-block;
-  padding: 0.6rem 1.25rem;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-button-y) var(--space-button-x);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-transform: capitalize;
   text-decoration: none;
-  font-weight: 600;
+  white-space: nowrap;
+  border: var(--border-width-thick) solid transparent;
+  border-radius: var(--radius-pill);
+  transition: background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default);
 }
 
 .cms-button--primary {
-  background: #000;
-  color: #fff;
+  background: var(--color-action);
+  border-color: var(--color-action);
+  color: var(--color-action-text);
+}
+
+.cms-button--primary:hover {
+  background: var(--brand-navy);
+  border-color: var(--brand-navy);
 }
 
 .cms-button--secondary {
-  border: 1px solid #000;
-  color: #000;
+  background: var(--color-surface);
+  border-color: var(--color-action-secondary-border);
+  color: var(--color-action-secondary-text);
+}
+
+.cms-button--secondary:hover {
+  background: var(--color-action-secondary-border);
+  color: var(--color-text-inverse);
 }
 
 /* CMS 404 page (Strapi page-not-found single type) */
@@ -753,10 +765,3 @@ button.reset:hover:not(:has(> *)) {
   }
 }
 
-/* CMS footer copy (Strapi footer single type) — footer has a dark background */
-.footer-cms-copy {
-  color: #fff;
-  text-align: center;
-  padding: 1rem;
-  margin: 0;
-}

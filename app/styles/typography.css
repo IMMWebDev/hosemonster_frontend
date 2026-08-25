@@ -1,0 +1,189 @@
+/*
+ * =============================================================================
+ * TYPOGRAPHY
+ * =============================================================================
+ * Implements the type styles from Figma → "Web Styleguide" → Fonts and Copy
+ * Lockups. All values come from tokens.css — nothing raw is written here.
+ *
+ * Figma style name → class in this file:
+ *   H1               → .h1   (or a bare <h1>)
+ *   H2               → .h2   (or a bare <h2>)
+ *   H2.5             → .h2-5
+ *   H3 / "Eyebrow"   → .eyebrow
+ *   H4 / "Button"    → .button-text (applied by the button classes)
+ *   B1 / "Standard Body Copy" → .body  (also the default for <body>)
+ *   B2 / "Small Body Copy"    → .body-sm
+ * =============================================================================
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * FONT LOADING — ACTION REQUIRED (needs an Adobe account, cannot be done in code)
+ * -----------------------------------------------------------------------------
+ * There are NO @font-face rules in this file, and there should not be.
+ *
+ * nimbus-sans-extended and gopher are ADOBE FONTS (Typekit) — a hosted
+ * subscription service. There are no font files to commit: Adobe serves them
+ * from its own CDN, and the licence covers use through that service on domains
+ * registered to a kit. Self-hosting the .woff2 files is outside that licence.
+ *
+ * HOW THE OLD SITE DOES IT (do not copy this):
+ *   wp-content/themes/es99/style.css has hardcoded @font-face rules pointing at
+ *   raw https://use.typekit.net/af/<hash>/... URLs, extracted from a kit and
+ *   pasted in. Those URLs still resolve today, but they are version-pinned
+ *   (v=3) and tied to an internal asset hash — when Adobe rotates them the
+ *   fonts vanish silently, with nothing failing in CI to warn you.
+ *   (The kit that IS referenced properly in that theme, pmz5erz, is Calibri
+ *   only — it does not contain either brand family.)
+ *
+ * HOW TO DO IT HERE:
+ *   1. In Adobe Fonts (fonts.adobe.com) open the Web Project containing
+ *      nimbus-sans-extended and gopher, or create one with both families.
+ *   2. Select the weights the design needs — see the gap note below.
+ *   3. Add this storefront's domain(s) to the project, including the Oxygen
+ *      preview domain and localhost for development.
+ *   4. Copy the kit ID and add the stylesheet in app/root.jsx, alongside the
+ *      other <link rel="stylesheet"> tags:
+ *
+ *        <link rel="stylesheet" href="https://use.typekit.net/<kitId>.css" />
+ *
+ *      The CSP in app/entry.server.jsx already allows use.typekit.net for both
+ *      styles and fonts, so no further change is needed there.
+ *
+ * ⚠ WEIGHT GAP — confirm before assuming the design is buildable:
+ *   The live site loads only these faces:
+ *       nimbus-sans-extended  700
+ *       gopher                400, 700
+ *   The Figma styleguide additionally calls for:
+ *       nimbus-sans-extended  900  (Eyebrow / H3)
+ *       gopher                500  (Standard Body Copy / B1)
+ *   Both families likely offer those weights in Adobe Fonts — they just need
+ *   selecting in the kit. If they are NOT available, the design must change:
+ *   the browser will synthesize a fake bold, which looks visibly wrong on a
+ *   display face. Verify when building the kit.
+ *
+ * Until the kit is added, the fallback stacks in --font-display / --font-body
+ * render. Layout and spacing are correct; the brand look is not.
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * BASE
+ * -----------------------------------------------------------------------------
+ * Body defaults to B1 (Standard Body Copy). Every bare <p> inherits this, so
+ * most body text needs no class at all.
+ */
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * HEADINGS
+ * -----------------------------------------------------------------------------
+ * Bare elements are styled so semantic HTML renders correctly without classes.
+ * The matching classes exist for when heading level and visual size need to
+ * differ — e.g. an <h2> that should look like H1 for document outline reasons.
+ * Reach for the class, never a heading level chosen for its looks.
+ */
+
+h1,
+.h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+h2,
+.h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Figma "H2.5" — an intermediate display size between H2 and the eyebrow.
+ * No native HTML element maps to it; always apply as a class. */
+.h2-5 {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-5);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/*
+ * Figma "H3" — used in the design as an EYEBROW: the small uppercase red label
+ * that sits above a heading. Named .eyebrow rather than .h3 because that is
+ * what it does; naming it h3 would invite using it as a generic third-level
+ * heading, which the design never does.
+ */
+h3,
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * BODY
+ * -----------------------------------------------------------------------------
+ */
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.body-sm {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MODIFIERS
+ * -----------------------------------------------------------------------------
+ */
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-inverse {
+  color: var(--color-text-inverse);
+}
+
+.text-accent {
+  color: var(--color-text-accent);
+}

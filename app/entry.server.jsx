@@ -22,6 +22,43 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    // Adobe Fonts (Typekit) serves the brand families, nimbus-sans-extended and
+    // gopher. The kit stylesheet is fetched from use.typekit.net and the font
+    // files it references are served from the same host, so both styleSrc and
+    // fontSrc are required — without them the CSP blocks the fonts silently.
+    // p.typekit.net is Adobe's usage-tracking pixel, which the kit also loads.
+    // See app/styles/typography.css for how to wire up the kit itself.
+    // ── IMPORTANT: how Hydrogen merges these ──────────────────────────────
+    // Hydrogen only merges a custom directive with its defaults when that key
+    // already exists in its defaults. Those keys are exactly:
+    //   baseUri, defaultSrc, frameAncestors, styleSrc, connectSrc
+    // For any OTHER key (imgSrc, fontSrc, …) there is nothing to merge with,
+    // so the value below becomes the whole directive — and because a specific
+    // directive overrides defaultSrc for that resource type, anything omitted
+    // here gets BLOCKED. Listing only the new host silently broke every
+    // Shopify product image. So imgSrc and fontSrc must restate the defaults.
+
+    // Merged with defaults — safe to list only what is new.
+    styleSrc: ['https://use.typekit.net'],
+    connectSrc: ['https://use.typekit.net', 'https://p.typekit.net'],
+
+    // NOT merged — must be complete.
+    // Shopify CDN serves product and store imagery; Strapi media is uploaded
+    // to Cloudinary behind the custom domain media.impactmit.com (the header
+    // logo comes from there); localhost:1337 covers a local Strapi using the
+    // default on-disk upload provider.
+    imgSrc: [
+      "'self'",
+      'data:',
+      'https://cdn.shopify.com',
+      'https://shopify.com',
+      'https://media.impactmit.com',
+      'https://res.cloudinary.com',
+      'http://localhost:1337',
+    ],
+
+    // NOT merged — must be complete. Adobe Fonts serves the brand families.
+    fontSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://use.typekit.net'],
   });
 
   const body = await renderToReadableStream(

@@ -1,0 +1,104 @@
+/*
+ * =============================================================================
+ * GLOBAL COMPONENTS
+ * =============================================================================
+ * Only genuinely global, reused-everywhere primitives belong here — buttons
+ * being the main one. Anything specific to a single component goes in that
+ * component's own *.module.css instead.
+ *
+ * Rule of thumb: if it appears in the Figma styleguide's "Elements" section
+ * and shows up on more than two pages, it is global. Otherwise it is a module.
+ * =============================================================================
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * BUTTONS
+ * -----------------------------------------------------------------------------
+ * Figma → Web Styleguide → Elements → "Buttons, Links and Icons"
+ *
+ *   Button Shop    (8:1967) → .btn--primary
+ *     red fill, 2px red border, white text, pill, 17px padding
+ *   Button Explore (8:1968) → .btn--secondary
+ *     white fill, 2px navy border, navy text, pill, 17px padding
+ *
+ * Both variants carry a 2px border. The primary's border matches its own fill,
+ * which looks redundant but is intentional: it keeps both variants at an
+ * identical height so they align when sat side by side, as they are in the
+ * NFPA copy lockup.
+ */
+
+.btn {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-button-y) var(--space-button-x);
+
+  /* Figma "H4" / Button text style */
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-align: center;
+  text-transform: capitalize;
+  text-decoration: none;
+  white-space: nowrap;
+
+  /* Shape */
+  border: var(--border-width-thick) solid transparent;
+  border-radius: var(--radius-pill);
+
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary — filled red */
+.btn--primary {
+  background-color: var(--color-action);
+  border-color: var(--color-action);
+  color: var(--color-action-text);
+}
+
+/* Secondary — outlined navy on white */
+.btn--secondary {
+  background-color: var(--color-surface);
+  border-color: var(--color-action-secondary-border);
+  color: var(--color-action-secondary-text);
+}
+
+/*
+ * Hover / focus states are NOT specced in the Figma styleguide — there are no
+ * hover variants on either button component. These are a conservative default:
+ * primary darkens toward navy, secondary fills with its own border color.
+ * Replace once design provides interaction states.
+ */
+.btn--primary:hover {
+  background-color: var(--brand-navy);
+  border-color: var(--brand-navy);
+}
+
+.btn--secondary:hover {
+  background-color: var(--color-action-secondary-border);
+  color: var(--color-text-inverse);
+}
+
+/* Visible keyboard focus. Not in the design, but required for accessibility —
+ * do not remove without an equivalent replacement. */
+.btn:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/*
+ * Layout helpers (.container, .container-grid and its placement classes) live
+ * in layout.css — the house container system. Do not redefine them here.
+ */

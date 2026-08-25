@@ -2,105 +2,166 @@ import {Suspense} from 'react';
 import {Await, NavLink, useAsyncValue} from 'react-router';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
+import CmsLink from '~/components/cms/CmsLink';
+import {strapiMedia} from '~/lib/strapi-media';
+import styles from './Header.module.css';
 
 /**
+ * Site header — Figma "Web Styleguide" → Nav + Footer → Navbar (21:263).
+ *
+ * Content is CMS-driven (Strapi `header` single type): logo, main nav, and the
+ * utility bar links. The commerce controls (search, account, cart) are rendered
+ * by Hydrogen because they depend on live session and cart state; the CMS only
+ * decides whether they appear and what they are labelled.
+ *
  * @param {HeaderProps}
  */
-export function Header({header, isLoggedIn, cart, publicStoreDomain, cmsHeader}) {
-  const {shop, menu} = header;
+export function Header({
+  header,
+  isLoggedIn,
+  cart,
+  cmsHeader,
+  strapiBaseUrl,
+}) {
+  const {shop} = header;
+
+  const logoUrl = strapiMedia(cmsHeader?.logo?.url, strapiBaseUrl);
+  // The logo links to home, so it needs a real alt. There is no CMS alt field
+  // by design — it comes from the Media Library's own alternativeText, set once
+  // on the upload, and falls back to the shop name.
+  const logoAlt = cmsHeader?.logo?.alternativeText || shop.name;
+  const utilityLinks = cmsHeader?.utilityLinks ?? [];
+  const mainNav = cmsHeader?.mainNav ?? [];
+
+  // These default to `true` rather than `?? true` on a nullish check alone,
+  // because Strapi returns null (not the schema default) for fields added to a
+  // pre-existing entry. Only an explicit `false` should hide a control.
+  const showSearch = cmsHeader?.showSearch !== false;
+  const showAccount = cmsHeader?.showAccount !== false;
+  const showCart = cmsHeader?.showCart !== false;
+
   return (
-    <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        {/* CMS header text (Strapi `header` single type) falls back to the
-            Shopify shop name until the CMS field is populated. */}
-        <strong>{cmsHeader?.header ?? shop.name}</strong>
-      </NavLink>
-      <HeaderMenu
-        menu={menu}
-        viewport="desktop"
-        primaryDomainUrl={header.shop.primaryDomain.url}
-        publicStoreDomain={publicStoreDomain}
-      />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+    <header className={styles.header}>
+      <div className={styles.utilityBar}>
+        <div className={styles.utilityInner}>
+          {showSearch && <SearchToggle />}
+
+          {utilityLinks.map((link, i) => (
+            <UtilityItem key={link.id ?? i} showSeparator={showSearch || i > 0}>
+              <CmsLink link={link} className={styles.utilityLink} />
+            </UtilityItem>
+          ))}
+
+          {showAccount && (
+            <UtilityItem showSeparator={showSearch || utilityLinks.length > 0}>
+              <AccountLink
+                isLoggedIn={isLoggedIn}
+                label={cmsHeader?.accountLabel || 'My Account'}
+              />
+            </UtilityItem>
+          )}
+
+          {showCart && (
+            <UtilityItem
+              showSeparator={
+                showSearch || showAccount || utilityLinks.length > 0
+              }
+            >
+              <CartToggle cart={cart} label={cmsHeader?.cartLabel || 'Cart'} />
+            </UtilityItem>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.mainBar}>
+        <div className={styles.mainBarInner}>
+        <NavLink prefetch="intent" to="/" className={styles.logo} end>
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={logoAlt}
+              className={styles.logoImage}
+              width={cmsHeader?.logo?.width ?? 185}
+              height={cmsHeader?.logo?.height ?? 48}
+            />
+          ) : (
+            <span className={styles.logoFallback}>{shop.name}</span>
+          )}
+        </NavLink>
+
+        <nav className={styles.nav} role="navigation">
+          {mainNav.map((link, i) => (
+            <CmsLink
+              key={link.id ?? i}
+              link={link}
+              className={styles.navLink}
+            />
+          ))}
+        </nav>
+
+          <HeaderMenuMobileToggle />
+        </div>
+      </div>
     </header>
   );
 }
 
 /**
- * @param {{
- *   menu: HeaderProps['header']['menu'];
- *   primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
- *   viewport: Viewport;
- *   publicStoreDomain: HeaderProps['publicStoreDomain'];
- * }}
+ * Wraps a utility-bar item, optionally preceded by the "·" divider from the
+ * design. The divider is decorative, so it is hidden from assistive tech.
+ *
+ * @param {{showSeparator?: boolean, children: import('react').ReactNode}}
  */
-export function HeaderMenu({
-  menu,
-  primaryDomainUrl,
-  viewport,
-  publicStoreDomain,
-}) {
-  const className = `header-menu-${viewport}`;
+function UtilityItem({showSeparator, children}) {
+  return (
+    <>
+      {showSeparator && (
+        <span className={styles.separator} aria-hidden="true">
+          ·
+        </span>
+      )}
+      {children}
+    </>
+  );
+}
+
+/**
+ * Mobile drawer nav. Rendered inside the Aside by PageLayout, so it reuses the
+ * CMS nav rather than the Shopify menu.
+ *
+ * @param {{mainNav: Array<object>}}
+ */
+export function HeaderMenu({mainNav = []}) {
   const {close} = useAside();
 
   return (
-    <nav className={className} role="navigation">
-      {viewport === 'mobile' && (
-        <NavLink
-          end
-          onClick={close}
-          prefetch="intent"
-          style={activeLinkStyle}
-          to="/"
-        >
-          Home
-        </NavLink>
-      )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
-        if (!item.url) return null;
-
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        return (
-          <NavLink
-            className="header-menu-item"
-            end
-            key={item.id}
-            onClick={close}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
-          </NavLink>
-        );
-      })}
+    <nav className="header-menu-mobile" role="navigation">
+      <NavLink end onClick={close} prefetch="intent" to="/">
+        Home
+      </NavLink>
+      {mainNav.map((link, i) => (
+        <CmsLink
+          key={link.id ?? i}
+          link={link}
+          className={styles.navLink}
+        />
+      ))}
     </nav>
   );
 }
 
 /**
- * @param {Pick<HeaderProps, 'isLoggedIn' | 'cart'>}
+ * @param {{isLoggedIn: Promise<boolean>, label: string}}
  */
-function HeaderCtas({isLoggedIn, cart}) {
+function AccountLink({isLoggedIn, label}) {
   return (
-    <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-          </Await>
-        </Suspense>
-      </NavLink>
-      <SearchToggle />
-      <CartToggle cart={cart} />
-    </nav>
+    <NavLink prefetch="intent" to="/account" className={styles.utilityLink}>
+      <Suspense fallback={label}>
+        <Await resolve={isLoggedIn} errorElement={label}>
+          {(loggedIn) => (loggedIn ? label : 'Sign In')}
+        </Await>
+      </Suspense>
+    </NavLink>
   );
 }
 
@@ -108,10 +169,11 @@ function HeaderMenuMobileToggle() {
   const {open} = useAside();
   return (
     <button
-      className="header-menu-mobile-toggle reset"
+      className={styles.menuToggle}
       onClick={() => open('mobile')}
+      aria-label="Open menu"
     >
-      <h3>☰</h3>
+      ☰
     </button>
   );
 }
@@ -119,22 +181,39 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button className="reset" onClick={() => open('search')}>
-      Search
+    <button
+      className={`${styles.utilityButton} ${styles.searchButton}`}
+      onClick={() => open('search')}
+      aria-label="Search"
+    >
+      {/* Inline rather than an asset: the Figma node is a text layer containing
+          an emoji, not an exported icon, so there is no vector to pull. */}
+      <svg
+        className={styles.searchIcon}
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        aria-hidden="true"
+      >
+        <circle cx="7" cy="7" r="5" />
+        <line x1="10.8" y1="10.8" x2="14.5" y2="14.5" strokeLinecap="round" />
+      </svg>
     </button>
   );
 }
 
 /**
- * @param {{count: number}}
+ * @param {{count: number, label: string}}
  */
-function CartBadge({count}) {
+function CartBadge({count, label}) {
   const {open} = useAside();
   const {publish, shop, cart, prevCart} = useAnalytics();
 
   return (
     <a
       href="/cart"
+      className={styles.utilityLink}
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -146,83 +225,31 @@ function CartBadge({count}) {
         });
       }}
     >
-      Cart <span aria-label={`(items: ${count})`}>{count}</span>
+      {label} <span aria-label={`(items: ${count})`}>({count})</span>
     </a>
   );
 }
 
 /**
- * @param {Pick<HeaderProps, 'cart'>}
+ * @param {{cart: HeaderProps['cart'], label: string}}
  */
-function CartToggle({cart}) {
+function CartToggle({cart, label}) {
   return (
-    <Suspense fallback={<CartBadge count={0} />}>
+    <Suspense fallback={<CartBadge count={0} label={label} />}>
       <Await resolve={cart}>
-        <CartBanner />
+        <CartBanner label={label} />
       </Await>
     </Suspense>
   );
 }
 
-function CartBanner() {
+/**
+ * @param {{label: string}}
+ */
+function CartBanner({label}) {
   const originalCart = useAsyncValue();
   const cart = useOptimisticCart(originalCart);
-  return <CartBadge count={cart?.totalQuantity ?? 0} />;
-}
-
-const FALLBACK_HEADER_MENU = {
-  id: 'gid://shopify/Menu/199655587896',
-  items: [
-    {
-      id: 'gid://shopify/MenuItem/461609500728',
-      resourceId: null,
-      tags: [],
-      title: 'Collections',
-      type: 'HTTP',
-      url: '/collections',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609533496',
-      resourceId: null,
-      tags: [],
-      title: 'Blog',
-      type: 'HTTP',
-      url: '/blogs/journal',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609566264',
-      resourceId: null,
-      tags: [],
-      title: 'Policies',
-      type: 'HTTP',
-      url: '/policies',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609599032',
-      resourceId: 'gid://shopify/Page/92591030328',
-      tags: [],
-      title: 'About',
-      type: 'PAGE',
-      url: '/pages/about',
-      items: [],
-    },
-  ],
-};
-
-/**
- * @param {{
- *   isActive: boolean;
- *   isPending: boolean;
- * }}
- */
-function activeLinkStyle({isActive, isPending}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'black',
-  };
+  return <CartBadge count={cart?.totalQuantity ?? 0} label={label} />;
 }
 
 /** @typedef {'desktop' | 'mobile'} Viewport */
@@ -232,6 +259,8 @@ function activeLinkStyle({isActive, isPending}) {
  * @property {Promise<CartApiQueryFragment|null>} cart
  * @property {Promise<boolean>} isLoggedIn
  * @property {string} publicStoreDomain
+ * @property {Record<string, any>} [cmsHeader]
+ * @property {string} [strapiBaseUrl]
  */
 
 /** @typedef {import('@shopify/hydrogen').CartViewPayload} CartViewPayload */

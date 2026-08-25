@@ -1,0 +1,211 @@
+/*
+ * Hero module — Figma "Homepage" → Hifi → Main → Section (7:1516)
+ *
+ * Full-bleed background image with a navy scrim, copy constrained to the
+ * shared container so it lines up with the header and every other section.
+ */
+
+.hero {
+  position: relative;
+  isolation: isolate; /* keeps the scrim's z-index local to this section */
+  display: flex;
+  align-items: center;
+  min-height: 584px; /* section height in the design */
+  padding-block: var(--space-16); /* 96px top / 97px bottom — the 1px is noise */
+  overflow: hidden;
+  background-color: var(--brand-navy); /* shows before the image loads */
+
+  /* Full-bleed. <main> carries a horizontal margin (see reset.css), so cancel
+   * exactly that much and grow by the same amount on each side. Using the token
+   * rather than 100vw matters: 100vw includes the scrollbar and would cause
+   * horizontal overflow on every desktop browser that reserves gutter space. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/*
+ * Layering — an explicit positive stack:
+ *   0  .background (image)
+ *   1  .scrim (gradient)
+ *   2  .inner (copy)
+ *
+ * Deliberately NOT negative z-index. A negative value puts these children at
+ * risk of painting behind .hero's own background-color, which silently hides
+ * the image; positive values on an explicit stack have no such ambiguity.
+ * `isolation: isolate` on .hero keeps the stack from interacting with the
+ * sticky header.
+ */
+
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right; /* keep the product cluster in frame as it narrows */
+  display: block;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--hero-overlay);
+  pointer-events: none;
+}
+
+/* Matches .container so the hero copy aligns with the header and footer */
+.inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 640px; /* copy column width in the design */
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/*
+ * Figma "H1", reversed out to white. The CMS heading field is multi-line and
+ * the design breaks it deliberately ("Fire Hydrant, / Fire Pump & / …"), so
+ * author line breaks are preserved rather than collapsed.
+ */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Figma "B1" / Standard Body Copy, reversed out */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text-inverse);
+  white-space: pre-line;
+  max-width: 532px; /* narrower than the heading, per the design */
+  margin: 0;
+}
+
+/*
+ * Trust bar — "Gold standard since 1993 · FM Approved · Built to NFPA 25…".
+ * Separators are decoration, generated in CSS and hidden from screen readers.
+ */
+.trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) 10px;
+  list-style: none;
+  margin: 0;
+  padding: var(--space-4) 0 0;
+}
+
+.trustItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--hero-meta-ink);
+  margin: 0;
+}
+
+.trustItem + .trustItem::before {
+  content: '·';
+  color: var(--hero-meta-rule);
+  font-weight: var(--weight-bold);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding-top: 14px; /* exact value from the design */
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame. The type scale already
+ * steps down via tokens, so only the section height and image framing change.
+ */
+
+/* tablet */
+@media (max-width: 1099px) {
+  .hero {
+    min-height: 480px;
+    padding-block: var(--space-12);
+  }
+
+  .copy {
+    max-width: 100%;
+  }
+}
+
+/* mdTablet — the scrim becomes vertical, because at narrow widths the copy sits
+ * over the middle of the image rather than its darker left edge. */
+@media (max-width: 699px) {
+  .hero {
+    min-height: 420px;
+  }
+
+  .scrim {
+    background: linear-gradient(
+      to bottom,
+      rgba(28, 58, 85, 0.75) 0%,
+      rgba(28, 58, 85, 0.55) 100%
+    );
+  }
+
+  .backgroundImage {
+    object-position: center;
+  }
+}
+
+/* mobile */
+@media (max-width: 499px) {
+  .hero {
+    padding-block: var(--space-8);
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+  }
+}
