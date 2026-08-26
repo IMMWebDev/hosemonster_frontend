@@ -1,0 +1,128 @@
+/*
+ * CTA Banner module — Figma "Homepage" → Hifi → Main → Section (7:1660)
+ *
+ * Full-bleed promo band: dark texture behind centred eyebrow / heading / body
+ * and up to two buttons. Page-agnostic.
+ */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--brand-navy);
+
+  /* Full-bleed. <main> carries a horizontal margin (see reset.css), so cancel
+   * exactly that much and grow by the same amount on each side. Same approach
+   * as the Hero — deliberately not 100vw, which includes the scrollbar and
+   * causes horizontal overflow. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* Positive stack, as in the Hero: image 0, wash 1, content 2. */
+.backgroundImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2; /* from the design */
+}
+
+.wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--promo-wash);
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px; /* exact value from the design */
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding: var(--space-16) var(--container-gutter); /* 64px block */
+  text-align: center;
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H2", reversed out */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/* Figma "B3" — 16px Gopher Regular */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+  white-space: pre-line;
+  max-width: 600px;
+  margin: 7px 0 0; /* the design's 7px lead-in above the copy */
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6); /* 22px in the design */
+  padding-top: 17px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame. The type scale already
+ * steps down via tokens, so only the band's own padding changes.
+ */
+
+/* tablet */
+@media (max-width: 1099px) {
+  .inner {
+    padding-block: var(--space-12);
+  }
+}
+
+/* mobile — buttons go full width rather than wrapping to two ragged lines. */
+@media (max-width: 499px) {
+  .inner {
+    padding-block: var(--space-8);
+  }
+
+  .actions {
+    width: 100%;
+    gap: var(--space-3);
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}

@@ -1,0 +1,292 @@
+/*
+ * Testimonials module — Figma "Homepage" → Hifi → Main → Section (7:1735)
+ *
+ * Intro copy above a carousel of quote cards. Page-agnostic.
+ *
+ * The carousel is a scroll-snap track rather than a transform-based slider:
+ * it works without JavaScript, it is natively swipeable on touch, keyboard
+ * users can scroll it, and the number of visible cards can change per
+ * breakpoint without any page-count arithmetic.
+ */
+
+.section {
+  padding-block-end: var(--space-16);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H2" */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: pre-line;
+  margin: 7px 0 0;
+}
+
+/* Figma "B1" */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--muted-ink);
+  max-width: 640px;
+  margin: 2px 0 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CAROUSEL
+ * -----------------------------------------------------------------------------
+ */
+
+.track {
+  display: flex;
+  gap: var(--space-5); /* 20px */
+  margin-top: 23px;
+  overflow-x: auto;
+  /*
+   * `proximity`, not `mandatory`. With four cards three-across there is only
+   * one card's worth of scroll range, and mandatory snapping refuses any
+   * position that is not exactly a snap point — which pinned the track at 0 and
+   * made the arrows inert. Proximity snaps when the scroll lands near a card
+   * edge and otherwise leaves it alone.
+   */
+  scroll-snap-type: x proximity;
+  /* Must match the padding below, or every snap point sits 4px beyond the
+   * scrollable range and none of them can be reached. */
+  scroll-padding-inline: 4px;
+  scroll-behavior: smooth;
+  /* The cards carry their own visible edge, so hide the scrollbar rather than
+   * letting it sit under the row. Scrolling still works by wheel, swipe, and
+   * the arrow buttons. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Room for the focus ring, which would otherwise be clipped by overflow. */
+  padding: 4px;
+  margin-inline: -4px;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    scroll-behavior: auto;
+  }
+}
+
+.card {
+  flex: 0 0 calc((100% - 2 * var(--space-5)) / 3); /* three across, per the design */
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  min-height: 370px;
+  padding: 33px 33px 34px;
+  border: var(--border-width-thick) solid var(--brand-navy);
+  border-radius: var(--radius-md);
+  background: var(--testimonial-bg);
+}
+
+/* Figma draws this as a 42px Helvetica quote glyph. Rendering it as text would
+ * put a stray “ into the accessibility tree, so it is a decorative pseudo. */
+.quoteMark::before {
+  content: '\201C';
+  display: block;
+  font-family: var(--font-body);
+  font-size: 42px;
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--color-text-accent);
+}
+
+/* Figma "B2" — blank lines in the CMS field are real paragraph breaks. */
+.quote {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-inverse);
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Pinned to the foot so attributions line up across cards of differing
+ * quote length — unlike the feature cards, where the images are a fixed size
+ * and top-alignment is what matters. */
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 19px;
+}
+
+.authorImage {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-pill);
+  border: 3px solid var(--color-action);
+  object-fit: cover;
+}
+
+/* Figma "B1" */
+.authorName {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/* Figma "B2" */
+.authorTitle {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--hero-meta-ink);
+  white-space: pre-line;
+  margin: 2px 0 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CONTROLS
+ * -----------------------------------------------------------------------------
+ * Rendered only when the track actually overflows — with three cards on a wide
+ * screen there is nothing to page to, and dead arrows are worse than none.
+ */
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding-top: 23px;
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: var(--border-width-thick) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--brand-navy);
+  padding: 0; /* the SVG centres itself; padding would bias it */
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+/* Sized in the button rather than on the SVG element so the two arrows are
+ * guaranteed identical. */
+.chevron {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.arrow:hover:not(:disabled) {
+  background: var(--brand-navy);
+  color: var(--color-text-inverse);
+}
+
+.arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.arrow:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: var(--border-width) solid var(--color-action);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.dotActive {
+  background: var(--color-action);
+}
+
+.dot:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame.
+ */
+
+/* tablet — two across */
+@media (max-width: 1099px) {
+  .section {
+    padding-block-end: var(--space-12);
+  }
+
+  .card {
+    flex-basis: calc((100% - var(--space-5)) / 2);
+  }
+}
+
+/* mdTablet — one across; a 12px quote in a half-width card is unreadable */
+@media (max-width: 699px) {
+  .card {
+    flex-basis: 100%;
+  }
+}
+
+/* mobile */
+@media (max-width: 499px) {
+  .section {
+    padding-block-end: var(--space-8);
+  }
+
+  .card {
+    padding: var(--space-6);
+    min-height: 0;
+  }
+}

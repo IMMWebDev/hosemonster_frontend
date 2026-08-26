@@ -40,7 +40,14 @@ export default async function handleRequest(
 
     // Merged with defaults — safe to list only what is new.
     styleSrc: ['https://use.typekit.net'],
-    connectSrc: ['https://use.typekit.net', 'https://p.typekit.net'],
+    connectSrc: [
+      'https://use.typekit.net',
+      'https://p.typekit.net',
+      // HubSpot form submission and field validation.
+      'https://forms.hsforms.com',
+      'https://forms-na1.hsforms.com',
+      'https://api.hsforms.com',
+    ],
 
     // NOT merged — must be complete.
     // Shopify CDN serves product and store imagery; Strapi media is uploaded
@@ -59,6 +66,25 @@ export default async function handleRequest(
 
     // NOT merged — must be complete. Adobe Fonts serves the brand families.
     fontSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://use.typekit.net'],
+
+    /*
+     * HubSpot forms are added to DEFAULT-SRC rather than a dedicated scriptSrc.
+     * Two reasons, both about the merge rule above:
+     *   1. defaultSrc IS one of Hydrogen's defaults, so these hosts are ADDED to
+     *      what is already there instead of replacing it.
+     *   2. Declaring scriptSrc would create it from scratch — and Hydrogen only
+     *      appends the CSP nonce to scriptSrc when it exists, while its
+     *      dev-only "http://localhost:*" allowance is added to defaultSrc only.
+     *      A hand-rolled scriptSrc would therefore block Vite's own dev scripts
+     *      and break HMR.
+     * js.hsforms.net serves the embed loader; forms.hsforms.com receives the
+     * submission and serves the form when HubSpot falls back to an iframe.
+     */
+    defaultSrc: [
+      'https://js.hsforms.net',
+      'https://forms.hsforms.com',
+      'https://forms-na1.hsforms.com',
+    ],
   });
 
   const body = await renderToReadableStream(

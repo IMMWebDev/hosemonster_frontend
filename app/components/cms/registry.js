@@ -1,5 +1,12 @@
 import Hero from '~/components/cms/modules/Hero';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
+import TextMedia from '~/components/cms/modules/TextMedia';
+import CategoryGrid from '~/components/cms/modules/CategoryGrid';
+import CtaBanner from '~/components/cms/modules/CtaBanner';
+import FeatureCards from '~/components/cms/modules/FeatureCards';
+import Testimonials from '~/components/cms/modules/Testimonials';
+import Ticker from '~/components/cms/modules/Ticker';
+import Newsletter from '~/components/cms/modules/Newsletter';
 import Wysiwyg from '~/components/cms/modules/Wysiwyg';
 import ImageContent from '~/components/cms/modules/ImageContent';
 
@@ -47,6 +54,73 @@ export const MODULE_REGISTRY = {
           },
         },
       },
+    },
+  },
+  'module.text-media': {
+    Component: TextMedia,
+    options: {
+      populate: {
+        image: true,
+        bullets: true,
+        primaryCTA: {populate: {pageLink: true}},
+        secondaryCTA: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.category-grid': {
+    Component: CategoryGrid,
+    options: {
+      populate: {
+        bannerImage: true,
+        bannerCta: {populate: {pageLink: true}},
+        items: {
+          populate: {
+            image: true,
+            link: {populate: {pageLink: true}},
+          },
+        },
+      },
+    },
+  },
+  'module.cta-banner': {
+    Component: CtaBanner,
+    options: {
+      populate: {
+        backgroundImage: true,
+        primaryCta: {populate: {pageLink: true}},
+        secondaryCta: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.feature-cards': {
+    Component: FeatureCards,
+    options: {
+      populate: {
+        items: {
+          populate: {
+            image: true,
+            link: {populate: {pageLink: true}},
+          },
+        },
+      },
+    },
+  },
+  'module.testimonials': {
+    Component: Testimonials,
+    options: {
+      populate: {items: {populate: {authorImage: true}}},
+    },
+  },
+  'module.ticker': {
+    Component: Ticker,
+    options: {
+      populate: {items: true},
+    },
+  },
+  'module.newsletter': {
+    Component: Newsletter,
+    options: {
+      populate: {backgroundImage: true},
     },
   },
   'module.wysiwyg': {

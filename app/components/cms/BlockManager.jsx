@@ -9,10 +9,11 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
  *
  * @param {{
  *   blocks?: Array<{__component: string} & Record<string, any>>,
- *   baseUrl?: string
+ *   baseUrl?: string,
+ *   siteEnv?: Record<string, string | undefined>,
  * }} props
  */
-export default function BlockManager({blocks, baseUrl}) {
+export default function BlockManager({blocks, baseUrl, siteEnv}) {
   if (!blocks || blocks.length === 0) return null;
 
   return (
@@ -31,6 +32,7 @@ export default function BlockManager({blocks, baseUrl}) {
             key={`block-${__component}-${index}`}
             data={rest}
             baseUrl={baseUrl}
+            siteEnv={siteEnv}
           />
         );
       })}

@@ -1,0 +1,289 @@
+/*
+ * Category Grid module — Figma "Homepage" → Hifi → Main → Section (7:1609)
+ *
+ * Intro copy, an optional banner, then a two-column grid of linked image cards.
+ * Page-agnostic; the card count comes from the CMS.
+ */
+
+.section {
+  padding-block: var(--space-4) var(--space-16); /* 16px top / 65px bottom */
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6); /* 24px */
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H2". The CMS heading is multi-line and the design breaks it
+ * deliberately across three lines, so author breaks are preserved. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: pre-line;
+  max-width: 760px;
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * BANNER
+ * -----------------------------------------------------------------------------
+ * Same positive-stack layering as the Hero: image 0, wash 1, content 2.
+ */
+
+.banner {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6); /* 26px in the design */
+  min-height: 131px;
+  padding: var(--space-8); /* 34px */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--brand-navy);
+}
+
+.bannerImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  opacity: 0.2; /* from the design */
+}
+
+.bannerWash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--banner-wash);
+  pointer-events: none;
+}
+
+.bannerCopy {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Figma "H3", reversed out */
+.bannerHeading {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/* Figma "B1" */
+.bannerBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+  white-space: pre-line;
+  max-width: 600px;
+  margin: 0;
+}
+
+.bannerAction {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CARD GRID
+ * -----------------------------------------------------------------------------
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px; /* exact value from the design */
+}
+
+.card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: 98px;
+  padding: 15px; /* exact value from the design */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  text-decoration: none;
+  background-color: var(--brand-navy);
+  transition: box-shadow var(--duration-fast) var(--ease-default);
+}
+
+.cardImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Cards are roughly 6:1 but the source photos are near-square, so the crop is
+   * severe. Favouring the right edge keeps the product in frame, since the wash
+   * covers the left half where the title sits. */
+  object-position: right center;
+}
+
+.cardWash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--category-wash);
+  pointer-events: none;
+}
+
+/*
+ * The red hover state is a SECOND wash stacked over the navy one, faded in by
+ * opacity — not a swap of `background`. Gradients are not an animatable
+ * property, so changing background-image on hover snaps instantly instead of
+ * sweeping. Cross-fading two layers is the only way to actually animate it.
+ */
+.cardWashHover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--category-wash-featured);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-slow) var(--ease-default);
+}
+
+.card:hover .cardWashHover,
+.card:focus-visible .cardWashHover {
+  opacity: 1;
+}
+
+/* Figma "H3", reversed out */
+.cardTitle {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+.card:hover {
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.38); /* the design's selected-card shadow */
+}
+
+/*
+ * The card is an anchor, and reset.css underlines `a:hover` with a (0,1,1)
+ * selector that outranks the single class `.card` (0,1,0) — so the resting
+ * `text-decoration: none` loses on hover and the underline propagates down to
+ * the title. Cancel it at equal-or-higher specificity. Same trap as `.btn`;
+ * see the note in components.css.
+ */
+.card:hover,
+.card:focus,
+.card:active {
+  text-decoration: none;
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* A featured card sits permanently in the hover state. */
+.featured {
+  background-color: var(--black);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.38);
+}
+
+.featured .cardWashHover {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardWashHover {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame.
+ */
+
+/* tablet — banner stacks; grid stays two columns while it still fits. */
+@media (max-width: 1099px) {
+  .section {
+    padding-block-end: var(--space-12);
+  }
+
+  .banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-6);
+  }
+
+  .bannerBody {
+    max-width: none;
+  }
+}
+
+/* mdTablet — one card per row; two columns of 18px-uppercase titles wrap badly. */
+@media (max-width: 699px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* mobile */
+@media (max-width: 499px) {
+  .section {
+    padding-block-end: var(--space-8);
+  }
+
+  .bannerAction {
+    width: 100%;
+  }
+
+  .bannerAction > * {
+    width: 100%;
+  }
+}

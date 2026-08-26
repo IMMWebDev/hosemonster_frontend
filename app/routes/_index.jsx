@@ -40,6 +40,12 @@ async function loadCriticalData({context}) {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     modules,
     strapiBaseUrl: context.env.STRAPI_API_URL,
+    // Public, account-level config that modules need at render time. Only
+    // PUBLIC_* values belong here — this is serialised into the HTML.
+    siteEnv: {
+      hubspotPortalId: context.env.PUBLIC_HUBSPOT_PORTAL_ID,
+      hubspotRegion: context.env.PUBLIC_HUBSPOT_REGION,
+    },
   };
 }
 
@@ -50,7 +56,11 @@ export default function Homepage() {
   return (
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
-      <BlockManager blocks={data.modules} baseUrl={data.strapiBaseUrl} />
+      <BlockManager
+        blocks={data.modules}
+        baseUrl={data.strapiBaseUrl}
+        siteEnv={data.siteEnv}
+      />
     </div>
   );
 }

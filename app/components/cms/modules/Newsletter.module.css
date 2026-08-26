@@ -1,0 +1,248 @@
+/*
+ * Newsletter module — Figma "Homepage" → Footer with newsletter → Newsletter
+ *
+ * Full-bleed signup band. The form itself is an embedded HubSpot form, so most
+ * of the styling below reaches into HubSpot's own markup via :global().
+ */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--brand-navy);
+
+  /* Full-bleed — cancels the horizontal margin <main> carries. Same approach
+   * as the Hero and CTA Banner; deliberately not 100vw, which includes the
+   * scrollbar and causes horizontal overflow. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* Positive stack: image 0, wash 1, content 2. */
+.backgroundImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2; /* from the design */
+}
+
+.wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--newsletter-wash);
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr; /* from the design */
+  gap: var(--space-8);
+  align-items: center;
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding: var(--space-14) var(--container-gutter);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H2.5" — 40px, smaller than the section headings elsewhere */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-5);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  white-space: pre-line;
+  margin: 4px 0 0;
+}
+
+/* Figma "B1" */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+  margin: 0;
+}
+
+.formColumn {
+  min-width: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * HUBSPOT FORM
+ * -----------------------------------------------------------------------------
+ * Everything below targets markup HubSpot injects, so the selectors are
+ * :global() and match HubSpot's own class names rather than ours. They are
+ * scoped under .formColumn so they cannot leak to any other HubSpot form on
+ * the site.
+ *
+ * ⚠ This only applies if HubSpot renders the form INLINE. If the embed falls
+ * back to an iframe, none of it reaches the fields and the form has to be
+ * styled in HubSpot's own form editor instead.
+ */
+
+.formColumn :global(.hs-form-field > label) {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--newsletter-label-ink);
+  margin-bottom: 7px;
+}
+
+/* HubSpot marks required fields with a span it calls hs-form-required. */
+.formColumn :global(.hs-form-required) {
+  color: var(--newsletter-required-ink);
+}
+
+.formColumn :global(.hs-error-msg),
+.formColumn :global(.hs-error-msgs label) {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+  color: var(--color-action);
+  margin-top: var(--space-2);
+}
+
+/* The field row: input and button side by side, as in the design. */
+.formColumn :global(.hs-form) {
+  display: flex;
+  flex-direction: column;
+}
+
+.formColumn :global(.hs-input) {
+  width: 100%;
+  padding: 13px 14px;
+  font-family: var(--font-body);
+  font-size: 13px; /* the design's input size */
+  line-height: normal;
+  color: var(--brand-navy);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--newsletter-input-border);
+  border-radius: var(--radius-pill);
+}
+
+.formColumn :global(.hs-input::placeholder) {
+  color: var(--brand-navy);
+  opacity: 0.6;
+}
+
+.formColumn :global(.hs-input:focus-visible) {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.formColumn :global(.hs-button) {
+  padding: 13px 22px;
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-transform: capitalize;
+  color: var(--color-text-inverse);
+  background: var(--color-action);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.formColumn :global(.hs-button:hover) {
+  background: var(--brand-navy);
+}
+
+.formColumn :global(.hs-button:focus-visible) {
+  outline: var(--border-width-thick) solid var(--color-surface);
+  outline-offset: 2px;
+}
+
+/*
+ * HubSpot lays the email field and the submit button out as separate blocks.
+ * This puts them on one row with the input flexing, matching the design,
+ * without depending on HubSpot's own layout classes.
+ */
+.formColumn :global(.hs-form > .hs_email),
+.formColumn :global(.hs-form > .hs-email) {
+  flex: 1 1 auto;
+}
+
+.formColumn :global(.hs-form) {
+  gap: 10px; /* the design's gap between field and button */
+}
+
+@media (min-width: 500px) {
+  .formColumn :global(.hs-form) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+
+  /* The label belongs above the input only, not stretched across the button. */
+  .formColumn :global(.hs_submit) {
+    grid-column: 2;
+  }
+}
+
+/*
+ * Placeholder shown when no form ID is configured yet. Deliberately quiet — it
+ * is a build-time note, not something a visitor should read as an error.
+ */
+.formPending {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+  color: var(--hero-meta-ink);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame.
+ */
+
+/* tablet — copy above the form rather than a cramped two-column split */
+@media (max-width: 1099px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    padding-block: var(--space-12);
+  }
+}
+
+/* mobile */
+@media (max-width: 499px) {
+  .inner {
+    padding-block: var(--space-8);
+  }
+}

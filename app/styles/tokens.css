@@ -53,9 +53,89 @@
   --nav-rule: #e2e2df; /* Header bottom border */
   --nav-rule-utility: #ededed; /* Utility bar bottom border */
   --legal-ink: #9a9a9a; /* Footer legal/copyright line */
+  --newsletter-label-ink: #d6d6d2; /* Newsletter field label */
+  --newsletter-required-ink: #9a9a96; /* Newsletter required asterisk */
+  --newsletter-input-border: #565656; /* Newsletter input border */
   --hero-meta-ink: #b7b7b2; /* Hero trust bar; also Discovery card description */
   --hero-meta-rule: #c4c4c4; /* Hero trust separators; also Discovery tab dividers */
-  --muted-ink: #666666; /* Guided Discovery intro copy */
+  --muted-ink: #666666; /* Tabbed Cards intro copy */
+  --body-ink: #4a4a4a; /* Text & Media body copy */
+  --list-ink: #3a3a3a; /* Text & Media bullet list */
+
+  /* Testimonial card — navy with a slight top-to-bottom darkening. */
+  --testimonial-bg: linear-gradient(
+      180deg,
+      rgba(28, 58, 85, 0.2) 0%,
+      rgba(0, 0, 0, 0.2) 100%
+    ),
+    linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-navy) 100%);
+
+  /* Feature card backgrounds. A flat brand colour with a subtle darkening at
+   * the foot, matching the design's two stacked gradients. The hover variant is
+   * cross-faded over the base — see FeatureCards.module.css. */
+  --feature-card-bg: linear-gradient(
+      180deg,
+      rgba(28, 58, 85, 0) 73%,
+      rgba(0, 0, 0, 0.15) 100%
+    ),
+    linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-navy) 100%);
+  --feature-card-bg-hover: linear-gradient(
+      180deg,
+      rgba(235, 63, 33, 0) 73%,
+      rgba(0, 0, 0, 0.16) 100%
+    ),
+    linear-gradient(90deg, var(--color-action) 0%, var(--color-action) 100%);
+
+  /* Newsletter band wash — vertical darkening plus a navy sweep from the left,
+   * so the copy column stays legible over the photo. */
+  --newsletter-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(102, 102, 102, 0) 73%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(28, 58, 85, 0.67) 24%,
+      rgba(28, 58, 85, 0) 100%
+    );
+
+  /* Full-bleed promo band wash — vertical, over a 20%-opacity texture on navy.
+   * Darkest at the bottom so white copy stays legible wherever it lands. */
+  --promo-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.2) 29%,
+      rgba(102, 102, 102, 0) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(28, 58, 85, 0.83) 11%,
+      rgba(28, 58, 85, 0) 100%
+    );
+
+  /* Inset banner wash — over a 20%-opacity photo on navy. */
+  --banner-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(102, 102, 102, 0) 73%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(28, 58, 85, 0.83) 49.5%,
+      rgba(28, 58, 85, 0) 100%
+    );
+
+  /* Category card washes. A hard-ish left-to-right sweep so the title stays
+   * legible while the product photo shows through on the right. */
+  --category-wash: linear-gradient(
+    90deg,
+    var(--brand-navy) 48%,
+    rgba(28, 58, 85, 0) 73%
+  );
+  --category-wash-featured: linear-gradient(
+    90deg,
+    var(--color-action) 45%,
+    rgba(235, 63, 33, 0) 73%
+  );
 
   /* Guided Discovery card wash. Two stacked gradients over a 50%-opacity photo:
    * a subtle bottom darkening, then a strong navy sweep from the left so the
@@ -179,6 +259,7 @@
   --space-10: 2.5rem; /* 40px — Footer top padding */
   --space-11: 2.75rem; /* 44px — card gap, Footer horizontal padding */
   --space-12: 3rem; /* 48px */
+  --space-14: 3.5rem; /* 56px — Newsletter band padding */
   --space-15: 3.75rem; /* 60px — section padding in Figma */
   --space-16: 4rem; /* 64px */
 
