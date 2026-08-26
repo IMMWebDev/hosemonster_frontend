@@ -368,41 +368,41 @@ The CSS must use Adobe's names:
 `tokens.css` uses the correct names. Do not "tidy" them to match Figma — they
 would stop matching and silently fall back.
 
-### Current kit: `zny1qeh` — two weights missing
+### Current kit: `zny1qeh` — complete
 
-Verified in-browser on 2026-08-26. The kit loads and both brand families paint
-correctly. It ships twelve faces, of which the site uses three:
+Verified in-browser on 2026-08-26. 25 faces registered, `font-display: swap`.
+All five faces the design uses resolve to themselves rather than being
+substituted by a nearby weight:
 
-| Family | In the kit | Site uses |
-|---|---|---|
-| `gopher` | 400, 700 (+ italics) | 400, 700 |
-| `nimbus-sans-extended` | 400, 700 | 700 |
-| `nimbus-sans` | 400, 700 (+ italics) | — |
-| `nimbus-sans-condensed` | 400, 700 | — |
+| Family | Weight | Token | Used by |
+|---|---|---|---|
+| `gopher` | 400 Regular | `--weight-regular` | B2 Small Body Copy |
+| `gopher` | 500 Medium | `--weight-medium` | B1 Standard Body Copy |
+| `gopher` | 700 Bold | `--weight-bold` | Buttons |
+| `nimbus-sans-extended` | 700 Bold | `--weight-bold` | H1, H2, H2.5 |
+| `nimbus-sans-extended` | 900 Black | `--weight-black` | Eyebrow (Figma H3) |
 
-**Two weights the design depends on are absent**, and the browser silently
-substitutes a lighter face rather than failing:
+The kit also carries `nimbus-sans`, `nimbus-sans-condensed` and assorted
+italics the site does not use. Not worth trimming — browsers only download a
+face when text actually matches it, so unused faces cost a few KB of CSS and
+zero font requests.
 
-| Requested | Actually renders | Affects |
-|---|---|---|
-| `gopher` **500** Medium | `gopher` 400 | `--weight-medium` — B1 Standard Body Copy, i.e. nearly all body text |
-| `nimbus-sans-extended` **900** Black | `nimbus-sans-extended` 700 | `--weight-black` — every eyebrow (Figma H3) |
+### ⚠ Hard-reload after any kit change
 
-Neither synthesizes a fake bold — a real, lighter face is substituted — so it
-renders cleanly, just lighter than the comps.
+The kit CSS is served `max-age=600, stale-while-revalidate=604800`. A browser
+will keep serving the **old** kit — for up to a week — while refreshing in the
+background. Newly added weights look "missing" when they are already in the
+kit. This bit us once already. Check the source before debugging anything:
 
-**Fix:** ask the designer to add **Gopher Medium (500)** and **Nimbus Sans
-Extended Black (900)** to the same web project. The kit ID does not change and
-no code change is needed. Both weights exist in Adobe's library — verified
-against the family API.
+```bash
+curl -s https://use.typekit.net/zny1qeh.css | grep -c @font-face
+```
 
-Also worth requesting: set the project's **font-display to `swap`** (currently
-`auto`), so text paints in the fallback instead of staying invisible while the
-fonts download.
+To force the browser to catch up, refetch past the cache and reload:
 
-The nine unused faces are not worth trimming. Browsers only download a face
-when text actually matches it, so they cost ~5KB of extra CSS and zero font
-requests.
+```js
+await fetch('https://use.typekit.net/zny1qeh.css', {cache: 'reload'}); location.reload();
+```
 
 ### Full weight availability, for reference
 

@@ -35,30 +35,30 @@
  * The CSP in app/entry.server.jsx already allows use.typekit.net (styleSrc +
  * fontSrc) and p.typekit.net (styleSrc, for the kit's own @import).
  *
- * ⚠ CURRENT KIT — zny1qeh — IS MISSING TWO WEIGHTS THE DESIGN USES.
- *   Verified in-browser on 2026-08-26. It ships gopher 400/700 (+italics),
- *   nimbus-sans 400/700 (+italics), nimbus-sans-condensed 400/700, and
- *   nimbus-sans-extended 400/700. Only three of those twelve faces are used.
- *   Absent, and silently substituted by the browser:
+ * CURRENT KIT — zny1qeh — HAS EVERYTHING THE DESIGN NEEDS.
+ *   Verified in-browser on 2026-08-26: 25 faces registered, font-display swap.
+ *   All five faces the design uses resolve to themselves rather than being
+ *   substituted by a nearby weight:
  *
- *     gopher 500 Medium  -> falls back to gopher 400. This is --weight-medium,
- *                           i.e. B1 Standard Body Copy: nearly all body text.
- *     nimbus-sans-extended 900 Black
- *                        -> falls back to 700. This is --weight-black, i.e.
- *                           every eyebrow (Figma H3).
+ *     gopher                400 Regular   --weight-regular  (B2 small body)
+ *     gopher                500 Medium    --weight-medium   (B1 body copy)
+ *     gopher                700 Bold      --weight-bold     (buttons)
+ *     nimbus-sans-extended  700 Bold      --weight-bold     (H1, H2, H2.5)
+ *     nimbus-sans-extended  900 Black     --weight-black    (eyebrow / H3)
  *
- *   Neither synthesizes a fake bold — a real, lighter face is substituted — so
- *   it renders cleanly but lighter than the comps. Ask the designer to add
- *   Gopher Medium and Nimbus Sans Extended Black to the SAME web project; the
- *   kit ID does not change and no code change is needed.
+ *   The kit also carries nimbus-sans, nimbus-sans-condensed and various
+ *   italics that the site does not use. Not worth trimming: browsers only
+ *   download a face when text actually matches it, so unused faces cost a few
+ *   KB of extra CSS and zero font requests.
  *
- *   Also worth requesting: set the project's font-display to `swap` (it is
- *   currently `auto`) so text paints in the fallback instead of staying
- *   invisible while the fonts download.
+ * ⚠ AFTER THE DESIGNER CHANGES THE KIT, HARD-RELOAD BEFORE BELIEVING WHAT YOU
+ *   SEE. The kit CSS is served `max-age=600, stale-while-revalidate=604800`,
+ *   so a browser will keep serving the OLD kit — for up to a week — while it
+ *   refreshes in the background. New weights appear to be "missing" when they
+ *   are in fact already in the kit. Confirm against the source before
+ *   debugging anything:
  *
- *   Unused faces cost almost nothing at runtime — browsers only download a face
- *   when text actually matches it, so the nine spare faces here are ~5KB of
- *   extra CSS and no font requests. Not worth trimming on performance grounds.
+ *     curl -s https://use.typekit.net/zny1qeh.css | grep -c @font-face
  *
  *   Domains: the kit must list localhost, the Oxygen preview domain, and
  *   production. Unlike the raw asset URLs described below, kits ARE

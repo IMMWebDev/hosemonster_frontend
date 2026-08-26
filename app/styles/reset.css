@@ -91,6 +91,24 @@ form {
   }
 }
 
+/*
+ * Form controls do not inherit font-family from `body` — the UA stylesheet
+ * assigns them a system font instead. Without this the search field, its submit
+ * button, the aside close buttons and the mobile menu toggle all render in
+ * Arial while everything around them is Gopher.
+ *
+ * `font-family` on its own rather than the `font: inherit` shorthand, which
+ * would also reset size, weight and line-height — clobbering the `font-size`
+ * set on `input` immediately below, and the type styles that components set on
+ * their own buttons.
+ */
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+}
+
 input {
   border-radius: var(--radius-sm);
   border: var(--border-width) solid var(--color-border-strong);
