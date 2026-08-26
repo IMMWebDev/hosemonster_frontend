@@ -21,6 +21,21 @@ import {PageLayout} from './components/PageLayout';
 import NotFound from '~/components/cms/NotFound';
 
 /**
+ * Adobe Fonts (Typekit) kit serving the brand families, nimbus-sans-extended
+ * and gopher.
+ *
+ * Hardcoded rather than an env var on purpose: a kit ID is public — it ships in
+ * the page source — it is identical in every environment, and one Adobe project
+ * covers every domain registered to it. An env var only added a step that,
+ * if missed on Oxygen, silently drops the brand fonts in production.
+ *
+ * Adding WEIGHTS to the existing kit needs no change here; the ID is stable.
+ * See app/styles/typography.css for the faces this kit must contain, and for
+ * which ones it is currently missing.
+ */
+const TYPEKIT_KIT_ID = 'zny1qeh';
+
+/**
  * This is important to avoid re-fetching root queries on sub-navigations
  * @type {ShouldRevalidateFunction}
  */
@@ -150,6 +165,7 @@ async function loadCriticalData({context}) {
     cmsFooter,
     cmsOptions,
     // Public, account-level config the newsletter embed needs at render time.
+    // These ship in the page source — never put a secret here.
     siteEnv: {
       hubspotPortalId: context.env.PUBLIC_HUBSPOT_PORTAL_ID,
       hubspotRegion: context.env.PUBLIC_HUBSPOT_REGION,
@@ -192,6 +208,25 @@ export function Layout({children}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        {/*
+          Adobe Fonts (Typekit) — see TYPEKIT_KIT_ID above. First in <head> so
+          the request starts before our own sheets; the kit only declares
+          @font-face and .tk-* helpers, so it cannot collide with anything
+          below it.
+
+          The crossOrigin preconnect is for the font FILES, not this stylesheet:
+          font fetches are CORS requests and need their own connection, so
+          warming it here saves a round trip once the CSS parses.
+        */}
+        <link
+          rel="preconnect"
+          href="https://use.typekit.net"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href={`https://use.typekit.net/${TYPEKIT_KIT_ID}.css`}
+        />
         {/* Load order matters: tokens → reset → typography → layout →
             components → app. tokens.css comes first because every other sheet
             consumes var(--*), and app.css comes last so page-specific rules can

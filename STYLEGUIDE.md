@@ -334,10 +334,26 @@ global body default.
 
 ---
 
-## ⚠ Fonts — Adobe Fonts kit not yet wired up
+## Fonts — Adobe Fonts kit
 
-**The brand fonts are Adobe Fonts (Typekit), a hosted subscription service.
-There are no font files to commit, and none should be.**
+**The brand fonts are Adobe Fonts (Typekit), a hosted service. There are no
+font files to commit, and none should be.**
+
+The kit ID is a constant at the top of [`app/root.jsx`](app/root.jsx):
+
+```js
+const TYPEKIT_KIT_ID = 'zny1qeh';
+```
+
+`Layout` emits the kit `<link>` plus a `crossorigin` preconnect from it, first
+in `<head>` so the request starts before our own stylesheets.
+
+**Not an env var, deliberately.** A kit ID is public — it ships in the page
+source — it is identical in every environment, and one Adobe project covers
+every domain registered to it. Making it configurable bought nothing except a
+step that could be missed on Oxygen, silently dropping the brand fonts in
+production. To change kits, edit that line. Adding *weights* to the existing
+kit needs no code change at all.
 
 ### Real family names
 
@@ -352,64 +368,88 @@ The CSS must use Adobe's names:
 `tokens.css` uses the correct names. Do not "tidy" them to match Figma — they
 would stop matching and silently fall back.
 
-### How the old WordPress site does it — do not copy this
+### Current kit: `zny1qeh` — two weights missing
 
-`wp-content/themes/es99/style.css` contains hardcoded `@font-face` rules
-pointing at raw `https://use.typekit.net/af/<hash>/...` URLs, extracted from a
-kit and pasted in. Those URLs still resolve, but they are version-pinned
-(`v=3`) and tied to an internal asset hash. When Adobe rotates them the fonts
-disappear with nothing failing in CI to warn you. Self-hosting or hotlinking
-them from a new domain is also outside the Adobe licence.
+Verified in-browser on 2026-08-26. The kit loads and both brand families paint
+correctly. It ships twelve faces, of which the site uses three:
+
+| Family | In the kit | Site uses |
+|---|---|---|
+| `gopher` | 400, 700 (+ italics) | 400, 700 |
+| `nimbus-sans-extended` | 400, 700 | 700 |
+| `nimbus-sans` | 400, 700 (+ italics) | — |
+| `nimbus-sans-condensed` | 400, 700 | — |
+
+**Two weights the design depends on are absent**, and the browser silently
+substitutes a lighter face rather than failing:
+
+| Requested | Actually renders | Affects |
+|---|---|---|
+| `gopher` **500** Medium | `gopher` 400 | `--weight-medium` — B1 Standard Body Copy, i.e. nearly all body text |
+| `nimbus-sans-extended` **900** Black | `nimbus-sans-extended` 700 | `--weight-black` — every eyebrow (Figma H3) |
+
+Neither synthesizes a fake bold — a real, lighter face is substituted — so it
+renders cleanly, just lighter than the comps.
+
+**Fix:** ask the designer to add **Gopher Medium (500)** and **Nimbus Sans
+Extended Black (900)** to the same web project. The kit ID does not change and
+no code change is needed. Both weights exist in Adobe's library — verified
+against the family API.
+
+Also worth requesting: set the project's **font-display to `swap`** (currently
+`auto`), so text paints in the fallback instead of staying invisible while the
+fonts download.
+
+The nine unused faces are not worth trimming. Browsers only download a face
+when text actually matches it, so they cost ~5KB of extra CSS and zero font
+requests.
+
+### Full weight availability, for reference
+
+| Family | Foundry | Available in Adobe Fonts |
+|---|---|---|
+| Nimbus Sans Extended | URW Type Foundry | Light 300, Regular 400, Bold 700, Black 900 (no italics) |
+| Gopher | Adam Ladd | Hairline through Heavy, italics throughout |
+
+Domains: the kit must list `localhost`, the Oxygen preview domain, and
+production. Unlike the raw asset URLs described below, kits **are**
+domain-locked.
+
+The CSP in [`app/entry.server.jsx`](app/entry.server.jsx) is pre-wired:
+`use.typekit.net` in `styleSrc` and `fontSrc`, and `p.typekit.net` in
+`styleSrc` — the kit stylesheet opens with an `@import` of
+`p.typekit.net/p.css`, and an `@import` is fetched under `style-src`, not
+`connect-src`. Without these Hydrogen's default CSP blocks webfonts silently,
+which is genuinely nasty to debug.
+
+### Why the old site works without any of this
+
+`wp-content/themes/es99/style.css` hardcodes `@font-face` rules pointing at raw
+`https://use.typekit.net/af/<hash>/...` URLs lifted out of a kit's generated
+CSS. Those assets are **unauthenticated** — they return `200` with
+`access-control-allow-origin: *` from any origin, with or without a `Referer`.
+That is why hosemonster.com renders the brand fonts without owning a kit for
+them. It is not authorisation; it is an absent check.
+
+Three reasons not to repeat it:
+
+1. **It cannot produce the design.** The theme only pins Nimbus 700, Gopher 400
+   and Gopher 700 — no Nimbus 900 (every eyebrow) and no Gopher 500 (all
+   standard body copy). The per-face hashes are opaque and cannot be derived.
+2. **Silent breakage.** The URLs are pinned to `/30/` and `v=3` against an
+   internal asset hash. When Adobe rotates them the fonts vanish with nothing
+   failing in CI.
+3. **Licence.** Adobe's TOU covers kit delivery on registered domains.
 
 The kit that *is* referenced properly in that theme — `pmz5erz` — contains
-**Calibri only**. It does not include either brand family.
-
-### How to wire it up here
-
-1. In [fonts.adobe.com](https://fonts.adobe.com), open the Web Project
-   containing `nimbus-sans-extended` and `gopher`, or create one with both.
-2. Select the weights listed below.
-3. Add this storefront's domains to the project — production, the Oxygen
-   preview domain, and `localhost` for development.
-4. Add the kit stylesheet in [`app/root.jsx`](app/root.jsx), alongside the
-   other `<link rel="stylesheet">` tags:
-
-   ```jsx
-   <link rel="stylesheet" href="https://use.typekit.net/<kitId>.css" />
-   ```
-
-The CSP in [`app/entry.server.jsx`](app/entry.server.jsx) already allows
-`use.typekit.net` for `styleSrc`, `fontSrc`, and `connectSrc`, so nothing else
-is needed. Without those entries Hydrogen's default CSP blocks webfonts
-silently — a genuinely nasty thing to debug, so it is pre-wired.
-
-### ⚠ Weight gap — verify before building
-
-The live site loads only these faces:
-
-| Family | Weights available today |
-|---|---|
-| `nimbus-sans-extended` | 700 |
-| `gopher` | 400, 700 |
-
-The Figma styleguide additionally requires:
-
-| Family | Weight | Used by |
-|---|---|---|
-| `nimbus-sans-extended` | **900** | Eyebrow / H3 |
-| `gopher` | **500** | Standard Body Copy / B1 |
-
-Both families likely offer these in Adobe Fonts and just need selecting in the
-kit. **If they are not available, the design has to change** — the browser will
-synthesize a fake bold, which looks visibly wrong on a display face. Confirm
-when you build the kit.
+**Calibri only**, four faces. It does not include either brand family.
 
 ### Third family
 
 The old theme also loads `alverata` (700). It does not appear in the Figma
 styleguide and is not carried over. Confirm it is genuinely retired.
 
-Until the kit is added the fallback stacks render. Layout and spacing are
+Until the kit ID is set the fallback stacks render. Layout and spacing are
 correct; the brand look is not.
 
 ---

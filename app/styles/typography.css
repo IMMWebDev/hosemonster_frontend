@@ -18,51 +18,69 @@
 
 /*
  * -----------------------------------------------------------------------------
- * FONT LOADING — ACTION REQUIRED (needs an Adobe account, cannot be done in code)
+ * FONT LOADING — ONE STEP LEFT (needs an Adobe account; cannot be done in code)
  * -----------------------------------------------------------------------------
  * There are NO @font-face rules in this file, and there should not be.
  *
- * nimbus-sans-extended and gopher are ADOBE FONTS (Typekit) — a hosted
- * subscription service. There are no font files to commit: Adobe serves them
- * from its own CDN, and the licence covers use through that service on domains
- * registered to a kit. Self-hosting the .woff2 files is outside that licence.
+ * nimbus-sans-extended and gopher are ADOBE FONTS (Typekit) — a hosted service.
+ * There are no font files to commit: Adobe serves them from its own CDN, and
+ * the licence covers delivery through a kit on domains registered to it.
  *
- * HOW THE OLD SITE DOES IT (do not copy this):
- *   wp-content/themes/es99/style.css has hardcoded @font-face rules pointing at
- *   raw https://use.typekit.net/af/<hash>/... URLs, extracted from a kit and
- *   pasted in. Those URLs still resolve today, but they are version-pinned
- *   (v=3) and tied to an internal asset hash — when Adobe rotates them the
- *   fonts vanish silently, with nothing failing in CI to warn you.
- *   (The kit that IS referenced properly in that theme, pmz5erz, is Calibri
- *   only — it does not contain either brand family.)
+ * WIRING: the kit ID is a constant, TYPEKIT_KIT_ID, at the top of app/root.jsx.
+ * `Layout` emits the kit <link> plus a preconnect from it. Not an env var — a
+ * kit ID is public, identical in every environment, and one Adobe project
+ * covers all its registered domains, so an env var only added a step that could
+ * be missed on Oxygen and silently drop the fonts in production.
  *
- * HOW TO DO IT HERE:
- *   1. In Adobe Fonts (fonts.adobe.com) open the Web Project containing
- *      nimbus-sans-extended and gopher, or create one with both families.
- *   2. Select the weights the design needs — see the gap note below.
- *   3. Add this storefront's domain(s) to the project, including the Oxygen
- *      preview domain and localhost for development.
- *   4. Copy the kit ID and add the stylesheet in app/root.jsx, alongside the
- *      other <link rel="stylesheet"> tags:
+ * The CSP in app/entry.server.jsx already allows use.typekit.net (styleSrc +
+ * fontSrc) and p.typekit.net (styleSrc, for the kit's own @import).
  *
- *        <link rel="stylesheet" href="https://use.typekit.net/<kitId>.css" />
+ * ⚠ CURRENT KIT — zny1qeh — IS MISSING TWO WEIGHTS THE DESIGN USES.
+ *   Verified in-browser on 2026-08-26. It ships gopher 400/700 (+italics),
+ *   nimbus-sans 400/700 (+italics), nimbus-sans-condensed 400/700, and
+ *   nimbus-sans-extended 400/700. Only three of those twelve faces are used.
+ *   Absent, and silently substituted by the browser:
  *
- *      The CSP in app/entry.server.jsx already allows use.typekit.net for both
- *      styles and fonts, so no further change is needed there.
+ *     gopher 500 Medium  -> falls back to gopher 400. This is --weight-medium,
+ *                           i.e. B1 Standard Body Copy: nearly all body text.
+ *     nimbus-sans-extended 900 Black
+ *                        -> falls back to 700. This is --weight-black, i.e.
+ *                           every eyebrow (Figma H3).
  *
- * ⚠ WEIGHT GAP — confirm before assuming the design is buildable:
- *   The live site loads only these faces:
- *       nimbus-sans-extended  700
- *       gopher                400, 700
- *   The Figma styleguide additionally calls for:
- *       nimbus-sans-extended  900  (Eyebrow / H3)
- *       gopher                500  (Standard Body Copy / B1)
- *   Both families likely offer those weights in Adobe Fonts — they just need
- *   selecting in the kit. If they are NOT available, the design must change:
- *   the browser will synthesize a fake bold, which looks visibly wrong on a
- *   display face. Verify when building the kit.
+ *   Neither synthesizes a fake bold — a real, lighter face is substituted — so
+ *   it renders cleanly but lighter than the comps. Ask the designer to add
+ *   Gopher Medium and Nimbus Sans Extended Black to the SAME web project; the
+ *   kit ID does not change and no code change is needed.
  *
- * Until the kit is added, the fallback stacks in --font-display / --font-body
+ *   Also worth requesting: set the project's font-display to `swap` (it is
+ *   currently `auto`) so text paints in the fallback instead of staying
+ *   invisible while the fonts download.
+ *
+ *   Unused faces cost almost nothing at runtime — browsers only download a face
+ *   when text actually matches it, so the nine spare faces here are ~5KB of
+ *   extra CSS and no font requests. Not worth trimming on performance grounds.
+ *
+ *   Domains: the kit must list localhost, the Oxygen preview domain, and
+ *   production. Unlike the raw asset URLs described below, kits ARE
+ *   domain-locked.
+ *
+ * ⚠ DO NOT copy the old site's approach.
+ *   wp-content/themes/es99/style.css hardcodes @font-face rules pointing at raw
+ *   https://use.typekit.net/af/<hash>/... URLs lifted out of a kit's generated
+ *   CSS. They work from any origin — the assets are unauthenticated, and serve
+ *   200 with `access-control-allow-origin: *` regardless of Referer — which is
+ *   why the legacy site renders correctly without owning a kit for them. That
+ *   is not authorisation, it is an absent check. Three reasons not to repeat it:
+ *     1. It only pins Nimbus 700 / Gopher 400 / Gopher 700, so it cannot supply
+ *        Nimbus 900 (every eyebrow) or Gopher 500 (all standard body copy).
+ *        The per-face hashes are opaque and cannot be derived.
+ *     2. The URLs are pinned to /30/ and v=3 against an internal asset hash;
+ *        when Adobe rotates them the fonts vanish with nothing failing in CI.
+ *     3. It sits outside the Adobe TOU, which covers kit delivery on registered
+ *        domains.
+ *   (The kit that theme DOES reference properly, pmz5erz, is Calibri only.)
+ *
+ * Until the kit ID is set, the fallback stacks in --font-display / --font-body
  * render. Layout and spacing are correct; the brand look is not.
  * -----------------------------------------------------------------------------
  */

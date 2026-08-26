@@ -39,7 +39,10 @@ export default async function handleRequest(
     // Shopify product image. So imgSrc and fontSrc must restate the defaults.
 
     // Merged with defaults — safe to list only what is new.
-    styleSrc: ['https://use.typekit.net'],
+    // p.typekit.net belongs here as well as in connectSrc: the kit stylesheet
+    // opens with `@import url("https://p.typekit.net/p.css?…")`, and an @import
+    // is fetched under style-src, not connect-src.
+    styleSrc: ['https://use.typekit.net', 'https://p.typekit.net'],
     connectSrc: [
       'https://use.typekit.net',
       'https://p.typekit.net',
