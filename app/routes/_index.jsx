@@ -34,18 +34,16 @@ export async function loader(args) {
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context}) {
-  const {modules} = await context.strapi.getPage('/');
+  const {page, modules} = await context.strapi.getPage('/');
 
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     modules,
     strapiBaseUrl: context.env.STRAPI_API_URL,
-    // Public, account-level config that modules need at render time. Only
-    // PUBLIC_* values belong here — this is serialised into the HTML.
-    siteEnv: {
-      hubspotPortalId: context.env.PUBLIC_HUBSPOT_PORTAL_ID,
-      hubspotRegion: context.env.PUBLIC_HUBSPOT_REGION,
-    },
+    // Read by PageLayout via useMatches to decide whether the newsletter band
+    // renders above the footer. Exposed even when null so the layout can tell
+    // "this page has an opinion" from "no page loaded".
+    includeNewsletter: page?.includeNewsletter ?? null,
   };
 }
 
@@ -56,11 +54,7 @@ export default function Homepage() {
   return (
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
-      <BlockManager
-        blocks={data.modules}
-        baseUrl={data.strapiBaseUrl}
-        siteEnv={data.siteEnv}
-      />
+      <BlockManager blocks={data.modules} baseUrl={data.strapiBaseUrl} />
     </div>
   );
 }

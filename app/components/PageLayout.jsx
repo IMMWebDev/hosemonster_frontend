@@ -1,7 +1,8 @@
-import {Await, Link} from 'react-router';
+import {Await, Link, useMatches} from 'react-router';
 import {Suspense, useId} from 'react';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
+import Newsletter from '~/components/Newsletter';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {
@@ -21,8 +22,11 @@ export function PageLayout({
   publicStoreDomain,
   cmsHeader,
   cmsFooter,
+  cmsOptions,
+  siteEnv,
   strapiBaseUrl,
 }) {
+  const includeNewsletter = useIncludeNewsletter();
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
@@ -39,6 +43,13 @@ export function PageLayout({
         />
       )}
       <main>{children}</main>
+      {includeNewsletter && cmsOptions?.newsletter ? (
+        <Newsletter
+          newsletter={cmsOptions.newsletter}
+          baseUrl={strapiBaseUrl}
+          siteEnv={siteEnv}
+        />
+      ) : null}
       <Footer
         header={header}
         cmsFooter={cmsFooter}
@@ -46,6 +57,33 @@ export function PageLayout({
       />
     </Aside.Provider>
   );
+}
+
+/**
+ * Reads the current page's `includeNewsletter` switch.
+ *
+ * The newsletter band is site chrome rendered here in the layout, but the
+ * switch belongs to the PAGE, whose data is loaded by the route nested below
+ * this component. `useMatches` is how a layout reaches a child route's loader
+ * data without fetching the page a second time. The deepest match that
+ * actually carries the field wins.
+ *
+ * Anything other than an explicit `false` counts as on. Strapi only applies a
+ * field's default to NEWLY created entries, so every page authored before the
+ * switch existed reports `null` — treating null as off would silently hide the
+ * band across the whole site.
+ *
+ * @returns {boolean}
+ */
+function useIncludeNewsletter() {
+  const matches = useMatches();
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const data = matches[i]?.data;
+    if (data && typeof data === 'object' && 'includeNewsletter' in data) {
+      return data.includeNewsletter !== false;
+    }
+  }
+  return true;
 }
 
 /**

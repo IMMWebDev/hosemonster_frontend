@@ -3,14 +3,18 @@ import {strapiMedia} from '~/lib/strapi-media';
 import styles from './Newsletter.module.css';
 
 /**
- * Newsletter module — Figma "Homepage" → Footer with newsletter → Newsletter.
+ * Newsletter band — Figma "Homepage" → Footer with newsletter → Newsletter.
  *
- * Full-bleed signup band. The email field and button are an embedded HubSpot
- * form, so the CMS holds only the form ID — the input, its label, validation
- * and the thank-you message all live in HubSpot. Page-agnostic.
+ * Site-wide chrome, not a page module: the content is edited once on the
+ * Options single type and this renders directly above the footer on every page
+ * whose `includeNewsletter` is not switched off.
+ *
+ * The email field and button are an embedded HubSpot form, so the CMS holds
+ * only the form ID — the input, its label, validation and the thank-you
+ * message all live in HubSpot.
  *
  * @param {{
- *   data: {
+ *   newsletter?: {
  *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
@@ -21,14 +25,15 @@ import styles from './Newsletter.module.css';
  *   siteEnv?: {hubspotPortalId?: string, hubspotRegion?: string},
  * }} props
  */
-export default function Newsletter({data, baseUrl, siteEnv}) {
+export default function Newsletter({newsletter, baseUrl, siteEnv}) {
+  const data = newsletter;
   const {eyebrow, heading, body, hubspotFormId} = data ?? {};
   const portalId = siteEnv?.hubspotPortalId;
   const region = siteEnv?.hubspotRegion || 'na1';
 
   if (!heading) return null;
 
-  const backgroundUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
+  const backgroundUrl = strapiMedia(data?.backgroundImage?.url, baseUrl);
   // Both halves are required: the script is per-portal, the form is per-id.
   const canEmbed = Boolean(hubspotFormId && portalId);
 

@@ -26,6 +26,9 @@ export async function loader({context, params}) {
     page,
     modules,
     strapiBaseUrl: context.env.STRAPI_API_URL,
+    // Read by PageLayout via useMatches to decide whether the newsletter band
+    // renders above the footer.
+    includeNewsletter: page?.includeNewsletter ?? null,
   };
 }
 

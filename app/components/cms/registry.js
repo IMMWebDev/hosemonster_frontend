@@ -6,7 +6,6 @@ import CtaBanner from '~/components/cms/modules/CtaBanner';
 import FeatureCards from '~/components/cms/modules/FeatureCards';
 import Testimonials from '~/components/cms/modules/Testimonials';
 import Ticker from '~/components/cms/modules/Ticker';
-import Newsletter from '~/components/cms/modules/Newsletter';
 import Wysiwyg from '~/components/cms/modules/Wysiwyg';
 import ImageContent from '~/components/cms/modules/ImageContent';
 
@@ -115,12 +114,6 @@ export const MODULE_REGISTRY = {
     Component: Ticker,
     options: {
       populate: {items: true},
-    },
-  },
-  'module.newsletter': {
-    Component: Newsletter,
-    options: {
-      populate: {backgroundImage: true},
     },
   },
   'module.wysiwyg': {

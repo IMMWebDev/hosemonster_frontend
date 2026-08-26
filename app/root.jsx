@@ -102,7 +102,10 @@ export async function loader(args) {
 async function loadCriticalData({context}) {
   const {storefront, strapi} = context;
 
-  const [header, notFound, cmsHeader, cmsFooter] = await Promise.all([
+  // ⚠ This destructuring is positional — each name must line up with the same
+  // index in the array below. Adding a fetch in the middle without moving its
+  // name to the matching position silently hands one type's data to another.
+  const [header, notFound, cmsHeader, cmsOptions, cmsFooter] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
@@ -123,6 +126,11 @@ async function loadCriticalData({context}) {
         mainNav: {populate: {pageLink: true}},
       },
     }),
+    // Site-wide settings. Holds the newsletter band shown above the footer, so
+    // that copy is edited once rather than per page.
+    strapi.getSingle('option', {
+      populate: {newsletter: {populate: {backgroundImage: true}}},
+    }),
     // Three levels deep: footer → linkColumns → links → pageLink. `populate: '*'`
     // would stop at linkColumns and return them with no links at all.
     strapi.getSingle('footer', {
@@ -140,6 +148,12 @@ async function loadCriticalData({context}) {
     notFound,
     cmsHeader,
     cmsFooter,
+    cmsOptions,
+    // Public, account-level config the newsletter embed needs at render time.
+    siteEnv: {
+      hubspotPortalId: context.env.PUBLIC_HUBSPOT_PORTAL_ID,
+      hubspotRegion: context.env.PUBLIC_HUBSPOT_REGION,
+    },
     // Needed by strapiMedia() to resolve relative upload paths. Harmless with
     // the Cloudinary provider (absolute URLs pass through untouched), but
     // required if the upload provider is ever switched back to local.

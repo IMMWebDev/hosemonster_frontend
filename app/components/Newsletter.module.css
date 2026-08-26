@@ -11,11 +11,15 @@
   overflow: hidden;
   background-color: var(--brand-navy);
 
-  /* Full-bleed — cancels the horizontal margin <main> carries. Same approach
-   * as the Hero and CTA Banner; deliberately not 100vw, which includes the
-   * scrollbar and causes horizontal overflow. */
-  margin-inline: calc(-1 * var(--main-gutter));
-  width: calc(100% + 2 * var(--main-gutter));
+  /*
+   * No full-bleed hack here, unlike the Hero and CTA Banner. Those are page
+   * modules rendered inside <main>, which carries a horizontal margin they have
+   * to cancel. This band is site chrome rendered by PageLayout as a sibling of
+   * <main>, so it is already the full width of the page — subtracting the
+   * gutter as well pushes it past both viewport edges and creates a horizontal
+   * scrollbar.
+   */
+  width: 100%;
 }
 
 /* Positive stack: image 0, wash 1, content 2. */
