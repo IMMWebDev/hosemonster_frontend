@@ -50,6 +50,22 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
 export function createStrapiClient({env, withCache}) {
   const baseUrl = (env.STRAPI_API_URL ?? '').replace(/\/$/, '');
 
+  /*
+   * Caching is disabled in development.
+   *
+   * With CacheLong on the single types, a CMS edit sits behind an hour-long
+   * freshness window: you save in Strapi, reload, and still see the old
+   * content. That reads as "my changes aren't rendering" and the only way out
+   * is restarting the dev server after every edit — which cost us real time
+   * while building the header nav.
+   *
+   * Production keeps the full strategy; this only changes local development,
+   * where the extra round trip to a Strapi on localhost is free.
+   */
+  const isDev = import.meta.env?.DEV === true;
+  const singleTypeCache = () => (isDev ? CacheNone() : CacheLong());
+  const defaultCache = () => (isDev ? CacheNone() : CacheShort());
+
   /**
    * Low-level cached REST GET against Strapi. Params are `qs`-serialized into
    * Strapi's `filters[...]` / `populate[...]` bracket syntax.
@@ -80,7 +96,7 @@ export function createStrapiClient({env, withCache}) {
       },
       {
         displayName: `Strapi ${path}`,
-        cacheStrategy: opts.cacheStrategy ?? CacheShort(),
+        cacheStrategy: opts.cacheStrategy ?? defaultCache(),
         cacheKey: ['strapi', path, params],
         // withCache only reaches this for an ok response; never cache errors.
         shouldCacheResponse: (_body, res) => res.ok,
@@ -171,7 +187,7 @@ export function createStrapiClient({env, withCache}) {
       const payload = await strapiFetch(
         name,
         {populate, status},
-        {cacheStrategy: cacheStrategy ?? CacheLong()},
+        {cacheStrategy: cacheStrategy ?? singleTypeCache()},
       );
       return payload?.data ?? null;
     } catch (error) {

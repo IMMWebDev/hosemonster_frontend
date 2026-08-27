@@ -11,10 +11,11 @@ import {Link} from 'react-router';
  * @param {{
  *   link: {linkUrl?: string, openNewTab?: boolean, pageLink?: {path?: string}, linkText?: string},
  *   className?: string,
- *   children?: import('react').ReactNode
+ *   children?: import('react').ReactNode,
+ *   onClick?: (event: import('react').MouseEvent) => void
  * }} props
  */
-export default function CmsLink({link, className = '', children}) {
+export default function CmsLink({link, className = '', children, onClick}) {
   if (!link) return null;
   const {linkUrl, openNewTab, pageLink, linkText} = link;
   const to = linkUrl || pageLink?.path || '#';
@@ -26,6 +27,7 @@ export default function CmsLink({link, className = '', children}) {
       <a
         href={to}
         className={className}
+        onClick={onClick}
         target={openNewTab ? '_blank' : undefined}
         rel={openNewTab ? 'noopener noreferrer' : undefined}
       >
@@ -35,7 +37,7 @@ export default function CmsLink({link, className = '', children}) {
   }
 
   return (
-    <Link to={to} className={className}>
+    <Link to={to} className={className} onClick={onClick}>
       {label}
     </Link>
   );

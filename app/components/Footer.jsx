@@ -24,7 +24,6 @@ export function Footer({header, cmsFooter, strapiBaseUrl}) {
     linkColumns = [],
     copyrightName,
     legalLinks = [],
-    legalNote,
   } = cmsFooter;
 
   const logoUrl = strapiMedia(cmsFooter.logo?.url, strapiBaseUrl);
@@ -107,27 +106,25 @@ export function Footer({header, cmsFooter, strapiBaseUrl}) {
 
       <hr className={styles.divider} />
 
+      {/*
+        Copyright left, legal links right — the conventional split. They used to
+        run together as one sentence separated by middots, which read as a list
+        of links with a date stuck on the front.
+      */}
       <div className={styles.legal}>
-        <p className={styles.legalText}>
+        <p className={styles.copyright}>
           © {new Date().getFullYear()}
           {copyrightName ? ` ${copyrightName}` : ''}
-          {legalLinks.map((link) => (
-            <span key={link.id}>
-              <span className={styles.legalSeparator} aria-hidden="true">
-                {' · '}
-              </span>
-              <CmsLink link={link} className={styles.legalLink} />
-            </span>
-          ))}
-          {legalNote ? (
-            <>
-              <span className={styles.legalSeparator} aria-hidden="true">
-                {' · '}
-              </span>
-              {legalNote}
-            </>
-          ) : null}
         </p>
+        {legalLinks.length > 0 ? (
+          <ul className={styles.legalLinks}>
+            {legalLinks.map((link) => (
+              <li key={link.id}>
+                <CmsLink link={link} className={styles.legalLink} />
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
     </footer>
   );

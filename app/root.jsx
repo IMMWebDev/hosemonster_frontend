@@ -138,7 +138,16 @@ async function loadCriticalData({context}) {
       populate: {
         logo: true,
         utilityLinks: {populate: {pageLink: true}},
-        mainNav: {populate: {pageLink: true}},
+        // Three levels: mainNav -> link / dropdownLinks -> pageLink. A nav item
+        // WRAPS a utilities.link rather than redeclaring its fields, so adding
+        // a relation to that one component (a new collection type, say) reaches
+        // both the top-level item and every dropdown entry at once.
+        mainNav: {
+          populate: {
+            link: {populate: {pageLink: true}},
+            dropdownLinks: {populate: {pageLink: true}},
+          },
+        },
       },
     }),
     // Site-wide settings. Holds the newsletter band shown above the footer, so

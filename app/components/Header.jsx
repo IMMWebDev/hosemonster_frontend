@@ -1,5 +1,6 @@
-import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from 'react-router';
+import {Suspense, useCallback, useEffect, useId, useRef, useState} from 'react';
+import {Await, NavLink, useAsyncValue, useLocation} from 'react-router';
+import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
 import CmsLink from '~/components/cms/CmsLink';
@@ -90,19 +91,221 @@ export function Header({
         </NavLink>
 
         <nav className={styles.nav} role="navigation">
-          {mainNav.map((link, i) => (
-            <CmsLink
-              key={link.id ?? i}
-              link={link}
-              className={styles.navLink}
-            />
-          ))}
+          {mainNav.map((item, i) =>
+            item?.isDropdown ? (
+              <NavDropdown key={item.id ?? i} item={item} />
+            ) : (
+              <CmsLink
+                key={item.id ?? i}
+                link={item?.link}
+                className={styles.navLink}
+              />
+            ),
+          )}
         </nav>
 
           <HeaderMenuMobileToggle />
         </div>
       </div>
     </header>
+  );
+}
+
+/**
+ * True when a CMS link actually points somewhere. Unset links come back from
+ * Strapi as '#' placeholders or empty, and a parent that only opens a menu is a
+ * legitimate configuration — "Resources" is a grouping label, not a page.
+ *
+ * @param {{linkUrl?: string, pageLink?: {path?: string}}} [link]
+ */
+function hasDestination(link) {
+  const to = link?.linkUrl || link?.pageLink?.path;
+  return Boolean(to) && to !== '#';
+}
+
+/**
+ * A top-level nav entry that opens a menu.
+ *
+ * The parent element is a LINK when the CMS gives it a destination and a BUTTON
+ * when it does not — the markup follows the content rather than forcing one
+ * shape. That distinction matters on touch, where there is no hover: a link
+ * that also toggles has to either navigate or open, and whichever it picks, the
+ * other action becomes unreachable. So when the parent is a link it gets a
+ * separate caret button beside it, giving both actions their own target on
+ * every input type. When it is a button, the whole control toggles.
+ *
+ * Nothing here is auto-generated — no synthesised "Shop All" entry. The menu
+ * contains exactly what `dropdownLinks` contains, so what the CMS shows is what
+ * renders. If a landing page should be reachable from inside the menu, it is
+ * added in Strapi like any other link.
+ *
+ * @param {{item: {id?: number, link?: object, dropdownLinks?: Array<object>}}}
+ */
+function NavDropdown({item}) {
+  const {link, dropdownLinks = []} = item;
+  const [open, setOpen] = useState(false);
+  const [alignEnd, setAlignEnd] = useState(false);
+  const wrapRef = useRef(null);
+  const panelRef = useRef(null);
+  const closeTimer = useRef(null);
+  const menuId = useId();
+  const {pathname} = useLocation();
+  const linked = hasDestination(link);
+
+  const cancelClose = useCallback(() => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  }, []);
+
+  // A short grace period on mouseleave. Without it, the diagonal path from the
+  // parent across to an item lower in the panel crosses dead space and the menu
+  // shuts under the cursor.
+  const scheduleClose = useCallback(() => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setOpen(false), 150);
+  }, [cancelClose]);
+
+  useEffect(() => cancelClose, [cancelClose]);
+
+  // Close when navigating — clicking an item inside the panel would otherwise
+  // leave it hanging open over the new page.
+  useEffect(() => setOpen(false), [pathname]);
+
+  /*
+   * The nav sits at the right of the header, so a left-anchored panel on one of
+   * the last items runs straight off the viewport — Shop overflowed by 134px
+   * and gave the whole page a horizontal scrollbar. Measured rather than
+   * hard-coded to the last item, because which items are dropdowns is CMS-driven
+   * and the nav width changes with the labels.
+   *
+   * offsetWidth is readable while the panel is visually hidden: it is
+   * opacity/visibility-hidden, never display:none, so it still has layout.
+   */
+  useIsomorphicLayoutEffect(() => {
+    if (!open) return undefined;
+
+    const measure = () => {
+      const wrap = wrapRef.current;
+      const panel = panelRef.current;
+      if (!wrap || !panel) return;
+      const EDGE_MARGIN = 16;
+      const left = wrap.getBoundingClientRect().left;
+      setAlignEnd(left + panel.offsetWidth > window.innerWidth - EDGE_MARGIN);
+    };
+
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const onKeyDown = (e) => {
+      if (e.key !== 'Escape') return;
+      setOpen(false);
+      // Return focus to the control that opened the menu, or Escape strands
+      // keyboard users at the top of the document.
+      wrapRef.current?.querySelector('[aria-expanded]')?.focus();
+    };
+    const onPointerDown = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [open]);
+
+  if (dropdownLinks.length === 0) {
+    // Flagged as a dropdown but empty. Fall back to a plain link rather than
+    // rendering a control that opens nothing.
+    return <CmsLink link={link} className={styles.navLink} />;
+  }
+
+  const label = link?.linkText ?? '';
+  const caret = (
+    <svg
+      className={styles.navCaret}
+      viewBox="0 0 10 6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden="true"
+    >
+      <path d="M1 1l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
+  return (
+    <div
+      className={styles.navItem}
+      ref={wrapRef}
+      onMouseEnter={() => {
+        cancelClose();
+        setOpen(true);
+      }}
+      onMouseLeave={scheduleClose}
+      onFocus={() => {
+        cancelClose();
+        setOpen(true);
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+      }}
+    >
+      {linked ? (
+        <>
+          <CmsLink link={link} className={styles.navLink} />
+          <button
+            type="button"
+            className={styles.navCaretButton}
+            aria-expanded={open}
+            aria-controls={menuId}
+            aria-label={`${open ? 'Close' : 'Open'} ${label} menu`}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {caret}
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          className={`${styles.navLink} ${styles.navTrigger}`}
+          aria-expanded={open}
+          aria-controls={menuId}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {label}
+          {caret}
+        </button>
+      )}
+
+      <div
+        id={menuId}
+        ref={panelRef}
+        className={styles.dropdown}
+        data-open={open ? 'true' : undefined}
+        data-align={alignEnd ? 'end' : undefined}
+        // Hidden from assistive tech and taken out of the tab order while
+        // closed. `hidden` alone would kill the open/close transition.
+        aria-hidden={open ? undefined : 'true'}
+        inert={open ? undefined : ''}
+      >
+        <ul className={styles.dropdownList}>
+          {dropdownLinks.map((child, i) => (
+            <li key={child.id ?? i}>
+              <CmsLink link={child} className={styles.dropdownLink} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -139,14 +342,92 @@ export function HeaderMenu({mainNav = []}) {
       <NavLink end onClick={close} prefetch="intent" to="/">
         Home
       </NavLink>
-      {mainNav.map((link, i) => (
-        <CmsLink
-          key={link.id ?? i}
-          link={link}
-          className={styles.navLink}
-        />
-      ))}
+      {mainNav.map((item, i) =>
+        item?.isDropdown && (item.dropdownLinks?.length ?? 0) > 0 ? (
+          <MobileNavGroup key={item.id ?? i} item={item} onNavigate={close} />
+        ) : (
+          <CmsLink
+            key={item.id ?? i}
+            link={item?.link}
+            className={styles.navLink}
+          />
+        ),
+      )}
     </nav>
+  );
+}
+
+/**
+ * One collapsible group in the mobile drawer.
+ *
+ * The desktop hover menu has no equivalent on touch, so dropdown children would
+ * otherwise be unreachable on a phone entirely. An accordion is used rather
+ * than showing everything expanded because the drawer would otherwise run to
+ * several screens once all three menus are populated.
+ *
+ * When the parent has its own destination it is a link in the row, with the
+ * chevron as a separate toggle — same reasoning as the desktop version.
+ *
+ * @param {{item: {link?: object, dropdownLinks?: Array<object>}, onNavigate: () => void}}
+ */
+function MobileNavGroup({item, onNavigate}) {
+  const {link, dropdownLinks = []} = item;
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const linked = hasDestination(link);
+  const label = link?.linkText ?? '';
+
+  return (
+    <div className={styles.mobileGroup}>
+      <div className={styles.mobileGroupHeader}>
+        {linked ? (
+          <CmsLink
+            link={link}
+            className={styles.navLink}
+            onClick={onNavigate}
+          />
+        ) : (
+          <span className={styles.navLink}>{label}</span>
+        )}
+        <button
+          type="button"
+          className={styles.mobileToggle}
+          aria-expanded={open}
+          aria-controls={panelId}
+          aria-label={`${open ? 'Collapse' : 'Expand'} ${label}`}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <svg
+            className={styles.navCaret}
+            viewBox="0 0 10 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 1l4 4 4-4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {open ? (
+        <ul id={panelId} className={styles.mobileSubList}>
+          {dropdownLinks.map((child, i) => (
+            <li key={child.id ?? i}>
+              <CmsLink
+                link={child}
+                className={styles.mobileSubLink}
+                onClick={onNavigate}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }
 

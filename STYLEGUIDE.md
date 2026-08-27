@@ -215,8 +215,9 @@ Two commercial families:
 | H2.5 | `.h2-5` | 40px / 1.0 | Nimbus Bold |
 | H3 (Eyebrow) | `.eyebrow` | 18px / 1.1, red | Nimbus Black |
 | H4 (Button) | applied by `.btn` | 16px / 1.0 | Gopher Bold |
-| B1 (Standard Body) | `.body` / default | 14px / 1.7 | Gopher Medium |
-| B2 (Small Body) | `.body-sm` | 12px / 1.5 | Gopher Regular |
+| B1 (Standard Body) | `.body` / default | **18px** / 1.7 | Gopher Medium |
+| B2 (Small Body) | `.body-sm` | **16px** / 1.5 | Gopher Regular |
+| B3 (Large Body) | `--text-body-lg` | **20px** / 1.7 | Gopher Regular |
 
 Body text is the default — a bare `<p>` already renders as B1. No class needed.
 
@@ -326,11 +327,25 @@ Figma. `components.css` ships conservative defaults (primary darkens to navy,
 secondary inverts) plus a `:focus-visible` outline required for accessibility.
 Replace with designed states when available.
 
-### 7. Body copy is 14px
+### 7. Body copy sizes raised above Figma — RESOLVED, code is intentionally ahead
 
-B1 is specced at 14px. That is on the small side for long-form reading. Not
-changed — flagging in case it was meant as a component size rather than the
-global body default.
+Figma specs B1 at 14px and B2 at 12px. Both were too small for long-form
+reading, and were raised on the client's instruction (2026-08-26):
+
+| Token | Figma | In code |
+|---|---|---|
+| `--text-body` (B1) | 14px | **18px** |
+| `--text-body-sm` (B2) | 12px | **16px** |
+| `--text-body-lg` (B3) | 16px | **20px** |
+
+B3 was scaled with the others because it exists to sit one step *above* body
+copy; left at 16px it would have been smaller than B1 and the name would lie.
+
+`Footer .columnHeading` also moved from `--text-button` (16px) to `--text-body`
+(18px) — at 16px it would have exactly matched the links beneath it, leaving
+only weight to carry the hierarchy.
+
+**Update the Figma styleguide to match. Do not "correct" these back.**
 
 ---
 

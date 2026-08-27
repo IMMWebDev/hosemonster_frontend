@@ -162,6 +162,209 @@
 
 /*
  * -----------------------------------------------------------------------------
+ * DROPDOWN NAV
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — no dropdown frame exists in the design file. Styled
+ * to match the header's own type and colour tokens; revisit when a comp lands.
+ */
+
+.navItem {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* The button variant, used when the CMS gives the parent no destination, has to
+ * be reset to look identical to the anchor variant beside it. */
+.navTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.navCaretButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  margin: -4px; /* keeps the hit area without shifting the row */
+  background: none;
+  border: 0;
+  color: var(--nav-ink);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.navCaretButton:hover,
+.navItem:hover .navCaretButton {
+  color: var(--color-action);
+}
+
+.navCaret {
+  width: 10px;
+  height: 6px;
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+[aria-expanded='true'] .navCaret {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  min-width: 220px;
+  /* Bridges the gap between the trigger and the panel so the pointer never
+   * crosses dead space on its way down — the transparent border is part of the
+   * hover target, not decoration. */
+  border-top: var(--space-3) solid transparent;
+  background-clip: padding-box;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  /*
+   * `visibility` alongside opacity so "closed" does not rest on opacity alone —
+   * a stuck or interrupted opacity transition would otherwise leave the panel
+   * on screen. It is delayed by the fade duration so the fade-out still plays,
+   * then snaps hidden; on open it flips immediately with no delay.
+   */
+  visibility: hidden;
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    visibility 0s linear var(--duration-fast);
+}
+
+/* Set by NavDropdown when a left-anchored panel would leave the viewport. */
+.dropdown[data-align='end'] {
+  left: auto;
+  right: 0;
+}
+
+.dropdown[data-open='true'] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    visibility 0s;
+}
+
+.dropdownList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--space-2) 0;
+  list-style: none;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dropdown);
+}
+
+/* reset.css puts a bottom margin on every <li>; it would gap the rows. */
+.dropdownList li {
+  margin-bottom: 0;
+}
+
+.dropdownLink {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body-sm);
+  color: var(--nav-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--duration-fast) var(--ease-default),
+    background-color var(--duration-fast) var(--ease-default);
+}
+
+.dropdownLink:hover,
+.dropdownLink:focus-visible {
+  color: var(--color-action);
+  background: var(--color-surface-subtle);
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown,
+  .navCaret {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MOBILE DRAWER GROUPS
+ * -----------------------------------------------------------------------------
+ * Rendered inside the Aside by PageLayout, not in the header bar itself.
+ */
+
+.mobileGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.mobileToggle {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+  background: none;
+  border: 0;
+  color: var(--nav-ink);
+  cursor: pointer;
+}
+
+.mobileSubList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0 0 0 var(--space-4);
+  list-style: none;
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+.mobileSubList li {
+  margin-bottom: 0;
+}
+
+.mobileSubLink {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body-sm);
+  color: var(--nav-ink);
+  text-decoration: none;
+}
+
+.mobileSubLink:hover {
+  color: var(--color-action);
+  text-decoration: none;
+}
+
+/*
+ * -----------------------------------------------------------------------------
  * RESPONSIVE — house breakpoints (see app/styles/layout.css)
  * -----------------------------------------------------------------------------
  * ⚠ Not specced in Figma — the design provides a 1280px desktop frame only.

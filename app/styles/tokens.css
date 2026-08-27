@@ -222,11 +222,17 @@
   --text-h2-5: 2.5rem; /* 40px — Figma "H2.5" */
   --text-h3: 1.125rem; /* 18px — Figma "H3" (Eyebrow) */
   --text-button: 1rem; /* 16px — Figma "H4" (Button) */
-  --text-body: 0.875rem; /* 14px — Figma "B1" (Standard Body Copy) */
-  --text-body-sm: 0.75rem; /* 12px — Figma "B2" (Small Body Copy) */
+  /* ⚠ DELIBERATE DIVERGENCE FROM FIGMA. The styleguide specifies B1 at 14px and
+   * B2 at 12px. Both were raised for readability at the client's direction on
+   * 2026-08-26 — 14px body reads as fine print on a large display. Update the
+   * Figma styleguide to match rather than "correcting" these back. */
+  --text-body: 1.125rem; /* 18px — Figma "B1" (Standard Body Copy), was 14px */
+  --text-body-sm: 1rem; /* 16px — Figma "B2" (Small Body Copy), was 12px */
   /* ⚠ Figma "B3" (Gopher Regular 16 / 1.7). Used by the Guided Discovery card
-   * but absent from the styleguide's Fonts page — flag for design. */
-  --text-body-lg: 1rem; /* 16px */
+   * but absent from the styleguide's Fonts page — flag for design.
+   * Scaled with B1 above: it exists to sit one step ABOVE body copy, so at 16px
+   * it would now be smaller than body and the name would lie. */
+  --text-body-lg: 1.25rem; /* 20px, was 16px */
 
   /* Line heights — unitless, so they scale with font-size */
   --leading-h1: 0.98;
@@ -332,6 +338,8 @@
    */
   --shadow-aside: 0 0 50px rgba(0, 0, 0, 0.3);
   --shadow-overlay: rgba(0, 0, 0, 0.2);
+  /* Header dropdown panel. Not specced in Figma — no dropdown frame exists. */
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.12);
 
   /* ==========================================================================
    * 9. MOTION

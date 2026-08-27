@@ -131,10 +131,16 @@ a.contactLine:hover {
   gap: var(--space-4);
 }
 
-/* Figma "H4" */
+/*
+ * Was Figma "H4" / --text-button (16px) against 12px links. Now that B2 is 16px,
+ * that would
+ * make a column heading exactly the size of the links beneath it, leaving only
+ * weight to carry the hierarchy. Stepped up to B1 so the heading still reads as
+ * a heading.
+ */
 .columnHeading {
   font-family: var(--font-body);
-  font-size: var(--text-button);
+  font-size: var(--text-body);
   font-weight: var(--weight-bold);
   line-height: var(--leading-button);
   text-transform: capitalize;
@@ -177,20 +183,36 @@ a.contactLine:hover {
  * -----------------------------------------------------------------------------
  */
 
+/*
+ * Full-bleed rule. The footer is rendered by PageLayout as a sibling of <main>,
+ * so it already spans the page — the divider just needs no max-width of its own
+ * and no gutter. Figma draws it at 1192px, inset from the content column; edge
+ * to edge is what was asked for and reads better as a band separator.
+ */
 .divider {
   border: 0;
   border-top: var(--border-width) solid var(--color-border-strong);
-  max-width: 1192px; /* narrower than the grid, per the design */
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
 }
 
+/*
+ * Legal bar: copyright left, links right. `space-between` does the split, and
+ * wrapping keeps it sane when the link list outgrows the row before the mobile
+ * breakpoint takes over.
+ */
 .legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
   max-width: var(--container-outer);
   margin-inline: auto;
   padding: var(--space-4) var(--container-gutter) var(--space-6);
 }
 
-.legalText {
+.copyright {
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
@@ -199,17 +221,33 @@ a.contactLine:hover {
   margin: 0;
 }
 
+.legalLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* reset.css gives every <li> a bottom margin; it would break this row's
+ * vertical alignment against the copyright. */
+.legalLinks li {
+  margin-bottom: 0;
+}
+
 .legalLink {
-  color: inherit;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--legal-ink);
   text-decoration: none;
 }
 
 .legalLink:hover {
   text-decoration: underline;
-}
-
-.legalSeparator {
-  user-select: none;
 }
 
 /*
@@ -236,5 +274,13 @@ a.contactLine:hover {
 @media (max-width: 499px) {
   .inner {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Stack the legal bar rather than letting space-between strand the links on
+   * their own right-aligned row. */
+  .legal {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
   }
 }

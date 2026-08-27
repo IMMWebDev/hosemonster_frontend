@@ -1,14 +1,6 @@
-import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
 import styles from './Ticker.module.css';
-
-/*
- * useLayoutEffect cannot run on the server, and Hydrogen server-renders every
- * component — React warns loudly about it on every render. Falling back to
- * useEffect on the server keeps the client behaviour (measure before paint, so
- * the corrected copy count never flashes) without the warning.
- */
-const useIsomorphicLayoutEffect =
-  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 /** Scroll speed in pixels per second. Constant regardless of how many items
  *  are entered, so adding one does not make the strip run faster. */
