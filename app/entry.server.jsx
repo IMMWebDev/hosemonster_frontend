@@ -42,7 +42,13 @@ export default async function handleRequest(
     // p.typekit.net belongs here as well as in connectSrc: the kit stylesheet
     // opens with `@import url("https://p.typekit.net/p.css?…")`, and an @import
     // is fetched under style-src, not connect-src.
-    styleSrc: ['https://use.typekit.net', 'https://p.typekit.net'],
+    styleSrc: [
+      'https://use.typekit.net',
+      'https://p.typekit.net',
+      // BugHerd styles its injected sidebar.
+      'https://*.bugherd.com',
+      'https://www.bugherd.com',
+    ],
     connectSrc: [
       'https://use.typekit.net',
       'https://p.typekit.net',
@@ -50,6 +56,19 @@ export default async function handleRequest(
       'https://forms.hsforms.com',
       'https://forms-na1.hsforms.com',
       'https://api.hsforms.com',
+      // BugHerd posts feedback and polls for tasks.
+      'https://*.bugherd.com',
+      'https://www.bugherd.com',
+      'wss://*.bugherd.com',
+      /*
+       * BugHerd's sidebar bundles Bugsnag for its OWN crash reporting. Blocking
+       * it does not break BugHerd, but it logs two CSP errors on every page
+       * load — noise that would bury real errors during exactly the QA sessions
+       * BugHerd is here to support. Remove these two if you would rather not
+       * let a vendor's telemetry out.
+       */
+      'https://sessions.bugsnag.com',
+      'https://notify.bugsnag.com',
     ],
 
     // NOT merged — must be complete.
@@ -60,15 +79,24 @@ export default async function handleRequest(
     imgSrc: [
       "'self'",
       'data:',
+      'blob:', // BugHerd renders screenshot captures from blob URLs.
       'https://cdn.shopify.com',
       'https://shopify.com',
       'https://media.impactmit.com',
       'https://res.cloudinary.com',
       'http://localhost:1337',
+      'https://*.bugherd.com',
+      'https://www.bugherd.com',
     ],
 
     // NOT merged — must be complete. Adobe Fonts serves the brand families.
-    fontSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://use.typekit.net'],
+    fontSrc: [
+      "'self'",
+      'data:',
+      'https://cdn.shopify.com',
+      'https://use.typekit.net',
+      'https://*.bugherd.com',
+    ],
 
     /*
      * HubSpot forms are added to DEFAULT-SRC rather than a dedicated scriptSrc.
@@ -87,6 +115,16 @@ export default async function handleRequest(
       'https://js.hsforms.net',
       'https://forms.hsforms.com',
       'https://forms-na1.hsforms.com',
+      /*
+       * BugHerd (QA feedback sidebar). Goes in defaultSrc for the same reason
+       * as HubSpot above — declaring scriptSrc would break Vite's dev scripts.
+       * sidebarv2.js injects further scripts, iframes and workers of its own,
+       * so the host has to be allowed rather than relying on the nonce, which
+       * only covers the one tag we render.
+       */
+      'https://www.bugherd.com',
+      'https://bugherd.com',
+      'https://*.bugherd.com',
     ],
   });
 

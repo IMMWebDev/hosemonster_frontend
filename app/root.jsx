@@ -36,6 +36,19 @@ import NotFound from '~/components/cms/NotFound';
 const TYPEKIT_KIT_ID = 'zny1qeh';
 
 /**
+ * BugHerd project key for the QA feedback sidebar.
+ *
+ * Public, like the Typekit ID — it ships in the page source, and BugHerd only
+ * shows the sidebar to people signed in to the project, so it is not a secret.
+ *
+ * ⚠ This currently loads on EVERY environment, production included. BugHerd's
+ * sidebar stays hidden from ordinary visitors, but the script is still fetched
+ * and run for them. To restrict it to non-production, gate the <script> in
+ * `Layout` on an env flag rather than deleting this constant.
+ */
+const BUGHERD_API_KEY = 'qemlu54olb83vppojknrka';
+
+/**
  * This is important to avoid re-fetching root queries on sub-navigations
  * @type {ShouldRevalidateFunction}
  */
@@ -248,6 +261,22 @@ export function Layout({children}) {
         <link rel="stylesheet" href={appStyles}></link>
         <Meta />
         <Links />
+        {/*
+          BugHerd QA sidebar. `async` so it never blocks first paint.
+
+          Deliberately NOT given the CSP nonce. Browsers blank the `nonce`
+          content attribute after applying it (so a page cannot read its own
+          nonce back out), which means React hydration compares "" against the
+          client value and warns on every single load. Hydrogen's policy allows
+          the bugherd.com hosts outright, so the nonce bought nothing.
+
+          It loads from www.bugherd.com but pulls its bundles from
+          sidebar.bugherd.com — hence the wildcard in app/entry.server.jsx.
+        */}
+        <script
+          async
+          src={`https://www.bugherd.com/sidebarv2.js?apikey=${BUGHERD_API_KEY}`}
+        />
       </head>
       <body>
         {children}
