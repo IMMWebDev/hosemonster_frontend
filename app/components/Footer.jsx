@@ -1,130 +1,140 @@
-import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
+import {NavLink} from 'react-router';
+import CmsLink from '~/components/cms/CmsLink';
+import {SocialIcon} from '~/components/icons/SocialIcon';
+import {strapiMedia} from '~/lib/strapi-media';
+import styles from './Footer.module.css';
 
 /**
+ * Site footer — Figma "Web Styleguide" → Nav + Footer → Footer Only (27:1154).
+ *
+ * Entirely CMS-driven (Strapi `footer` single type). The Shopify footer menu is
+ * no longer rendered: the design's four columns are editorial groupings that
+ * don't map onto a Shopify menu, and having two sources would let them drift.
+ *
  * @param {FooterProps}
  */
-export function Footer({footer: footerPromise, header, publicStoreDomain}) {
+export function Footer({header, cmsFooter, strapiBaseUrl}) {
+  if (!cmsFooter) return null;
+
+  const {
+    address,
+    phone,
+    email,
+    socialLinks = [],
+    linkColumns = [],
+    copyrightName,
+    legalLinks = [],
+  } = cmsFooter;
+
+  const logoUrl = strapiMedia(cmsFooter.logo?.url, strapiBaseUrl);
+  // Alt comes from the Media Library's own alternativeText (set once on the
+  // upload) rather than a per-placement CMS field.
+  const logoAlt =
+    cmsFooter.logo?.alternativeText || copyrightName || header?.shop?.name || '';
+
   return (
-    <Suspense>
-      <Await resolve={footerPromise}>
-        {(footer) => (
-          <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
+    <footer className={styles.footer}>
+      <div
+        className={styles.inner}
+        // Drives the grid track count so adding a column in Strapi needs no
+        // CSS change. See --footer-columns in Footer.module.css.
+        style={{'--footer-columns': linkColumns.length || 4}}
+      >
+        <div className={styles.brand}>
+          <NavLink to="/" className={styles.logo} prefetch="intent" end>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={logoAlt}
+                className={styles.logoImage}
+                width={cmsFooter.logo?.width ?? 185}
+                height={cmsFooter.logo?.height ?? 48}
               />
+            ) : (
+              <span className={styles.logoFallback}>{logoAlt}</span>
             )}
-          </footer>
-        )}
-      </Await>
-    </Suspense>
-  );
-}
-
-/**
- * @param {{
- *   menu: FooterQuery['menu'];
- *   primaryDomainUrl: FooterProps['header']['shop']['primaryDomain']['url'];
- *   publicStoreDomain: string;
- * }}
- */
-function FooterMenu({menu, primaryDomainUrl, publicStoreDomain}) {
-  return (
-    <nav className="footer-menu" role="navigation">
-      {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
-        if (!item.url) return null;
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        const isExternal = !url.startsWith('/');
-        return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
-            {item.title}
-          </a>
-        ) : (
-          <NavLink
-            end
-            key={item.id}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
           </NavLink>
-        );
-      })}
-    </nav>
+
+          <div className={styles.contact}>
+            {address ? <p className={styles.contactLine}>{address}</p> : null}
+            {phone ? (
+              <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} className={styles.contactLine}>
+                {phone}
+              </a>
+            ) : null}
+            {email ? (
+              <a href={`mailto:${email}`} className={styles.contactLine}>
+                {email}
+              </a>
+            ) : null}
+          </div>
+
+          {socialLinks.length > 0 && (
+            <div className={styles.social}>
+              {socialLinks.map((social) => (
+                <a
+                  key={social.id}
+                  href={social.url}
+                  className={styles.socialLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <SocialIcon
+                    platform={social.platform}
+                    className={styles.socialIcon}
+                    title={social.label || social.platform}
+                  />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {linkColumns.map((column) => (
+          <div className={styles.column} key={column.id}>
+            <h2 className={styles.columnHeading}>{column.heading}</h2>
+            <ul className={styles.columnLinks}>
+              {(column.links ?? []).map((link) => (
+                <li key={link.id}>
+                  <CmsLink link={link} className={styles.columnLink} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <hr className={styles.divider} />
+
+      {/*
+        Copyright left, legal links right — the conventional split. They used to
+        run together as one sentence separated by middots, which read as a list
+        of links with a date stuck on the front.
+      */}
+      <div className={styles.legal}>
+        <p className={styles.copyright}>
+          © {new Date().getFullYear()}
+          {copyrightName ? ` ${copyrightName}` : ''}
+        </p>
+        {legalLinks.length > 0 ? (
+          <ul className={styles.legalLinks}>
+            {legalLinks.map((link) => (
+              <li key={link.id}>
+                <CmsLink link={link} className={styles.legalLink} />
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </footer>
   );
-}
-
-const FALLBACK_FOOTER_MENU = {
-  id: 'gid://shopify/Menu/199655620664',
-  items: [
-    {
-      id: 'gid://shopify/MenuItem/461633060920',
-      resourceId: 'gid://shopify/ShopPolicy/23358046264',
-      tags: [],
-      title: 'Privacy Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/privacy-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633093688',
-      resourceId: 'gid://shopify/ShopPolicy/23358013496',
-      tags: [],
-      title: 'Refund Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/refund-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633126456',
-      resourceId: 'gid://shopify/ShopPolicy/23358111800',
-      tags: [],
-      title: 'Shipping Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/shipping-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633159224',
-      resourceId: 'gid://shopify/ShopPolicy/23358079032',
-      tags: [],
-      title: 'Terms of Service',
-      type: 'SHOP_POLICY',
-      url: '/policies/terms-of-service',
-      items: [],
-    },
-  ],
-};
-
-/**
- * @param {{
- *   isActive: boolean;
- *   isPending: boolean;
- * }}
- */
-function activeLinkStyle({isActive, isPending}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
-  };
 }
 
 /**
  * @typedef {Object} FooterProps
- * @property {Promise<FooterQuery|null>} footer
- * @property {HeaderQuery} header
- * @property {string} publicStoreDomain
+ * @property {HeaderQuery} [header]
+ * @property {Record<string, any>} [cmsFooter]
+ * @property {string} [strapiBaseUrl]
  */
 
-/** @typedef {import('storefrontapi.generated').FooterQuery} FooterQuery */
 /** @typedef {import('storefrontapi.generated').HeaderQuery} HeaderQuery */

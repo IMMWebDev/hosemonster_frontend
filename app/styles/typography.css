@@ -1,0 +1,207 @@
+/*
+ * =============================================================================
+ * TYPOGRAPHY
+ * =============================================================================
+ * Implements the type styles from Figma → "Web Styleguide" → Fonts and Copy
+ * Lockups. All values come from tokens.css — nothing raw is written here.
+ *
+ * Figma style name → class in this file:
+ *   H1               → .h1   (or a bare <h1>)
+ *   H2               → .h2   (or a bare <h2>)
+ *   H2.5             → .h2-5
+ *   H3 / "Eyebrow"   → .eyebrow
+ *   H4 / "Button"    → .button-text (applied by the button classes)
+ *   B1 / "Standard Body Copy" → .body  (also the default for <body>)
+ *   B2 / "Small Body Copy"    → .body-sm
+ * =============================================================================
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * FONT LOADING — ONE STEP LEFT (needs an Adobe account; cannot be done in code)
+ * -----------------------------------------------------------------------------
+ * There are NO @font-face rules in this file, and there should not be.
+ *
+ * nimbus-sans-extended and gopher are ADOBE FONTS (Typekit) — a hosted service.
+ * There are no font files to commit: Adobe serves them from its own CDN, and
+ * the licence covers delivery through a kit on domains registered to it.
+ *
+ * WIRING: the kit ID is a constant, TYPEKIT_KIT_ID, at the top of app/root.jsx.
+ * `Layout` emits the kit <link> plus a preconnect from it. Not an env var — a
+ * kit ID is public, identical in every environment, and one Adobe project
+ * covers all its registered domains, so an env var only added a step that could
+ * be missed on Oxygen and silently drop the fonts in production.
+ *
+ * The CSP in app/entry.server.jsx already allows use.typekit.net (styleSrc +
+ * fontSrc) and p.typekit.net (styleSrc, for the kit's own @import).
+ *
+ * CURRENT KIT — zny1qeh — HAS EVERYTHING THE DESIGN NEEDS.
+ *   Verified in-browser on 2026-08-26: 25 faces registered, font-display swap.
+ *   All five faces the design uses resolve to themselves rather than being
+ *   substituted by a nearby weight:
+ *
+ *     gopher                400 Regular   --weight-regular  (B2 small body)
+ *     gopher                500 Medium    --weight-medium   (B1 body copy)
+ *     gopher                700 Bold      --weight-bold     (buttons)
+ *     nimbus-sans-extended  700 Bold      --weight-bold     (H1, H2, H2.5)
+ *     nimbus-sans-extended  900 Black     --weight-black    (eyebrow / H3)
+ *
+ *   The kit also carries nimbus-sans, nimbus-sans-condensed and various
+ *   italics that the site does not use. Not worth trimming: browsers only
+ *   download a face when text actually matches it, so unused faces cost a few
+ *   KB of extra CSS and zero font requests.
+ *
+ * ⚠ AFTER THE DESIGNER CHANGES THE KIT, HARD-RELOAD BEFORE BELIEVING WHAT YOU
+ *   SEE. The kit CSS is served `max-age=600, stale-while-revalidate=604800`,
+ *   so a browser will keep serving the OLD kit — for up to a week — while it
+ *   refreshes in the background. New weights appear to be "missing" when they
+ *   are in fact already in the kit. Confirm against the source before
+ *   debugging anything:
+ *
+ *     curl -s https://use.typekit.net/zny1qeh.css | grep -c @font-face
+ *
+ *   Domains: the kit must list localhost, the Oxygen preview domain, and
+ *   production. Unlike the raw asset URLs described below, kits ARE
+ *   domain-locked.
+ *
+ * ⚠ DO NOT copy the old site's approach.
+ *   wp-content/themes/es99/style.css hardcodes @font-face rules pointing at raw
+ *   https://use.typekit.net/af/<hash>/... URLs lifted out of a kit's generated
+ *   CSS. They work from any origin — the assets are unauthenticated, and serve
+ *   200 with `access-control-allow-origin: *` regardless of Referer — which is
+ *   why the legacy site renders correctly without owning a kit for them. That
+ *   is not authorisation, it is an absent check. Three reasons not to repeat it:
+ *     1. It only pins Nimbus 700 / Gopher 400 / Gopher 700, so it cannot supply
+ *        Nimbus 900 (every eyebrow) or Gopher 500 (all standard body copy).
+ *        The per-face hashes are opaque and cannot be derived.
+ *     2. The URLs are pinned to /30/ and v=3 against an internal asset hash;
+ *        when Adobe rotates them the fonts vanish with nothing failing in CI.
+ *     3. It sits outside the Adobe TOU, which covers kit delivery on registered
+ *        domains.
+ *   (The kit that theme DOES reference properly, pmz5erz, is Calibri only.)
+ *
+ * Until the kit ID is set, the fallback stacks in --font-display / --font-body
+ * render. Layout and spacing are correct; the brand look is not.
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * BASE
+ * -----------------------------------------------------------------------------
+ * Body defaults to B1 (Standard Body Copy). Every bare <p> inherits this, so
+ * most body text needs no class at all.
+ */
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * HEADINGS
+ * -----------------------------------------------------------------------------
+ * Bare elements are styled so semantic HTML renders correctly without classes.
+ * The matching classes exist for when heading level and visual size need to
+ * differ — e.g. an <h2> that should look like H1 for document outline reasons.
+ * Reach for the class, never a heading level chosen for its looks.
+ */
+
+h1,
+.h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+h2,
+.h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Figma "H2.5" — an intermediate display size between H2 and the eyebrow.
+ * No native HTML element maps to it; always apply as a class. */
+.h2-5 {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-5);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/*
+ * Figma "H3" — used in the design as an EYEBROW: the small uppercase red label
+ * that sits above a heading. Named .eyebrow rather than .h3 because that is
+ * what it does; naming it h3 would invite using it as a generic third-level
+ * heading, which the design never does.
+ */
+h3,
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * BODY
+ * -----------------------------------------------------------------------------
+ */
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.body-sm {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MODIFIERS
+ * -----------------------------------------------------------------------------
+ */
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-inverse {
+  color: var(--color-text-inverse);
+}
+
+.text-accent {
+  color: var(--color-text-accent);
+}

@@ -1,7 +1,8 @@
-import {Await, Link} from 'react-router';
+import {Await, Link, useMatches} from 'react-router';
 import {Suspense, useId} from 'react';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
+import Newsletter from '~/components/Newsletter';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {
@@ -16,32 +17,73 @@ import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 export function PageLayout({
   cart,
   children = null,
-  footer,
   header,
   isLoggedIn,
   publicStoreDomain,
+  cmsHeader,
+  cmsFooter,
+  cmsOptions,
+  siteEnv,
+  strapiBaseUrl,
 }) {
+  const includeNewsletter = useIncludeNewsletter();
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
       <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+      <MobileMenuAside cmsHeader={cmsHeader} />
       {header && (
         <Header
           header={header}
           cart={cart}
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
+          cmsHeader={cmsHeader}
+          strapiBaseUrl={strapiBaseUrl}
         />
       )}
       <main>{children}</main>
+      {includeNewsletter && cmsOptions?.newsletter ? (
+        <Newsletter
+          newsletter={cmsOptions.newsletter}
+          baseUrl={strapiBaseUrl}
+          siteEnv={siteEnv}
+        />
+      ) : null}
       <Footer
-        footer={footer}
         header={header}
-        publicStoreDomain={publicStoreDomain}
+        cmsFooter={cmsFooter}
+        strapiBaseUrl={strapiBaseUrl}
       />
     </Aside.Provider>
   );
+}
+
+/**
+ * Reads the current page's `includeNewsletter` switch.
+ *
+ * The newsletter band is site chrome rendered here in the layout, but the
+ * switch belongs to the PAGE, whose data is loaded by the route nested below
+ * this component. `useMatches` is how a layout reaches a child route's loader
+ * data without fetching the page a second time. The deepest match that
+ * actually carries the field wins.
+ *
+ * Anything other than an explicit `false` counts as on. Strapi only applies a
+ * field's default to NEWLY created entries, so every page authored before the
+ * switch existed reports `null` — treating null as off would silently hide the
+ * band across the whole site.
+ *
+ * @returns {boolean}
+ */
+function useIncludeNewsletter() {
+  const matches = useMatches();
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const data = matches[i]?.data;
+    if (data && typeof data === 'object' && 'includeNewsletter' in data) {
+      return data.includeNewsletter !== false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -149,19 +191,20 @@ function SearchAside() {
  *   publicStoreDomain: PageLayoutProps['publicStoreDomain'];
  * }}
  */
-function MobileMenuAside({header, publicStoreDomain}) {
+/**
+ * Mobile nav drawer. Driven by the same CMS nav as the desktop header, so the
+ * two cannot drift apart.
+ *
+ * @param {{cmsHeader?: Record<string, any>}}
+ */
+function MobileMenuAside({cmsHeader}) {
+  const mainNav = cmsHeader?.mainNav ?? [];
+  if (mainNav.length === 0) return null;
+
   return (
-    header.menu &&
-    header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
-        <HeaderMenu
-          menu={header.menu}
-          viewport="mobile"
-          primaryDomainUrl={header.shop.primaryDomain.url}
-          publicStoreDomain={publicStoreDomain}
-        />
-      </Aside>
-    )
+    <Aside type="mobile" heading="MENU">
+      <HeaderMenu mainNav={mainNav} />
+    </Aside>
   );
 }
 

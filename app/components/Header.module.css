@@ -1,0 +1,412 @@
+/*
+ * Header — Figma "Web Styleguide" → Nav + Footer → Navbar (21:263)
+ *
+ * First CSS Module in the codebase; the pattern for new components.
+ * Class names here are scoped by Vite, so plain names like `.nav` are safe.
+ * All values come from tokens.css — no raw hex, no magic numbers.
+ */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: var(--border-width) solid var(--nav-rule);
+  background: var(--color-surface);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * UTILITY BAR — navy strip, right-aligned
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * Both bars follow the same pattern: the bar itself is full-bleed so its
+ * background reaches the viewport edge, while the *content* inside is capped at
+ * --container-max and centred — matching every other centred region on the site.
+ * Without the inner wrapper the logo and nav pin to opposite screen edges, which
+ * on a 1920px monitor leaves ~1000px of dead space between them.
+ */
+
+.utilityBar {
+  background: var(--brand-navy);
+  border-bottom: var(--border-width) solid var(--nav-rule-utility);
+}
+
+.utilityInner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-5); /* 20px in the design */
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  /* Figma has 8px top / 9px bottom. The 1px difference is almost certainly
+   * incidental, so both sides use the 8px token rather than minting a 9px one.
+   * Horizontal padding is the shared container gutter, NOT Figma's 28px — see
+   * the note in STYLEGUIDE.md about aligning the header to the page grid. */
+  padding: var(--space-2) var(--container-gutter);
+}
+
+/* Figma "B2" / Small Body Copy, reversed out on navy */
+.utilityLink,
+.utilityButton {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.utilityLink:hover,
+.utilityButton:hover {
+  text-decoration: underline;
+}
+
+/*
+ * The design draws a "·" between utility items. It is decoration, not content,
+ * so it is generated here and hidden from screen readers rather than being
+ * typed into the CMS as a separate link.
+ */
+.separator {
+  color: var(--color-text-inverse);
+  font-size: var(--text-body-sm);
+  line-height: 1;
+  user-select: none;
+}
+
+.searchButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MAIN BAR — logo left, nav right
+ * -----------------------------------------------------------------------------
+ */
+
+.mainBar {
+  background: var(--color-surface);
+}
+
+.mainBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding: var(--space-4) var(--container-gutter);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.logoImage {
+  display: block;
+  width: 185px;
+  height: 48px;
+  object-fit: contain;
+}
+
+/* Shown only when the CMS has no logo uploaded */
+.logoFallback {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Figma "H4" / Button style, reused for nav links */
+.navLink {
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-transform: capitalize;
+  color: var(--nav-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.navLink:hover,
+.navLink[aria-current='page'] {
+  color: var(--color-action);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * DROPDOWN NAV
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — no dropdown frame exists in the design file. Styled
+ * to match the header's own type and colour tokens; revisit when a comp lands.
+ */
+
+.navItem {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* The button variant, used when the CMS gives the parent no destination, has to
+ * be reset to look identical to the anchor variant beside it. */
+.navTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.navCaretButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  margin: -4px; /* keeps the hit area without shifting the row */
+  background: none;
+  border: 0;
+  color: var(--nav-ink);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.navCaretButton:hover,
+.navItem:hover .navCaretButton {
+  color: var(--color-action);
+}
+
+.navCaret {
+  width: 10px;
+  height: 6px;
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+[aria-expanded='true'] .navCaret {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  min-width: 220px;
+  /* Bridges the gap between the trigger and the panel so the pointer never
+   * crosses dead space on its way down — the transparent border is part of the
+   * hover target, not decoration. */
+  border-top: var(--space-3) solid transparent;
+  background-clip: padding-box;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  /*
+   * `visibility` alongside opacity so "closed" does not rest on opacity alone —
+   * a stuck or interrupted opacity transition would otherwise leave the panel
+   * on screen. It is delayed by the fade duration so the fade-out still plays,
+   * then snaps hidden; on open it flips immediately with no delay.
+   */
+  visibility: hidden;
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    visibility 0s linear var(--duration-fast);
+}
+
+/* Set by NavDropdown when a left-anchored panel would leave the viewport. */
+.dropdown[data-align='end'] {
+  left: auto;
+  right: 0;
+}
+
+.dropdown[data-open='true'] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    visibility 0s;
+}
+
+.dropdownList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--space-2) 0;
+  list-style: none;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dropdown);
+}
+
+/* reset.css puts a bottom margin on every <li>; it would gap the rows. */
+.dropdownList li {
+  margin-bottom: 0;
+}
+
+.dropdownLink {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body-sm);
+  color: var(--nav-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--duration-fast) var(--ease-default),
+    background-color var(--duration-fast) var(--ease-default);
+}
+
+.dropdownLink:hover,
+.dropdownLink:focus-visible {
+  color: var(--color-action);
+  background: var(--color-surface-subtle);
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown,
+  .navCaret {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MOBILE DRAWER GROUPS
+ * -----------------------------------------------------------------------------
+ * Rendered inside the Aside by PageLayout, not in the header bar itself.
+ */
+
+.mobileGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.mobileToggle {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+  background: none;
+  border: 0;
+  color: var(--nav-ink);
+  cursor: pointer;
+}
+
+.mobileSubList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0 0 0 var(--space-4);
+  list-style: none;
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+.mobileSubList li {
+  margin-bottom: 0;
+}
+
+.mobileSubLink {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body-sm);
+  color: var(--nav-ink);
+  text-decoration: none;
+}
+
+.mobileSubLink:hover {
+  color: var(--color-action);
+  text-decoration: none;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (see app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — the design provides a 1280px desktop frame only.
+ * Desktop-first, matching the house system's max-width queries.
+ */
+
+.menuToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: var(--space-2);
+  cursor: pointer;
+  color: var(--nav-ink);
+  font-size: var(--text-h3);
+  line-height: 1;
+}
+
+/* desktopNav (max-width: 1250px) — named for exactly this: seven nav items
+ * plus a 185px logo stop fitting on one line, so swap to the drawer. */
+@media (max-width: 1250px) {
+  .nav {
+    display: none;
+  }
+
+  .menuToggle {
+    display: inline-flex;
+  }
+}
+
+/* Horizontal padding needs no media query — --container-gutter is already
+ * breakpoint-aware (tokens.css). */
+
+/* mobile (max-width: 499px) — the utility bar's link list collapses; search
+ * and cart stay, since those are the ones people reach for. */
+@media (max-width: 499px) {
+  .utilityInner {
+    gap: var(--space-3);
+  }
+
+  .utilityLinkOptional {
+    display: none;
+  }
+}

@@ -10,10 +10,43 @@ import {
   useRouteLoaderData,
 } from 'react-router';
 import favicon from '~/assets/favicon.svg';
-import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
+import tokenStyles from '~/styles/tokens.css?url';
+import typographyStyles from '~/styles/typography.css?url';
+import layoutStyles from '~/styles/layout.css?url';
+import componentStyles from '~/styles/components.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from './components/PageLayout';
+import NotFound from '~/components/cms/NotFound';
+
+/**
+ * Adobe Fonts (Typekit) kit serving the brand families, nimbus-sans-extended
+ * and gopher.
+ *
+ * Hardcoded rather than an env var on purpose: a kit ID is public — it ships in
+ * the page source — it is identical in every environment, and one Adobe project
+ * covers every domain registered to it. An env var only added a step that,
+ * if missed on Oxygen, silently drops the brand fonts in production.
+ *
+ * Adding WEIGHTS to the existing kit needs no change here; the ID is stable.
+ * See app/styles/typography.css for the faces this kit must contain, and for
+ * which ones it is currently missing.
+ */
+const TYPEKIT_KIT_ID = 'zny1qeh';
+
+/**
+ * BugHerd project key for the QA feedback sidebar.
+ *
+ * Public, like the Typekit ID — it ships in the page source, and BugHerd only
+ * shows the sidebar to people signed in to the project, so it is not a secret.
+ *
+ * ⚠ This currently loads on EVERY environment, production included. BugHerd's
+ * sidebar stays hidden from ordinary visitors, but the script is still fetched
+ * and run for them. To restrict it to non-production, gate the <script> in
+ * `Layout` on an env flag rather than deleting this constant.
+ */
+const BUGHERD_API_KEY = 'qemlu54olb83vppojknrka';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -95,19 +128,75 @@ export async function loader(args) {
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context}) {
-  const {storefront} = context;
+  const {storefront, strapi} = context;
 
-  const [header] = await Promise.all([
+  // ⚠ This destructuring is positional — each name must line up with the same
+  // index in the array below. Adding a fetch in the middle without moving its
+  // name to the matching position silently hands one type's data to another.
+  const [header, notFound, cmsHeader, cmsOptions, cmsFooter] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
+    // CMS single types (Strapi). getSingle is CacheLong + null-safe, so these
+    // are cheap cached subrequests that never throw. `notFound` feeds the
+    // ErrorBoundary; `cmsHeader`/`cmsFooter` feed the site header/footer.
+    strapi.getSingle('page-not-found'),
+    // Explicit populate: `populate: '*'` only goes one level deep, which would
+    // return the link components but NOT the `pageLink` relation nested inside
+    // each one — internal page links would silently resolve to '#'.
+    strapi.getSingle('header', {
+      populate: {
+        logo: true,
+        utilityLinks: {populate: {pageLink: true}},
+        // Three levels: mainNav -> link / dropdownLinks -> pageLink. A nav item
+        // WRAPS a utilities.link rather than redeclaring its fields, so adding
+        // a relation to that one component (a new collection type, say) reaches
+        // both the top-level item and every dropdown entry at once.
+        mainNav: {
+          populate: {
+            link: {populate: {pageLink: true}},
+            dropdownLinks: {populate: {pageLink: true}},
+          },
+        },
+      },
+    }),
+    // Site-wide settings. Holds the newsletter band shown above the footer, so
+    // that copy is edited once rather than per page.
+    strapi.getSingle('option', {
+      populate: {newsletter: {populate: {backgroundImage: true}}},
+    }),
+    // Three levels deep: footer → linkColumns → links → pageLink. `populate: '*'`
+    // would stop at linkColumns and return them with no links at all.
+    strapi.getSingle('footer', {
+      populate: {
+        logo: true,
+        socialLinks: true,
+        legalLinks: {populate: {pageLink: true}},
+        linkColumns: {populate: {links: {populate: {pageLink: true}}}},
+      },
+    }),
   ]);
 
-  return {header};
+  return {
+    header,
+    notFound,
+    cmsHeader,
+    cmsFooter,
+    cmsOptions,
+    // Public, account-level config the newsletter embed needs at render time.
+    // These ship in the page source — never put a secret here.
+    siteEnv: {
+      hubspotPortalId: context.env.PUBLIC_HUBSPOT_PORTAL_ID,
+      hubspotRegion: context.env.PUBLIC_HUBSPOT_REGION,
+    },
+    // Needed by strapiMedia() to resolve relative upload paths. Harmless with
+    // the Cloudinary provider (absolute URLs pass through untouched), but
+    // required if the upload provider is ever switched back to local.
+    strapiBaseUrl: context.env.STRAPI_API_URL,
+  };
 }
 
 /**
@@ -117,25 +206,16 @@ async function loadCriticalData({context}) {
  * @param {Route.LoaderArgs}
  */
 function loadDeferredData({context}) {
-  const {storefront, customerAccount, cart} = context;
+  const {customerAccount, cart} = context;
 
-  // defer the footer query (below the fold)
-  const footer = storefront
-    .query(FOOTER_QUERY, {
-      cache: storefront.CacheLong(),
-      variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
-      },
-    })
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
+  // The Shopify FOOTER_QUERY used to be deferred here. The footer is now
+  // entirely CMS-driven (Strapi `footer` single type, fetched in
+  // loadCriticalData), so the query was firing on every page load with nothing
+  // reading the result. Restore it here and in PageLayout if the Shopify footer
+  // menu is ever needed again.
   return {
     cart: cart.get(),
     isLoggedIn: customerAccount.isLoggedIn(),
-    footer,
   };
 }
 
@@ -150,10 +230,53 @@ export function Layout({children}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        {/*
+          Adobe Fonts (Typekit) — see TYPEKIT_KIT_ID above. First in <head> so
+          the request starts before our own sheets; the kit only declares
+          @font-face and .tk-* helpers, so it cannot collide with anything
+          below it.
+
+          The crossOrigin preconnect is for the font FILES, not this stylesheet:
+          font fetches are CORS requests and need their own connection, so
+          warming it here saves a round trip once the CSS parses.
+        */}
+        <link
+          rel="preconnect"
+          href="https://use.typekit.net"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href={`https://use.typekit.net/${TYPEKIT_KIT_ID}.css`}
+        />
+        {/* Load order matters: tokens → reset → typography → layout →
+            components → app. tokens.css comes first because every other sheet
+            consumes var(--*), and app.css comes last so page-specific rules can
+            still override. */}
+        <link rel="stylesheet" href={tokenStyles}></link>
         <link rel="stylesheet" href={resetStyles}></link>
+        <link rel="stylesheet" href={typographyStyles}></link>
+        <link rel="stylesheet" href={layoutStyles}></link>
+        <link rel="stylesheet" href={componentStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
         <Meta />
         <Links />
+        {/*
+          BugHerd QA sidebar. `async` so it never blocks first paint.
+
+          Deliberately NOT given the CSP nonce. Browsers blank the `nonce`
+          content attribute after applying it (so a page cannot read its own
+          nonce back out), which means React hydration compares "" against the
+          client value and warns on every single load. Hydrogen's policy allows
+          the bugherd.com hosts outright, so the nonce bought nothing.
+
+          It loads from www.bugherd.com but pulls its bundles from
+          sidebar.bugherd.com — hence the wildcard in app/entry.server.jsx.
+        */}
+        <script
+          async
+          src={`https://www.bugherd.com/sidebarv2.js?apikey=${BUGHERD_API_KEY}`}
+        />
       </head>
       <body>
         {children}
@@ -187,6 +310,7 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const rootData = useRouteLoaderData('root');
   let errorMessage = 'Unknown error';
   let errorStatus = 500;
 
@@ -195,6 +319,26 @@ export function ErrorBoundary() {
     errorStatus = error.status;
   } else if (error instanceof Error) {
     errorMessage = error.message;
+  }
+
+  // Render the CMS-driven 404 page for any 404 (global, like Next's
+  // not-found.jsx), wrapped in the site header/footer. rootData is available
+  // because 404s bubble up from child routes (the root loader succeeded); the
+  // header needs Analytics.Provider + PageLayout, same as the normal shell. If
+  // the root loader itself failed, render the bare 404 as a fallback.
+  if (errorStatus === 404) {
+    const notFound = <NotFound data={rootData?.notFound} />;
+    return rootData ? (
+      <Analytics.Provider
+        cart={rootData.cart}
+        shop={rootData.shop}
+        consent={rootData.consent}
+      >
+        <PageLayout {...rootData}>{notFound}</PageLayout>
+      </Analytics.Provider>
+    ) : (
+      notFound
+    );
   }
 
   return (

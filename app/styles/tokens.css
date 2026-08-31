@@ -1,0 +1,398 @@
+/*
+ * =============================================================================
+ * DESIGN TOKENS
+ * =============================================================================
+ * Source of truth: Figma → Hose Monster → "Web Styleguide" page
+ * https://www.figma.com/design/YkA269pTHE9uSRKE3hsoud/Hose-Monster?node-id=1-3525
+ *
+ * This file is the ONLY place raw values (hex codes, px sizes, radii) may be
+ * written. Every other stylesheet — app.css and all *.module.css files —
+ * references these variables via var(). If you find yourself typing a hex code
+ * anywhere else, it belongs here instead.
+ *
+ * Two tiers:
+ *   1. PRIMITIVES — the raw palette, named exactly as Figma names them.
+ *      Never reference these directly in components.
+ *   2. SEMANTIC   — role-based aliases pointing at primitives.
+ *      These are what you use in components.
+ *
+ * The indirection matters: when design swaps the action color from red to
+ * navy, you change --color-action here and every button follows. If components
+ * referenced --brand-300 directly, you'd be editing dozens of files.
+ * =============================================================================
+ */
+
+:root {
+  /* ==========================================================================
+   * 1. PRIMITIVES — raw palette
+   * ==========================================================================
+   * Values taken from the ColorCard swatch fills in Figma, NOT the hex text
+   * labels printed on the cards. Those labels contradict their own swatches —
+   * see STYLEGUIDE.md § "Known discrepancies". Confirm with design before
+   * treating these as final.
+   */
+
+  /* Neutral ramp */
+  --neutral-100: #e8e8e8; /* Figma: Neutral / 100 */
+  --neutral-500: #282727; /* Figma: Neutral / 500 */
+
+  /* Brand ramp */
+  --brand-navy: #1c3a55; /* Figma: Brand / 100 — headings, body text, secondary button */
+  --brand-gold: #e1b14b; /* Figma: Brand / 200 — accent */
+  --brand-red: #eb3f21; /* Figma: Brand / 300 — eyebrows, primary action */
+
+  /* Absolutes — not from the Figma palette, but required for text on fills */
+  --white: #ffffff;
+  --black: #000000;
+
+  /* ⚠ Off-palette — introduced by the Navbar component, NOT present in the
+   * styleguide's Colors section. Kept exact so the header matches the design.
+   * Flag for design reconciliation: --nav-ink is very close to --neutral-500
+   * (#282727) and may have been intended as the same value. */
+  --nav-ink: #2f2f2f; /* Main nav link text */
+  --nav-rule: #e2e2df; /* Header bottom border */
+  --nav-rule-utility: #ededed; /* Utility bar bottom border */
+  --legal-ink: #9a9a9a; /* Footer legal/copyright line */
+  --newsletter-label-ink: #d6d6d2; /* Newsletter field label */
+  --newsletter-required-ink: #9a9a96; /* Newsletter required asterisk */
+  --newsletter-input-border: #565656; /* Newsletter input border */
+  --hero-meta-ink: #b7b7b2; /* Hero trust bar; also Discovery card description */
+  --hero-meta-rule: #c4c4c4; /* Hero trust separators; also Discovery tab dividers */
+  --muted-ink: #666666; /* Tabbed Cards intro copy */
+  --body-ink: #4a4a4a; /* Text & Media body copy */
+  --list-ink: #3a3a3a; /* Text & Media bullet list */
+
+  /* Testimonial card — navy with a slight top-to-bottom darkening. */
+  --testimonial-bg: linear-gradient(
+      180deg,
+      rgba(28, 58, 85, 0.2) 0%,
+      rgba(0, 0, 0, 0.2) 100%
+    ),
+    linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-navy) 100%);
+
+  /* Feature card backgrounds. A flat brand colour with a subtle darkening at
+   * the foot, matching the design's two stacked gradients. The hover variant is
+   * cross-faded over the base — see FeatureCards.module.css. */
+  --feature-card-bg: linear-gradient(
+      180deg,
+      rgba(28, 58, 85, 0) 73%,
+      rgba(0, 0, 0, 0.15) 100%
+    ),
+    linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-navy) 100%);
+  --feature-card-bg-hover: linear-gradient(
+      180deg,
+      rgba(235, 63, 33, 0) 73%,
+      rgba(0, 0, 0, 0.16) 100%
+    ),
+    linear-gradient(90deg, var(--color-action) 0%, var(--color-action) 100%);
+
+  /* Newsletter band wash — vertical darkening plus a navy sweep from the left,
+   * so the copy column stays legible over the photo. */
+  --newsletter-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(102, 102, 102, 0) 73%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(28, 58, 85, 0.67) 24%,
+      rgba(28, 58, 85, 0) 100%
+    );
+
+  /* Full-bleed promo band wash — vertical, over a 20%-opacity texture on navy.
+   * Darkest at the bottom so white copy stays legible wherever it lands. */
+  --promo-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.2) 29%,
+      rgba(102, 102, 102, 0) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(28, 58, 85, 0.83) 11%,
+      rgba(28, 58, 85, 0) 100%
+    );
+
+  /* Inset banner wash — over a 20%-opacity photo on navy. */
+  --banner-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(102, 102, 102, 0) 73%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(28, 58, 85, 0.83) 49.5%,
+      rgba(28, 58, 85, 0) 100%
+    );
+
+  /* Category card washes. A hard-ish left-to-right sweep so the title stays
+   * legible while the product photo shows through on the right. */
+  --category-wash: linear-gradient(
+    90deg,
+    var(--brand-navy) 48%,
+    rgba(28, 58, 85, 0) 73%
+  );
+  --category-wash-featured: linear-gradient(
+    90deg,
+    var(--color-action) 45%,
+    rgba(235, 63, 33, 0) 73%
+  );
+
+  /* Guided Discovery card wash. Two stacked gradients over a 50%-opacity photo:
+   * a subtle bottom darkening, then a strong navy sweep from the left so the
+   * white title stays legible over the image. */
+  --discovery-card-wash: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.24) 19%,
+      rgba(102, 102, 102, 0) 69%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(28, 58, 85, 0.98) 36%,
+      rgba(28, 58, 85, 0) 88%
+    );
+
+  /* Hero image scrim. Left-to-right navy fade that keeps white text legible
+   * over a photographic background. Figma fades to transparent BLACK; this
+   * fades to transparent NAVY instead, which avoids the grey dead-zone some
+   * browsers produce when interpolating a colour to transparent black. */
+  --hero-overlay: linear-gradient(
+    to right,
+    rgba(28, 58, 85, 0.57) 0%,
+    rgba(28, 58, 85, 0) 100%
+  );
+
+  /* ==========================================================================
+   * 2. SEMANTIC — role-based aliases. USE THESE IN COMPONENTS.
+   * ========================================================================== */
+
+  /* Text */
+  --color-text: var(--brand-navy); /* Default body + heading color */
+  --color-text-muted: var(--neutral-500);
+  --color-text-inverse: var(--white); /* Text on dark or red fills */
+  --color-text-accent: var(--brand-red); /* Eyebrows, emphasis */
+
+  /* Surfaces */
+  --color-surface: var(--white); /* Default page background */
+  --color-surface-subtle: var(--neutral-100); /* Cards, alternating sections */
+  --color-surface-inverse: var(--neutral-500); /* Footer, dark sections */
+
+  /* Borders */
+  --color-border: var(--neutral-100);
+  --color-border-strong: var(--brand-navy);
+
+  /* Actions — primary = filled red, secondary = outlined navy */
+  --color-action: var(--brand-red);
+  --color-action-text: var(--white);
+  --color-action-secondary-border: var(--brand-navy);
+  --color-action-secondary-text: var(--brand-navy);
+
+  /* Accent */
+  --color-accent: var(--brand-gold);
+
+  /* ==========================================================================
+   * 3. TYPOGRAPHY
+   * ==========================================================================
+   * Two brand families, both served by ADOBE FONTS (Typekit) — not self-hosted.
+   *
+   *   nimbus-sans-extended — display/headings
+   *   gopher               — body/UI
+   *
+   * ⚠ The family names below are the exact strings Adobe serves, taken from the
+   * live @font-face rules on the current WordPress site. They are NOT the names
+   * shown in Figma ("Nimbus Sans Extd", "Gopher"). Those Figma names are display
+   * labels and will not match — do not "tidy" these to look like them.
+   *
+   * The Adobe kit is not wired up yet. See typography.css and STYLEGUIDE.md.
+   * Until it is, the fallback stacks render: layout holds, brand look does not.
+   */
+
+  --font-display: 'nimbus-sans-extended', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'gopher', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-black: 900;
+
+  /* Type scale — desktop values, exactly as specced in Figma.
+   * Expressed in rem (÷16) so browser text-size settings are respected.
+   * Figma style names are noted so design and code share vocabulary. */
+  --text-h1: 3.75rem; /* 60px — Figma "H1" */
+  --text-h2: 3.25rem; /* 52px — Figma "H2" */
+  --text-h2-5: 2.5rem; /* 40px — Figma "H2.5" */
+  --text-h3: 1.125rem; /* 18px — Figma "H3" (Eyebrow) */
+  --text-button: 1rem; /* 16px — Figma "H4" (Button) */
+  /* ⚠ DELIBERATE DIVERGENCE FROM FIGMA. The styleguide specifies B1 at 14px and
+   * B2 at 12px. Both were raised for readability at the client's direction on
+   * 2026-08-26 — 14px body reads as fine print on a large display. Update the
+   * Figma styleguide to match rather than "correcting" these back. */
+  --text-body: 1.125rem; /* 18px — Figma "B1" (Standard Body Copy), was 14px */
+  --text-body-sm: 1rem; /* 16px — Figma "B2" (Small Body Copy), was 12px */
+  /* ⚠ Figma "B3" (Gopher Regular 16 / 1.7). Used by the Guided Discovery card
+   * but absent from the styleguide's Fonts page — flag for design.
+   * Scaled with B1 above: it exists to sit one step ABOVE body copy, so at 16px
+   * it would now be smaller than body and the name would lie. */
+  --text-body-lg: 1.25rem; /* 20px, was 16px */
+
+  /* Line heights — unitless, so they scale with font-size */
+  --leading-h1: 0.98;
+  --leading-h2: 1;
+  --leading-h3: 1.1;
+  --leading-body: 1.7;
+  --leading-body-sm: 1.5;
+  --leading-button: 1;
+
+  /* Letter spacing — only H1 is tracked tight in the design */
+  --tracking-h1: -0.05em; /* -3px at 60px */
+  --tracking-normal: 0;
+
+  /* ==========================================================================
+   * 4. SPACING
+   * ==========================================================================
+   * NOT specced as a scale in Figma. Derived from observed values in the
+   * design (button padding 17px, card gaps 12/44/60px) and regularized onto a
+   * 4px grid. Flag for design review — see STYLEGUIDE.md.
+   */
+  --space-1: 0.25rem; /* 4px  */
+  --space-2: 0.5rem; /* 8px  */
+  --space-3: 0.75rem; /* 12px — card gap in Figma */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-7: 1.75rem; /* 28px — Navbar horizontal padding */
+  --space-8: 2rem; /* 32px */
+  --space-9: 2.25rem; /* 36px — Footer grid gap */
+  --space-10: 2.5rem; /* 40px — Footer top padding */
+  --space-11: 2.75rem; /* 44px — card gap, Footer horizontal padding */
+  --space-12: 3rem; /* 48px */
+  --space-14: 3.5rem; /* 56px — Newsletter band padding */
+  --space-15: 3.75rem; /* 60px — section padding in Figma */
+  --space-16: 4rem; /* 64px */
+
+  /* Button padding is 17px in Figma — an off-grid one-off, kept exact
+   * so buttons match the design pixel for pixel. */
+  --space-button-y: 17px;
+  --space-button-x: 17px;
+
+  /* ==========================================================================
+   * 5. RADII
+   * ==========================================================================
+   * Figma uses 20px on cards and 100px/129px on buttons. The two button values
+   * are both just "fully round" at those heights — collapsed to one pill token.
+   */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 20px; /* Figma: ColorCard, swatch */
+  --radius-pill: 9999px; /* Figma: buttons */
+
+  /* ==========================================================================
+   * 6. BORDER WIDTHS
+   * ========================================================================== */
+  --border-width: 1px;
+  --border-width-thick: 2px; /* Figma: both button variants */
+
+  /* ==========================================================================
+   * 7. LAYOUT
+   * ==========================================================================
+   * Carried over from the existing app.css :root block, plus a content max
+   * width derived from the 1280px frames used throughout the Figma page.
+   */
+  /* Container system — house standard, ported from the styled-components
+   * `Container` / `ContainerStyles`. Values map onto the existing space scale
+   * rather than introducing new magic numbers. See layout.css. */
+  /* The ONE content width for the site. Every centered region — page sections,
+   * header content, footer content — caps here. A module that genuinely needs
+   * to be wider or narrower overrides it locally; nothing else should. */
+  --container-max: 1440px;
+
+  /* Gutter and block padding are redefined per breakpoint at the bottom of this
+   * file, so consumers never need their own media queries for spacing — they
+   * just read the token and get the right value. */
+  --container-gutter: var(--space-8); /* 32px */
+  --container-block: var(--space-16); /* 64px */
+
+  /* The width a centred wrapper should cap at so its CONTENT is exactly
+   * --container-max with gutters sitting outside. Everything centred on the
+   * page uses this, which is what makes the header, footer, and page sections
+   * line up on the same vertical edges. Depends on border-box (see reset.css).
+   */
+  --container-outer: calc(var(--container-max) + 2 * var(--container-gutter));
+
+  /* Horizontal margin on <main>, inherited from the Hydrogen starter. It stops
+   * any section reaching the viewport edge, so full-bleed modules cancel it out
+   * with a negative margin of the same size (see .hero in Hero.module.css).
+   * Both sides read this token, so when the legacy routes are rebuilt and the
+   * margin drops to 0, the breakout math resolves to 0 and keeps working. */
+  --main-gutter: 1rem;
+
+  --aside-width: 400px;
+  --cart-aside-summary-height-with-discount: 300px;
+  --cart-aside-summary-height: 250px;
+  --grid-item-width: 355px;
+  --header-height: 64px;
+
+  /* ==========================================================================
+   * 8. ELEVATION
+   * ==========================================================================
+   * Not specced in Figma. Retained from existing app.css usage.
+   */
+  --shadow-aside: 0 0 50px rgba(0, 0, 0, 0.3);
+  --shadow-overlay: rgba(0, 0, 0, 0.2);
+  /* Header dropdown panel. Not specced in Figma — no dropdown frame exists. */
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* ==========================================================================
+   * 9. MOTION
+   * ==========================================================================
+   * Not specced in Figma. Derived from existing transition values in app.css.
+   */
+  --duration-fast: 200ms;
+  --duration-slow: 400ms;
+  --ease-default: ease-in-out;
+}
+
+/*
+ * =============================================================================
+ * RESPONSIVE TYPE SCALE
+ * =============================================================================
+ * The Figma page specs a "Desktop" scale only — there is no mobile frame.
+ * A 60px H1 overflows a 375px viewport, so these step-downs are REQUIRED for
+ * the site to function on mobile.
+ *
+ * ⚠ These values are NOT from design. They are a proportional reduction
+ * (~60% at H1, easing toward 100% at body) chosen so headings fit common
+ * breakpoints. Replace them once design provides a mobile scale.
+ * =============================================================================
+ */
+/* tablet (max-width: 1099px) */
+@media (max-width: 1099px) {
+  :root {
+    --text-h1: 3rem; /* 48px */
+    --text-h2: 2.625rem; /* 42px */
+    --text-h2-5: 2.125rem; /* 34px */
+
+    --container-gutter: var(--space-6); /* 24px */
+    --container-block: var(--space-12); /* 48px */
+  }
+}
+
+/* mdTablet (max-width: 699px) — must follow the tablet block, since both are
+ * max-width queries at equal specificity and the narrower one has to win. */
+@media (max-width: 699px) {
+  :root {
+    --text-h1: 2.25rem; /* 36px */
+    --text-h2: 2rem; /* 32px */
+    --text-h2-5: 1.625rem; /* 26px */
+    --text-h3: 1rem; /* 16px */
+    /* Body sizes hold — they are already at the small end. */
+  }
+}
+
+/* mobile (max-width: 499px) — gutter/block only; the type scale already
+ * stepped down at mdTablet. */
+@media (max-width: 499px) {
+  :root {
+    --container-gutter: var(--space-4); /* 16px */
+    --container-block: var(--space-8); /* 32px */
+  }
+}

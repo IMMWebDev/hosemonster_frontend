@@ -1,0 +1,157 @@
+/*
+ * =============================================================================
+ * LAYOUT SYSTEM
+ * =============================================================================
+ * Ported from the house styled-components system (`vars.screen` + `Container` /
+ * `ContainerStyles`) to plain CSS. Same breakpoint names, same spacing values,
+ * same named-grid-line container.
+ * =============================================================================
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * BREAKPOINTS — SINGLE SOURCE OF TRUTH
+ * -----------------------------------------------------------------------------
+ * ⚠ These CANNOT be CSS custom properties. `@media (max-width: var(--x))` is
+ * invalid CSS — media query conditions are evaluated before custom properties
+ * resolve. So the px values must be written literally in every @media rule.
+ *
+ * This table is the reference. `app/lib/breakpoints.js` mirrors it for JS
+ * (matchMedia). If you change a value, change it in both places.
+ *
+ *   Name                 Query                                     Notes
+ *   ------------------------------------------------------------------------
+ *   desktopLg            (min-width: 1440px)
+ *   desktopNav           (max-width: 1250px)                       nav collapse
+ *   desktop              (min-width: 1100px)
+ *   tablet               (max-width: 1099px)
+ *   mdTablet             (max-width: 699px)
+ *   tabletOnly           (min-width: 500px) and (max-width: 1099px)
+ *   mobile               (max-width: 499px)
+ *   largerThanPhone      (min-width: 500px)
+ *   smallerThanDesktop   (max-width: 1099px)                       = tablet
+ *   desktopOnly          (min-width: 1100px)                       = desktop
+ *
+ * Note `smallerThanDesktop` and `tablet` are identical, as are `desktopOnly`
+ * and `desktop`. Both spellings are kept so code ported from other projects
+ * reads naturally, but they are the same query — prefer `tablet` / `desktop`.
+ *
+ * The set is complete and non-overlapping at each boundary:
+ *   mobile (≤499) | largerThanPhone (≥500)
+ *   tablet (≤1099) | desktop (≥1100)
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * .container — simple centered content column
+ * -----------------------------------------------------------------------------
+ * The `ContainerStyles` equivalent. Use when a section just needs a centered,
+ * max-width, padded column and nothing needs to break out of it.
+ */
+
+.container {
+  width: 100%;
+  /* Caps so CONTENT is exactly --container-max, gutters outside. */
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+  padding-block: var(--container-block);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * .container-grid — full-bleed capable content column
+ * -----------------------------------------------------------------------------
+ * The `Container` equivalent. A grid whose named lines let children either sit
+ * in the content column or break out to the viewport edge:
+ *
+ *   full-width-start                                    full-width-end
+ *         |  gutter  |        content        |  gutter  |
+ *              content-start          content-end
+ *
+ * Direct children default to the content column, so most markup needs no class
+ * at all. Opt out with .full-width / .content-break-left / .content-break-right.
+ *
+ * Use this instead of .container whenever a section has a full-bleed background
+ * image, media strip, or edge-to-edge carousel.
+ *
+ * No media queries here: --container-gutter and --container-block are already
+ * breakpoint-aware (see tokens.css), so the tracks resize themselves. On tablet
+ * and below the gutters become fixed rather than flexible, so the content column
+ * takes all remaining width instead of being centred against large margins.
+ */
+
+.container-grid {
+  display: grid;
+  padding-block: var(--container-block);
+  grid-template-columns:
+    [full-width-start] minmax(var(--container-gutter), 1fr)
+    [content-start] minmax(auto, var(--container-max))
+    [content-end] minmax(var(--container-gutter), 1fr)
+    [full-width-end];
+}
+
+@media (max-width: 1099px) {
+  .container-grid {
+    grid-template-columns:
+      [full-width-start] var(--container-gutter)
+      [content-start] 1fr
+      [content-end] var(--container-gutter)
+      [full-width-end];
+  }
+}
+
+/*
+ * Placement helpers. Scoped to direct children of .container-grid so they can
+ * never leak into nested grids further down the tree.
+ */
+
+.container-grid > *,
+.container-grid > .content {
+  grid-column: content;
+}
+
+.container-grid > .full-width {
+  grid-column: full-width;
+}
+
+.container-grid > .content-break-left {
+  grid-column: full-width-start / content-end;
+}
+
+.container-grid > .content-break-right {
+  grid-column: content-start / full-width-end;
+}
+
+/*
+ * Inherit the parent's column tracks so nested content aligns to the same
+ * rhythm. Requires the child to also be a grid item of .container-grid.
+ */
+.container-grid > .subgrid {
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * Block-spacing modifiers
+ * -----------------------------------------------------------------------------
+ * Sections that sit flush against a neighbour (a hero under the header, two
+ * stacked bands of the same colour) need their block padding suppressed.
+ */
+
+.container-flush,
+.container-grid.container-flush {
+  padding-block: 0;
+}
+
+.container-flush-top,
+.container-grid.container-flush-top {
+  padding-block-start: 0;
+}
+
+.container-flush-bottom,
+.container-grid.container-flush-bottom {
+  padding-block-end: 0;
+}

@@ -1,0 +1,216 @@
+/*
+ * Feature Cards module — Figma "Homepage" → Hifi → Main → Section (7:1673)
+ *
+ * Intro copy above a row of portrait cards. Cards go red on hover, matching the
+ * "HMU Block Selected" variant in the design. Page-agnostic.
+ */
+
+.section {
+  padding-block: var(--space-16);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H2" */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: pre-line;
+  margin: 4px 0 0;
+}
+
+/* Figma "B1", in this section's muted grey */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--muted-ink);
+  max-width: 640px;
+  margin: var(--space-1) 0 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CARD ROW
+ * -----------------------------------------------------------------------------
+ * A grid rather than flex: every card gets an equal track, so a longer title in
+ * one card cannot make its column wider than the rest.
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px; /* exact value from the design */
+  margin-top: var(--space-8);
+}
+
+.card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 388px; /* card height in the design */
+  padding: 20px 18px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  text-decoration: none;
+  background: var(--feature-card-bg);
+  transition: box-shadow var(--duration-fast) var(--ease-default);
+}
+
+/*
+ * The red hover state is a stacked layer faded in by opacity, not a swap of
+ * `background`. Gradients are not an animatable property, so changing the
+ * background on hover snaps instead of sweeping.
+ */
+.cardHoverBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--feature-card-bg-hover);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-slow) var(--ease-default);
+}
+
+.card:hover .cardHoverBg,
+.card:focus-visible .cardHoverBg {
+  opacity: 1;
+}
+
+.card:hover {
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.36); /* the design's selected-card shadow */
+}
+
+/* The card is an anchor, and reset.css underlines `a:hover` with a (0,1,1)
+ * selector that outranks the single class `.card` (0,1,0). Same trap as `.btn`
+ * — see the note in components.css. */
+.card:hover,
+.card:focus,
+.card:active {
+  text-decoration: none;
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.cardImage {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1; /* 256x256 in the design */
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+/*
+ * Sits directly below the image, NOT pushed to the card foot. The images are a
+ * fixed square, so anchoring the text to the top of the remaining space makes
+ * every title land on the same line across the row. Using `margin-top: auto`
+ * here instead bottom-aligns the block, and a one-line description next to a
+ * two-line one then drags its title out of alignment with its neighbours.
+ */
+.cardText {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px; /* the design's gap between image and title */
+}
+
+/* Figma "H3", reversed out */
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/* Figma "B1". Grey at rest; on hover the card turns red, where grey muddies —
+ * so it becomes white held back to 72%, as in the selected variant. */
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+  margin: 0;
+  transition: color var(--duration-slow) var(--ease-default),
+    opacity var(--duration-slow) var(--ease-default);
+}
+
+.card:hover .cardDescription,
+.card:focus-visible .cardDescription {
+  color: var(--color-text-inverse);
+  opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardHoverBg,
+  .cardDescription {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame.
+ */
+
+/* tablet — four 298px cards no longer fit, so two per row. */
+@media (max-width: 1099px) {
+  .section {
+    padding-block: var(--space-12);
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* mobile — one per row; the card's own height rule stops applying so the
+ * image does not dominate a narrow screen. */
+@media (max-width: 499px) {
+  .section {
+    padding-block: var(--space-8);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    min-height: 0;
+  }
+}

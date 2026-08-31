@@ -1,0 +1,226 @@
+/*
+ * Text & Media module — Figma "Homepage" → Hifi → Main → Section (7:1581)
+ *
+ * A text lockup beside an image or video. Page-agnostic; `mediaSide` flips
+ * which side the media sits on so several of these can alternate down a page.
+ */
+
+.section {
+  padding-block-end: var(--space-16); /* 65px in the design */
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-11); /* 44px */
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/*
+ * mediaSide="left" reverses the visual order only. DOM order stays copy-first,
+ * so screen readers and the mobile stack always read heading before media
+ * regardless of which way the desktop layout faces.
+ */
+.mediaLeft {
+  flex-direction: row-reverse;
+}
+
+/*
+ * Columns are PROPORTIONAL, not fixed. The design draws copy 652px beside media
+ * 522px — a 1.25:1 ratio — but hard-coding the media at 522px pins it there
+ * while the copy absorbs every extra pixel, so the media shrinks in relative
+ * terms on anything wider than the comp. These two flex values reproduce the
+ * ratio and let both columns scale together.
+ */
+.copy {
+  flex: 1.25 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px; /* exact value from the design */
+}
+
+/* Figma "H3" / Eyebrow */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H2" */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Figma "B1", in this module's darker grey. Author line breaks are meaningful
+ * here — the copy is written as separate paragraphs. */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--body-ink);
+  white-space: pre-line;
+  max-width: 520px; /* narrower than the heading, per the design */
+  margin: 0;
+}
+
+/*
+ * Bullet list. Figma draws the marker and the label as separate layers; here it
+ * is a real <ul> so the list is announced as one, and `list-style: disc` draws
+ * the marker rather than a hand-placed glyph.
+ */
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 13px 0 0 var(--space-5); /* 20px indent, 13px top — from the design */
+  list-style: disc;
+}
+
+.bullet {
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-transform: capitalize;
+  color: var(--list-ink);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px; /* exact value from the design */
+  padding-top: 17px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MEDIA
+ * -----------------------------------------------------------------------------
+ */
+
+.media {
+  flex: 1 1 0; /* see the ratio note on .copy */
+  min-width: 0;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface-subtle); /* shows before the image loads */
+}
+
+.mediaImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/*
+ * Play affordance, shown only when a videoUrl is set. It is a link rather than
+ * a button: with no embed wired up yet it opens the video at its source, which
+ * degrades honestly instead of looking interactive and doing nothing.
+ */
+.playButton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.15);
+  border: 0;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.playButton:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.playButton:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: -4px;
+}
+
+.playIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px; /* from the design */
+  height: 62px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: var(--border-width-thick) solid var(--nav-ink);
+  color: var(--body-ink);
+}
+
+.playIcon svg {
+  width: 20px;
+  height: 20px;
+  /* Nudge the triangle so it reads as centred inside the circle — a centred
+   * bounding box on a triangle looks left-heavy. */
+  margin-left: 3px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1280px frame.
+ */
+
+/* tablet — stack, media below the copy regardless of mediaSide. */
+@media (max-width: 1099px) {
+  .section {
+    padding-block-end: var(--space-12);
+  }
+
+  .inner,
+  .mediaLeft {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-8);
+  }
+
+  .body {
+    max-width: none;
+  }
+
+  .media {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+/* mobile */
+@media (max-width: 499px) {
+  .section {
+    padding-block-end: var(--space-8);
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}

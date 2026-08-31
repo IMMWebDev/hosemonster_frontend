@@ -1,0 +1,105 @@
+/*
+ * Ticker module — Figma "Homepage" → Hifi → Main → Ticker Copy (26:519)
+ *
+ * A continuously scrolling strip of short claims, faded out at both edges.
+ * Page-agnostic.
+ */
+
+.section {
+  /* Full-bleed: the strip should run off both edges of the screen, otherwise
+   * the fade reads as the text stopping rather than continuing. Cancels the
+   * horizontal margin <main> carries — same approach as the Hero. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+  overflow: hidden;
+  padding-block: var(--space-4);
+
+  /* Fade both ends so items appear to emerge from and vanish into the edges. */
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 12%,
+    black 88%,
+    transparent 100%
+  );
+}
+
+/*
+ * The track holds the item list N times, N being measured at runtime (see
+ * Ticker.jsx). It translates left by exactly ONE copy's width, landing on a
+ * pixel-identical frame so the restart is invisible.
+ *
+ * The shift is a measured pixel value, NOT a percentage. A percentage is a
+ * fraction of the whole track, so it changes every time the copy count does —
+ * translating -50% is only correct at exactly two copies. Both the distance
+ * and the duration come from the component, which keeps the speed constant no
+ * matter how many items are entered.
+ */
+.track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll var(--ticker-duration, 30s) linear infinite;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-1 * var(--ticker-shift, 50%)));
+  }
+}
+
+/* Continuous motion is an accessibility problem for some readers, and it is
+ * also a distraction next to body copy. Stop it entirely when the OS asks. */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
+}
+
+/* Let people stop it to read an item. */
+.section:hover .track,
+.section:focus-within .track {
+  animation-play-state: paused;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Figma "B1" */
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 19px;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.divider {
+  padding-inline: 19px;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  color: var(--color-text-accent);
+  user-select: none;
+}
+
+@media (max-width: 699px) {
+  .item {
+    padding-inline: var(--space-3);
+  }
+
+  .divider {
+    padding-inline: var(--space-3);
+  }
+}
