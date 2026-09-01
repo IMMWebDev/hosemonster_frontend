@@ -8,7 +8,6 @@
  * Figma style name → class in this file:
  *   H1               → .h1   (or a bare <h1>)
  *   H2               → .h2   (or a bare <h2>)
- *   H2.5             → .h2-5
  *   H3 / "Eyebrow"   → .eyebrow
  *   H4 / "Button"    → .button-text (applied by the button classes)
  *   B1 / "Standard Body Copy" → .body  (also the default for <body>)
@@ -43,7 +42,7 @@
  *     gopher                400 Regular   --weight-regular  (B2 small body)
  *     gopher                500 Medium    --weight-medium   (B1 body copy)
  *     gopher                700 Bold      --weight-bold     (buttons)
- *     nimbus-sans-extended  700 Bold      --weight-bold     (H1, H2, H2.5)
+ *     nimbus-sans-extended  700 Bold      --weight-bold     (H1, H2)
  *     nimbus-sans-extended  900 Black     --weight-black    (eyebrow / H3)
  *
  *   The kit also carries nimbus-sans, nimbus-sans-condensed and various
@@ -128,19 +127,6 @@ h2,
 .h2 {
   font-family: var(--font-display);
   font-size: var(--text-h2);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-h2);
-  letter-spacing: var(--tracking-normal);
-  text-transform: uppercase;
-  color: var(--color-text);
-  margin: 0;
-}
-
-/* Figma "H2.5" — an intermediate display size between H2 and the eyebrow.
- * No native HTML element maps to it; always apply as a class. */
-.h2-5 {
-  font-family: var(--font-display);
-  font-size: var(--text-h2-5);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
   letter-spacing: var(--tracking-normal);

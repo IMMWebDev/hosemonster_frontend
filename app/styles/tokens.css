@@ -219,7 +219,6 @@
    * Figma style names are noted so design and code share vocabulary. */
   --text-h1: 3.75rem; /* 60px — Figma "H1" */
   --text-h2: 3.25rem; /* 52px — Figma "H2" */
-  --text-h2-5: 2.5rem; /* 40px — Figma "H2.5" */
   --text-h3: 1.125rem; /* 18px — Figma "H3" (Eyebrow) */
   --text-button: 1rem; /* 16px — Figma "H4" (Button) */
   /* ⚠ DELIBERATE DIVERGENCE FROM FIGMA. The styleguide specifies B1 at 14px and
@@ -369,7 +368,6 @@
   :root {
     --text-h1: 3rem; /* 48px */
     --text-h2: 2.625rem; /* 42px */
-    --text-h2-5: 2.125rem; /* 34px */
 
     --container-gutter: var(--space-6); /* 24px */
     --container-block: var(--space-12); /* 48px */
@@ -382,7 +380,6 @@
   :root {
     --text-h1: 2.25rem; /* 36px */
     --text-h2: 2rem; /* 32px */
-    --text-h2-5: 1.625rem; /* 26px */
     --text-h3: 1rem; /* 16px */
     /* Body sizes hold — they are already at the small end. */
   }

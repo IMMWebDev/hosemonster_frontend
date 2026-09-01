@@ -72,10 +72,14 @@
   margin: 0;
 }
 
-/* Figma "H2.5" — 40px, smaller than the section headings elsewhere */
+/*
+ * Was Figma "H2.5" (40px), a size that has been retired from the scale. H2 is
+ * the nearest surviving step, so this band's heading is now the same size as a
+ * section heading rather than one notch below it.
+ */
 .heading {
   font-family: var(--font-display);
-  font-size: var(--text-h2-5);
+  font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
   text-transform: uppercase;
