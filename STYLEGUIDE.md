@@ -212,7 +212,6 @@ Two commercial families:
 |---|---|---|---|
 | H1 | `.h1` / `<h1>` | 60px / 0.98, −3px tracking | Nimbus Bold |
 | H2 | `.h2` / `<h2>` | 52px / 1.0 | Nimbus Bold |
-| H2.5 | `.h2-5` | 40px / 1.0 | Nimbus Bold |
 | H3 (Eyebrow) | `.eyebrow` | 18px / 1.1, red | Nimbus Black |
 | H4 (Button) | applied by `.btn` | 16px / 1.0 | Gopher Bold |
 | B1 (Standard Body) | `.body` / default | **18px** / 1.7 | Gopher Medium |
@@ -268,7 +267,7 @@ swatch above it:
 
 **`tokens.css` uses the swatch fills**, on this reasoning: the navy `#1c3a55`
 and red `#eb3f21` swatches are independently corroborated by the text styles
-(H1/H2/H2.5 and body are all `#1c3a55`; the Eyebrow style is `#eb3f21`),
+(H1/H2 and body are all `#1c3a55`; the Eyebrow style is `#eb3f21`),
 whereas the printed labels include a duplicate (`#6D2613` twice) that looks
 like un-updated copy-paste. Worth confirming.
 
@@ -394,7 +393,7 @@ substituted by a nearby weight:
 | `gopher` | 400 Regular | `--weight-regular` | B2 Small Body Copy |
 | `gopher` | 500 Medium | `--weight-medium` | B1 Standard Body Copy |
 | `gopher` | 700 Bold | `--weight-bold` | Buttons |
-| `nimbus-sans-extended` | 700 Bold | `--weight-bold` | H1, H2, H2.5 |
+| `nimbus-sans-extended` | 700 Bold | `--weight-bold` | H1, H2 |
 | `nimbus-sans-extended` | 900 Black | `--weight-black` | Eyebrow (Figma H3) |
 
 The kit also carries `nimbus-sans`, `nimbus-sans-condensed` and assorted
