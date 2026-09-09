@@ -71,6 +71,22 @@ export default async function handleRequest(
       'https://notify.bugsnag.com',
     ],
 
+    /*
+     * NOT merged — Hydrogen has no frameSrc default, so this becomes the whole
+     * directive. Without it the YouTube embed in Text & Media falls back to
+     * defaultSrc, which does not list YouTube, and the iframe is blocked with
+     * nothing rendered and no error in the page.
+     *
+     * youtube-nocookie rather than youtube.com — see app/lib/youtube.js for
+     * why. Both hosts are listed because YouTube redirects between them in
+     * some regions.
+     */
+    frameSrc: [
+      "'self'",
+      'https://www.youtube-nocookie.com',
+      'https://www.youtube.com',
+    ],
+
     // NOT merged — must be complete.
     // Shopify CDN serves product and store imagery; Strapi media is uploaded
     // to Cloudinary behind the custom domain media.impactmit.com (the header
@@ -85,6 +101,8 @@ export default async function handleRequest(
       'https://media.impactmit.com',
       'https://res.cloudinary.com',
       'http://localhost:1337',
+      // YouTube poster frames, used when a video has no CMS image of its own.
+      'https://i.ytimg.com',
       'https://*.bugherd.com',
       'https://www.bugherd.com',
     ],

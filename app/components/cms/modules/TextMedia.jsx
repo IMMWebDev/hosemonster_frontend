@@ -1,4 +1,6 @@
 import CmsLink from '~/components/cms/CmsLink';
+import VideoEmbed from '~/components/cms/VideoEmbed';
+import {youTubeId} from '~/lib/youtube';
 import {strapiMedia} from '~/lib/strapi-media';
 import styles from './TextMedia.module.css';
 
@@ -43,6 +45,17 @@ export default function TextMedia({data, baseUrl}) {
   // unset, which marks it decorative rather than announcing a filename.
   const imageAlt = data.image?.alternativeText ?? '';
 
+  /*
+   * The media column is an image, a video, or nothing.
+   *
+   * `videoUrl` wins when both are set: the image then becomes the video's
+   * poster rather than a separate thing to render. An unparseable URL falls
+   * back to the image, so a typo degrades to the old behaviour instead of
+   * blanking the column.
+   */
+  const videoId = youTubeId(videoUrl);
+  const hasMedia = Boolean(videoId || imageUrl);
+
   return (
     <section className={styles.section}>
       <div
@@ -85,34 +98,34 @@ export default function TextMedia({data, baseUrl}) {
           )}
         </div>
 
-        {imageUrl ? (
+        {hasMedia ? (
           <div
             className={styles.media}
             data-reveal={mediaSide === 'left' ? 'left' : 'right'}
           >
-            <img
-              src={imageUrl}
-              alt={imageAlt}
-              className={styles.mediaImage}
-              data-parallax="slow"
-              loading="lazy"
-              decoding="async"
-            />
-            {videoUrl ? (
-              <a
-                className={styles.playButton}
-                href={videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Play video: ${heading}`}
-              >
-                <span className={styles.playIcon} aria-hidden="true">
-                  <svg viewBox="0 0 16 16" fill="currentColor" focusable="false">
-                    <path d="M3 1.8v12.4a.6.6 0 0 0 .92.5l9.6-6.2a.6.6 0 0 0 0-1L3.92 1.3a.6.6 0 0 0-.92.5Z" />
-                  </svg>
-                </span>
-              </a>
-            ) : null}
+            {videoId ? (
+              <VideoEmbed
+                videoId={videoId}
+                posterUrl={imageUrl}
+                posterAlt={imageAlt}
+                videoTitle={heading}
+                className={styles.videoWrap}
+                imageClassName={styles.mediaImage}
+                buttonClassName={styles.playButton}
+                iconClassName={styles.playIcon}
+                frameClassName={styles.videoFrame}
+                imageProps={{'data-parallax': 'slow'}}
+              />
+            ) : (
+              <img
+                src={imageUrl}
+                alt={imageAlt}
+                className={styles.mediaImage}
+                data-parallax="slow"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
           </div>
         ) : null}
       </div>
