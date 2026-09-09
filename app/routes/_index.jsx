@@ -2,11 +2,38 @@ import {useLoaderData} from 'react-router';
 import {MockShopNotice} from '~/components/MockShopNotice';
 import BlockManager from '~/components/cms/BlockManager';
 
+const HOME_TITLE = 'Home Page | Hose Monster';
+const HOME_DESCRIPTION =
+  'Hose Monster makes the safest, most accurate and efficient flow testing ' +
+  'equipment in the industry. Contact a sales rep to upgrade your fire ' +
+  'protection today!';
+
 /**
+ * Homepage metadata.
+ *
+ * ⚠ Hardcoded, unlike every other CMS page. `app/routes/$.jsx` builds its tags
+ * from the page's `seo` component in Strapi; this route ignores that entirely.
+ *
+ * The homepage entry in Strapi still HAS an `seo` component — it is required on
+ * the Pages type — so anything typed into it there has no effect on what
+ * renders. Edit the constants above instead, or port the meta function from
+ * `$.jsx` to make this CMS-driven.
+ *
+ * Values carried over from the live WordPress site so search results and shared
+ * links do not change wording at launch.
+ *
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [
+    {title: HOME_TITLE},
+    {name: 'description', content: HOME_DESCRIPTION},
+    {property: 'og:title', content: HOME_TITLE},
+    {property: 'og:description', content: HOME_DESCRIPTION},
+    {property: 'og:type', content: 'website'},
+    {property: 'og:site_name', content: 'HoseMonster'},
+    {name: 'twitter:card', content: 'summary_large_image'},
+  ];
 };
 
 /**
