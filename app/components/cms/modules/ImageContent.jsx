@@ -32,7 +32,10 @@ export default function ImageContent({data, baseUrl}) {
       className={`cms-image-content ${colorMode} side-${(imageSide || 'Left').toLowerCase()}`}
     >
       <div className="cms-image-content__inner">
-        <div className="cms-image-content__text">
+        <div
+          className="cms-image-content__text"
+          data-reveal
+        >
           {eyebrow ? <p className="cms-eyebrow">{eyebrow}</p> : null}
           {title ? <h2>{title}</h2> : null}
           {copy ? <p>{copy}</p> : null}

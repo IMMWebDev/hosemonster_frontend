@@ -72,11 +72,27 @@ export default function TabbedCards({data, baseUrl}) {
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
-        {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
-        <h2 className={styles.heading}>{heading}</h2>
-        {body ? <p className={styles.body}>{body}</p> : null}
+        {eyebrow ? (
+          <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
+          {heading}
+        </h2>
+        {body ? (
+          <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+            {body}
+          </p>
+        ) : null}
 
-        <div className={styles.tablist} role="tablist" aria-label={heading}>
+        <div
+          className={styles.tablist}
+          role="tablist"
+          aria-label={heading}
+          data-reveal
+          style={{'--reveal-i': 3}}
+        >
           {items.map((item, i) => (
             <button
               key={item.id ?? i}

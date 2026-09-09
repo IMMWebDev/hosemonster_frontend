@@ -52,13 +52,13 @@ export default function Newsletter({newsletter, baseUrl, siteEnv}) {
       <div className={styles.wash} aria-hidden="true" />
 
       <div className={styles.inner}>
-        <div className={styles.copy}>
+        <div className={styles.copy} data-reveal>
           {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
           <h2 className={styles.heading}>{heading}</h2>
           {body ? <p className={styles.body}>{body}</p> : null}
         </div>
 
-        <div className={styles.formColumn}>
+        <div className={styles.formColumn} data-reveal style={{'--reveal-i': 1}}>
           {canEmbed ? (
             <HubSpotForm
               portalId={portalId}

@@ -36,6 +36,7 @@ export default function CtaBanner({data, baseUrl}) {
           /* Decorative texture — the heading carries the meaning. */
           alt=""
           className={styles.backgroundImage}
+          data-parallax="slow"
           loading="lazy"
           decoding="async"
         />
@@ -43,9 +44,19 @@ export default function CtaBanner({data, baseUrl}) {
       <div className={styles.wash} aria-hidden="true" />
 
       <div className={styles.inner}>
-        {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
-        <h2 className={styles.heading}>{heading}</h2>
-        {body ? <p className={styles.body}>{body}</p> : null}
+        {eyebrow ? (
+          <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
+          {heading}
+        </h2>
+        {body ? (
+          <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+            {body}
+          </p>
+        ) : null}
 
         {(primaryCta?.linkText || secondaryCta?.linkText) && (
           <div className={styles.actions}>

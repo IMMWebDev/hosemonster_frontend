@@ -43,7 +43,7 @@ export default function Hero({data, baseUrl}) {
   return (
     <section className={styles.hero}>
       {bgUrl ? (
-        <div className={styles.background}>
+        <div className={styles.background} data-parallax>
           <img
             src={bgUrl}
             /* Decorative: the heading carries all the meaning, so an empty alt
@@ -51,6 +51,7 @@ export default function Hero({data, baseUrl}) {
                filename. Do not "fix" this to a description. */
             alt=""
             className={styles.backgroundImage}
+            data-reveal="zoom"
             /* The hero is the largest above-the-fold paint on the page, so it
                is loaded eagerly and flagged high priority rather than lazily —
                this is the LCP element. */
@@ -69,9 +70,19 @@ export default function Hero({data, baseUrl}) {
 
       <div className={styles.inner}>
         <div className={styles.copy}>
-          {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
+          {eyebrow ? (
+            <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+              {eyebrow}
+            </p>
+          ) : null}
 
-          <h1 className={styles.heading}>{heading}</h1>
+          <h1
+            className={styles.heading}
+            data-reveal="focus"
+            style={{'--reveal-i': 1}}
+          >
+            {heading}
+          </h1>
 
           {body ? <p className={styles.body}>{body}</p> : null}
 

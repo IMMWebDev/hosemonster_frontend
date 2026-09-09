@@ -49,9 +49,19 @@ export default function TextMedia({data, baseUrl}) {
         className={`${styles.inner} ${mediaSide === 'left' ? styles.mediaLeft : ''}`}
       >
         <div className={styles.copy}>
-          {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
-          <h2 className={styles.heading}>{heading}</h2>
-          {body ? <p className={styles.body}>{body}</p> : null}
+          {eyebrow ? (
+            <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+              {eyebrow}
+            </p>
+          ) : null}
+          <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
+            {heading}
+          </h2>
+          {body ? (
+            <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+              {body}
+            </p>
+          ) : null}
 
           {bullets.length > 0 && (
             <ul className={styles.bullets}>
@@ -76,11 +86,15 @@ export default function TextMedia({data, baseUrl}) {
         </div>
 
         {imageUrl ? (
-          <div className={styles.media}>
+          <div
+            className={styles.media}
+            data-reveal={mediaSide === 'left' ? 'left' : 'right'}
+          >
             <img
               src={imageUrl}
               alt={imageAlt}
               className={styles.mediaImage}
+              data-parallax="slow"
               loading="lazy"
               decoding="async"
             />

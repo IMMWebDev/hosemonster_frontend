@@ -12,10 +12,21 @@ import {Link} from 'react-router';
  *   link: {linkUrl?: string, openNewTab?: boolean, pageLink?: {path?: string}, linkText?: string},
  *   className?: string,
  *   children?: import('react').ReactNode,
- *   onClick?: (event: import('react').MouseEvent) => void
+ *   onClick?: (event: import('react').MouseEvent) => void,
+ *   style?: import('react').CSSProperties,
+ *   dataReveal?: string | boolean
  * }} props
  */
-export default function CmsLink({link, className = '', children, onClick}) {
+export default function CmsLink({
+  link,
+  className = '',
+  children,
+  onClick,
+  style,
+  // Scroll-reveal passthrough — see app/styles/motion.css. Card components
+  // render through this link, so without it they cannot opt into the reveal.
+  dataReveal,
+}) {
   if (!link) return null;
   const {linkUrl, openNewTab, pageLink, linkText} = link;
   const to = linkUrl || pageLink?.path || '#';
@@ -28,6 +39,8 @@ export default function CmsLink({link, className = '', children, onClick}) {
         href={to}
         className={className}
         onClick={onClick}
+        style={style}
+        data-reveal={dataReveal}
         target={openNewTab ? '_blank' : undefined}
         rel={openNewTab ? 'noopener noreferrer' : undefined}
       >
@@ -37,7 +50,13 @@ export default function CmsLink({link, className = '', children, onClick}) {
   }
 
   return (
-    <Link to={to} className={className} onClick={onClick}>
+    <Link
+      to={to}
+      className={className}
+      onClick={onClick}
+      style={style}
+      data-reveal={dataReveal}
+    >
       {label}
     </Link>
   );

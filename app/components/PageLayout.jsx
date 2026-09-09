@@ -1,6 +1,7 @@
 import {Await, Link, useMatches} from 'react-router';
 import {Suspense, useId} from 'react';
 import {Aside} from '~/components/Aside';
+import {useReveal} from '~/lib/use-reveal';
 import {Footer} from '~/components/Footer';
 import Newsletter from '~/components/Newsletter';
 import {Header, HeaderMenu} from '~/components/Header';
@@ -27,6 +28,8 @@ export function PageLayout({
   strapiBaseUrl,
 }) {
   const includeNewsletter = useIncludeNewsletter();
+  // Drives every module's scroll-reveal. See app/styles/motion.css.
+  useReveal();
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
