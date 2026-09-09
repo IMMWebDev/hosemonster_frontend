@@ -138,6 +138,29 @@
  * a button: with no embed wired up yet it opens the video at its source, which
  * degrades honestly instead of looking interactive and doing nothing.
  */
+/*
+ * VideoEmbed renders its poster + button inside this wrapper, so it has to fill
+ * .media exactly — otherwise the absolutely-positioned play button would
+ * anchor to .media while the image sits in a smaller box.
+ */
+.videoWrap {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * The iframe replaces the poster on click. .media already carries the 16/9
+ * aspect ratio and the rounded corners, so the frame just fills it.
+ */
+.videoFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
 .playButton {
   position: absolute;
   inset: 0;
