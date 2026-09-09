@@ -1,0 +1,199 @@
+/*
+ * =============================================================================
+ * MOTION — scroll reveal
+ * =============================================================================
+ * One mechanism for every module's entrance animation. A module opts in with a
+ * `data-reveal` attribute; app/lib/use-reveal.js watches for it and sets
+ * `data-reveal-in` once the element scrolls into view.
+ *
+ *   <p data-reveal>…</p>                   fade + rise (the default)
+ *   <div data-reveal="left">…</div>        slide in from the left
+ *   <div data-reveal="right">…</div>       slide in from the right
+ *   <div data-reveal="fade">…</div>        opacity only, no movement
+ *   <img data-reveal="zoom" />             settle out of a slight scale-up
+ *   <h1 data-reveal="focus">…</h1>         de-blur into place — headings only
+ *
+ * Stagger a group by setting --reveal-i on each child, counting from 0:
+ *
+ *   <li style={{'--reveal-i': i}} data-reveal>
+ *
+ * Separately, `data-parallax` drifts an element against the scroll. That one is
+ * scroll-LINKED rather than triggered — see the bottom of this file.
+ *
+ * ⚠ EVERY RULE IS GATED ON `html.js`.
+ * Without that gate a browser with JS disabled — or any run where the bundle
+ * fails — would leave the whole page at opacity 0 with no way to reveal it. The
+ * class is set by a one-line inline script in app/root.jsx, so the hidden state
+ * only ever exists when something is guaranteed to undo it.
+ *
+ * The inline script is in <head> and runs before first paint, so there is no
+ * flash of un-hidden content on the way in.
+ * =============================================================================
+ */
+
+:root {
+  --reveal-distance: 18px;
+  --reveal-stagger: 65ms;
+
+  /*
+   * Spring easing, not a hand-picked bezier.
+   *
+   * These are real damped-harmonic-oscillator curves sampled into `linear()`,
+   * which is what a spring-based library computes at runtime — the difference
+   * being the browser interpolates these on the compositor with no JS.
+   *
+   * --spring: stiffness 170, damping 18, mass 1 → damping ratio 0.69.
+   *   Overshoots to 1.05 and settles. This is the "arrives with weight" feel;
+   *   used for transform, where a few px of overshoot reads as momentum.
+   *
+   * --spring-firm: stiffness 210, damping 26 → ratio 0.90.
+   *   Overshoots by 0.2%, effectively not at all. For properties where
+   *   overshoot would look like a mistake rather than physics — scale on
+   *   imagery, and blur.
+   *
+   * Durations are the springs' own settle times, so the curve is not squashed
+   * or stretched away from the physics it came from.
+   */
+  --spring: linear(
+    0, 0.0424, 0.1456, 0.2801, 0.4242, 0.5633, 0.688, 0.7936, 0.8785, 0.9431,
+    0.9896, 1.0205, 1.039, 1.0479, 1.0499, 1.0472, 1.0418, 1.0349, 1.0277,
+    1.0209, 1.0148, 1.0096, 1.0055, 1.0025, 1.0003, 0.9988, 0.998, 0.9976,
+    0.9975, 0.9977, 0.998, 0.9983, 0.9987, 1
+  );
+  --spring-duration: 790ms;
+
+  --spring-firm: linear(
+    0, 0.0282, 0.097, 0.1877, 0.2876, 0.388, 0.4834, 0.5708, 0.6484, 0.7158,
+    0.7733, 0.8214, 0.8612, 0.8936, 0.9196, 0.9402, 0.9564, 0.9689, 0.9784,
+    0.9855, 0.9908, 0.9946, 0.9973, 0.9991, 1.0003, 1.0011, 1.0015, 1.0017,
+    1.0017, 1.0016, 1.0015, 1.0013, 1.0012, 1
+  );
+  --spring-firm-duration: 585ms;
+
+  /*
+   * Opacity runs on its own, shorter, non-springy timing. A spring on opacity
+   * is wrong twice over: the overshoot clips (you cannot be 105% opaque, so the
+   * curve flat-lines and the motion stalls), and content that is still fading
+   * while it finishes moving reads as sluggish. Fading in first and letting the
+   * position settle underneath is what makes spring libraries feel crisp.
+   */
+  --reveal-fade-duration: 420ms;
+  --reveal-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-distance), 0);
+  transition:
+    opacity var(--reveal-fade-duration) var(--reveal-fade-ease),
+    transform var(--spring-duration) var(--spring),
+    filter var(--spring-firm-duration) var(--spring-firm);
+  transition-delay: calc(var(--reveal-i, 0) * var(--reveal-stagger));
+  /*
+   * Promote only while hidden. Left on permanently this pins a compositor layer
+   * per element for the life of the page, which on a long page costs more
+   * memory than the animation ever saves.
+   */
+  will-change: opacity, transform;
+}
+
+/* translate3d throughout so every variant animates on the compositor. */
+html.js [data-reveal='left'] {
+  transform: translate3d(calc(var(--reveal-distance) * -2.2), 0, 0);
+}
+
+html.js [data-reveal='right'] {
+  transform: translate3d(calc(var(--reveal-distance) * 2.2), 0, 0);
+}
+
+html.js [data-reveal='fade'] {
+  transform: none;
+}
+
+/* Firm spring: a scale that overshoots looks like a bug, not momentum. */
+html.js [data-reveal='zoom'] {
+  transform: scale3d(1.05, 1.05, 1);
+  transition-duration: var(--reveal-fade-duration), var(--spring-firm-duration),
+    var(--spring-firm-duration);
+  transition-timing-function: var(--reveal-fade-ease), var(--spring-firm),
+    var(--spring-firm);
+}
+
+/*
+ * De-blur. Reserved for large display type — blur forces a raster pass per
+ * frame, so it is affordable on one heading and not on a grid of cards.
+ */
+html.js [data-reveal='focus'] {
+  transform: translate3d(0, calc(var(--reveal-distance) * 0.6), 0);
+  filter: blur(10px);
+  will-change: opacity, transform, filter;
+}
+
+html.js [data-reveal][data-reveal-in] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  /* Hand the layer back once the element has arrived. */
+  will-change: auto;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * PARALLAX — scroll-linked, not scroll-triggered
+ * -----------------------------------------------------------------------------
+ * The one thing a JS motion library is normally needed for: tying a property to
+ * scroll position rather than firing once on entry. `animation-timeline: view()`
+ * does it natively, driven by the compositor, with no scroll listener and no
+ * main-thread work.
+ *
+ * Purely additive. Browsers without scroll-driven animation ignore the whole
+ * block and the element simply sits still — nothing to fall back to, because
+ * the element is fully styled and visible without it.
+ *
+ *   <img data-parallax />          drifts up as the section passes
+ *   <img data-parallax="slow" />   half the travel
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.js [data-parallax] {
+      animation: reveal-parallax linear both;
+      animation-timeline: view();
+      /* Start once the element enters and run until it leaves, so the drift is
+         spread across the whole pass rather than finishing early. */
+      animation-range: entry 0% exit 100%;
+    }
+
+    html.js [data-parallax='slow'] {
+      --parallax-travel: 3%;
+    }
+  }
+}
+
+@keyframes reveal-parallax {
+  from {
+    transform: translate3d(0, var(--parallax-travel, 6%), 0);
+  }
+  to {
+    transform: translate3d(0, calc(var(--parallax-travel, 6%) * -1), 0);
+  }
+}
+
+/*
+ * Reduced motion: show everything immediately. The elements still get their
+ * data-reveal-in attribute — only the visual change is suppressed — so nothing
+ * downstream has to know about the preference.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal],
+  html.js [data-reveal][data-reveal-in] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+    will-change: auto;
+  }
+
+  html.js [data-parallax] {
+    animation: none;
+  }
+}

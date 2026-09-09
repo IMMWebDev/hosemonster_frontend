@@ -45,11 +45,17 @@ export default function CategoryGrid({data, baseUrl}) {
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
-        {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
-        <h2 className={styles.heading}>{heading}</h2>
+        {eyebrow ? (
+          <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
+          {heading}
+        </h2>
 
         {hasBanner && (
-          <div className={styles.banner}>
+          <div className={styles.banner} data-reveal style={{'--reveal-i': 2}}>
             {bannerImageUrl ? (
               <img
                 src={bannerImageUrl}
@@ -85,6 +91,7 @@ export default function CategoryGrid({data, baseUrl}) {
                 key={item.id ?? i}
                 item={item}
                 baseUrl={baseUrl}
+                index={i}
               />
             ))}
           </div>
@@ -100,7 +107,7 @@ export default function CategoryGrid({data, baseUrl}) {
  *
  * @param {{item: object, baseUrl?: string}} props
  */
-function CategoryCard({item, baseUrl}) {
+function CategoryCard({item, baseUrl, index = 0}) {
   const {title, link, featured} = item;
   const imageUrl = strapiMedia(item.image?.url, baseUrl);
 
@@ -128,14 +135,23 @@ function CategoryCard({item, baseUrl}) {
   // With nothing to link to, render a plain container rather than a dead anchor
   // that reads as interactive and cannot be tabbed out of usefully.
   if (!link) {
-    return <div className={className}>{inner}</div>;
+    return (
+      <div className={className} data-reveal style={{'--reveal-i': index + 3}}>
+        {inner}
+      </div>
+    );
   }
 
   // CmsLink already resolves internal (React Router <Link>) vs external (<a>)
   // and handles openNewTab, so the whole card reuses it rather than
   // reimplementing that logic here.
   return (
-    <CmsLink link={link} className={className}>
+    <CmsLink
+      link={link}
+      className={className}
+      dataReveal
+      style={{'--reveal-i': index + 3}}
+    >
       {inner}
     </CmsLink>
   );

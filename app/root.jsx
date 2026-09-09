@@ -16,6 +16,7 @@ import tokenStyles from '~/styles/tokens.css?url';
 import typographyStyles from '~/styles/typography.css?url';
 import layoutStyles from '~/styles/layout.css?url';
 import componentStyles from '~/styles/components.css?url';
+import motionStyles from '~/styles/motion.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from './components/PageLayout';
 import NotFound from '~/components/cms/NotFound';
@@ -231,6 +232,19 @@ export function Layout({children}) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         {/*
+          Marks the document as JS-capable so app/styles/motion.css can hide
+          reveal targets. Every rule there is gated on `html.js`, so if the
+          bundle never runs the page simply renders with no animation instead of
+          staying invisible. Inline and in <head> so it lands before first paint
+          — a deferred script would flash the un-hidden content first.
+        */}
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js')",
+          }}
+        />
+        {/*
           Adobe Fonts (Typekit) — see TYPEKIT_KIT_ID above. First in <head> so
           the request starts before our own sheets; the kit only declares
           @font-face and .tk-* helpers, so it cannot collide with anything
@@ -258,6 +272,7 @@ export function Layout({children}) {
         <link rel="stylesheet" href={typographyStyles}></link>
         <link rel="stylesheet" href={layoutStyles}></link>
         <link rel="stylesheet" href={componentStyles}></link>
+        <link rel="stylesheet" href={motionStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
         <Meta />
         <Links />

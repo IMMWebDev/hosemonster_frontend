@@ -14,6 +14,7 @@ export default function Wysiwyg({data}) {
   if (!data?.wysiwyg) return null;
   return (
     <div
+      data-reveal
       className="cms-wysiwyg"
       dangerouslySetInnerHTML={{__html: data.wysiwyg}}
     />
