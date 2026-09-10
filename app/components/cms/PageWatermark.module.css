@@ -27,6 +27,21 @@
   position: relative;
   /* Keeps the -1 layer below from escaping behind the page background. */
   isolation: isolate;
+
+  /*
+   * Does two jobs.
+   *
+   * 1. Marks are deliberately positioned past the end of the page — the extras
+   *    are how a long page gets more of them — and this trims whatever the page
+   *    is not tall enough to show.
+   * 2. They also hang off the left and right edges, which without this creates
+   *    horizontal page overflow and a stray scrollbar.
+   *
+   * `clip`, NOT `hidden`. `overflow: hidden` makes this a scroll container,
+   * which silently breaks `position: sticky` on anything inside <main> — and
+   * app.css has three sticky elements. `clip` trims without that side effect.
+   */
+  overflow: clip;
 }
 
 .mark {

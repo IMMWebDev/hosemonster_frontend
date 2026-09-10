@@ -39,8 +39,19 @@ a {
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
+/*
+ * Site-wide link hover: the link turns red. NO underline — that is reserved for
+ * the CURRENT PAGE, so the two states stay distinguishable. See the
+ * `[aria-current='page']` rule in Header.module.css.
+ *
+ * ⚠ `:not(.btn)` is load-bearing. Buttons are anchors too, and `a:hover` at
+ * (0,1,1) outranks `.btn--primary` at (0,1,0) — so without this the colour
+ * below would repaint a primary button's white label red against its navy
+ * hover fill. Excluding buttons is clearer than escalating every button rule.
+ */
+a:hover:not(.btn) {
+  color: var(--color-action);
+  text-decoration: none;
   cursor: pointer;
 }
 

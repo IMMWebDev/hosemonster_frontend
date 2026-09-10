@@ -287,6 +287,12 @@
   /* ==========================================================================
    * 6. BORDER WIDTHS
    * ========================================================================== */
+  /* Link hover underline. One treatment everywhere: the link turns red and
+   * gains a red rule beneath it. Offset far enough clear of the baseline that
+   * it does not cut through descenders. */
+  --underline-thickness: 2px;
+  --underline-offset: 5px;
+
   --border-width: 1px;
   --border-width-thick: 2px; /* Figma: both button variants */
 

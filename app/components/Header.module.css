@@ -63,9 +63,20 @@
   cursor: pointer;
 }
 
-.utilityLink:hover,
-.utilityButton:hover {
+/*
+ * White on navy, where the site-wide red hover would be near-unreadable — so
+ * these keep their colour and underline instead.
+ *
+ * ⚠ Descendant selector for specificity, not for scoping. `a:hover:not(.btn)`
+ * in reset.css is (0,2,1) and would outrank a plain `.utilityLink:hover` at
+ * (0,2,0); `.utilityBar` in front makes it (0,3,0) and wins.
+ */
+.utilityBar .utilityLink:hover,
+.utilityBar .utilityButton:hover {
+  color: var(--color-text-inverse);
   text-decoration: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
 }
 
 /*
@@ -155,9 +166,14 @@
   transition: color var(--duration-fast) var(--ease-default);
 }
 
-.navLink:hover,
+/* Hover comes from the global a:hover in reset.css — red plus the underline.
+ * Only the current-page state needs stating here, and it gets the same
+ * treatment so "you are here" and "you are hovering" read alike. */
 .navLink[aria-current='page'] {
   color: var(--color-action);
+  text-decoration: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
 }
 
 /*
@@ -291,6 +307,7 @@
     background-color var(--duration-fast) var(--ease-default);
 }
 
+/* Menu rows get a background fill on hover as well as the colour change. */
 .dropdownLink:hover,
 .dropdownLink:focus-visible {
   color: var(--color-action);
@@ -360,7 +377,6 @@
 
 .mobileSubLink:hover {
   color: var(--color-action);
-  text-decoration: none;
 }
 
 /*
