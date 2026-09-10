@@ -172,9 +172,9 @@ a.contactLine:hover {
   transition: color var(--duration-fast) var(--ease-default);
 }
 
+/* Colour and underline both come from the global a:hover. */
 .columnLink:hover {
   color: var(--color-action);
-  text-decoration: underline;
 }
 
 /*

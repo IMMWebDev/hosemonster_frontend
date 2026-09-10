@@ -17,28 +17,34 @@ import styles from './PageWatermark.module.css';
  * }} props
  */
 /**
- * Where each mark sits.
+ * Where the marks sit.
  *
- * ⚠ A FIXED TABLE, NOT `Math.random()`. Hydrogen renders this on the server and
- * hydrates on the client; a random value would differ between the two, which
- * React reports as a hydration mismatch, and the marks would jump to new spots
- * on every client-side navigation. Hand-placed values are deterministic and, as
- * a bonus, actually art-directable — real randomness clusters in ways that look
- * like a mistake rather than a rhythm.
+ * ⚠ FIXED PIXEL SPACING, NOT PERCENTAGES.
  *
- *   top    percentage of page height, so spacing scales with page length
- *   side   which edge it hangs off
- *   inset  how far off that edge, in px — varied so the run does not read as a
- *          ruled margin
- *   scale  multiplier on --wm-width, for a little depth
+ * Percentages looked right on a long page and broke on a short one: five marks
+ * spread across a single-module page compress into a few hundred pixels while
+ * each mark is ~650px tall, so they pile on top of each other. Pixel offsets
+ * keep the gap constant no matter how tall the page is.
+ *
+ * More marks are declared than most pages need. Any that fall past the end of
+ * the page are clipped away by `overflow: clip` on the wrapper, so a short page
+ * simply shows the first one or two and a long page shows the lot. Nothing has
+ * to know the page height, and there is no measuring pass.
+ *
+ * ⚠ The jitter is FIXED, not `Math.random()`. Hydrogen renders on the server
+ * and hydrates on the client; a random value differs between the two, which
+ * React reports as a hydration mismatch, and the marks would jump on every
+ * client-side navigation.
  */
-const MARKS = [
-  {top: 7, side: 'left', inset: 60, scale: 1},
-  {top: 23, side: 'right', inset: 30, scale: 0.82},
-  {top: 46, side: 'left', inset: 85, scale: 1.14},
-  {top: 62, side: 'right', inset: 45, scale: 0.9},
-  {top: 85, side: 'left', inset: 20, scale: 1.06},
-];
+const MARK_COUNT = 14;
+const FIRST_AT = 240; // px from the top of <main>
+const BASE_STEP = 900; // px between marks before jitter
+
+// Cycled by index so the run never settles into a visible rhythm. Lengths are
+// coprime with 2 (the side alternation) so pairings keep shifting.
+const TOP_JITTER = [0, 120, -60, 180, -30, 90, -110];
+const INSETS = [60, 30, 85, 45, 20, 70]; // px off the edge
+const SCALES = [1, 0.82, 1.14, 0.9, 1.06, 0.95];
 
 export default function PageWatermark({imageUrl, children}) {
   if (!imageUrl) return children;
@@ -54,19 +60,24 @@ export default function PageWatermark({imageUrl, children}) {
         '--wm-width-mobile': '230px',
       }}
     >
-      {MARKS.map((m) => (
-        <span
-          key={`wm-${m.top}-${m.side}`}
-          className={styles.mark}
-          data-side={m.side}
-          aria-hidden="true"
-          style={{
-            '--wm-top': `${m.top}%`,
-            '--wm-inset': `${m.inset}px`,
-            '--wm-scale': m.scale,
-          }}
-        />
-      ))}
+      {Array.from({length: MARK_COUNT}, (_, i) => {
+        const top = FIRST_AT + i * BASE_STEP + TOP_JITTER[i % TOP_JITTER.length];
+        return (
+          <span
+            key={`wm-${i}`}
+            className={styles.mark}
+            // Alternating sides means neighbours never sit on the same edge, so
+            // two that land close together still cannot collide horizontally.
+            data-side={i % 2 === 0 ? 'left' : 'right'}
+            aria-hidden="true"
+            style={{
+              '--wm-top': `${top}px`,
+              '--wm-inset': `${INSETS[i % INSETS.length]}px`,
+              '--wm-scale': SCALES[i % SCALES.length],
+            }}
+          />
+        );
+      })}
       {children}
     </div>
   );
