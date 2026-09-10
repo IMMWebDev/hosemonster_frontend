@@ -16,6 +16,7 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
 export default function BlockManager({blocks, baseUrl, siteEnv}) {
   if (!blocks || blocks.length === 0) return null;
 
+
   return (
     <>
       {blocks.map(({__component, ...rest}, index) => {

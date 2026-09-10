@@ -2,6 +2,8 @@ import {Await, Link, useMatches} from 'react-router';
 import {Suspense, useId} from 'react';
 import {Aside} from '~/components/Aside';
 import {useReveal} from '~/lib/use-reveal';
+import PageWatermark from '~/components/cms/PageWatermark';
+import {strapiMedia} from '~/lib/strapi-media';
 import {Footer} from '~/components/Footer';
 import Newsletter from '~/components/Newsletter';
 import {Header, HeaderMenu} from '~/components/Header';
@@ -45,7 +47,16 @@ export function PageLayout({
           strapiBaseUrl={strapiBaseUrl}
         />
       )}
-      <main>{children}</main>
+      {/*
+        Site-wide brand watermark, from the Options single type. Wraps <main>
+        rather than living inside a module so it repeats behind the whole page
+        — and so every page gets it, not only ones built from a dynamic zone.
+      */}
+      <PageWatermark
+        imageUrl={strapiMedia(cmsOptions?.watermark?.url, strapiBaseUrl)}
+      >
+        <main>{children}</main>
+      </PageWatermark>
       {includeNewsletter && cmsOptions?.newsletter ? (
         <Newsletter
           newsletter={cmsOptions.newsletter}
