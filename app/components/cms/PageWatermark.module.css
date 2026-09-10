@@ -1,0 +1,99 @@
+/*
+ * =============================================================================
+ * PAGE WATERMARK
+ * =============================================================================
+ * The brand flame, repeated a few times down the page behind every module,
+ * alternating left / right.
+ *
+ * WHY DISCRETE ELEMENTS AND NOT A REPEATING BACKGROUND
+ *
+ * The obvious approach — `background-repeat: repeat-y` — cannot space the
+ * repeats out. `background-size` sets the TILE, and the tile is what repeats,
+ * so a tile sized to the image repeats immediately after it with no gap. Making
+ * the tile taller to create a gap stretches the image, because the image is
+ * sized to fill the tile.
+ *
+ * So each mark is its own element, positioned down the wrapper as a percentage
+ * of page height. That also means the spacing scales with the page: a short
+ * page gets the same number of marks spread closer together, a long page
+ * spreads them out, and neither ends up with marks stacked back to back.
+ *
+ * Sections with their own dark fill (hero, CTA banner, newsletter) paint over
+ * the marks, which is intended — they show through the white stretches.
+ * =============================================================================
+ */
+
+.wrap {
+  position: relative;
+  /* Keeps the -1 layer below from escaping behind the page background. */
+  isolation: isolate;
+}
+
+.mark {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+
+  /* --wm-scale varies the size per mark; see the MARKS table in the component. */
+  width: calc(var(--wm-width) * var(--wm-scale, 1));
+  /* Height follows the asset's own 1338:2160 portrait ratio. */
+  aspect-ratio: 1338 / 2160;
+
+  background-image: var(--wm-image);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+
+  /*
+   * The asset ships PRE-FADED — a pale outline already at the intended weight.
+   * Do not dim it further here; that made it invisible on white the first time.
+   * If it needs to be lighter, ask for a lighter asset.
+   */
+  opacity: 1;
+
+  /* --wm-top is set per element by the component. */
+  top: var(--wm-top);
+}
+
+/*
+ * Side comes from the MARKS table via data-side, not nth-child — the run is
+ * hand-placed, so position in the list no longer implies which edge.
+ */
+.mark[data-side='left'] {
+  left: calc(var(--wm-inset) * -1);
+}
+
+.mark[data-side='right'] {
+  right: calc(var(--wm-inset) * -1);
+}
+
+@media (max-width: 1099px) {
+  .mark {
+    width: calc(var(--wm-width-tablet) * var(--wm-scale, 1));
+  }
+}
+
+@media (max-width: 699px) {
+  .mark {
+    width: calc(var(--wm-width-mobile) * var(--wm-scale, 1));
+    /* One column here, so a mark sits directly behind body copy rather than
+     * beside it. Pulled further off-canvas and eased back. */
+    opacity: 0.5;
+  }
+
+  /* Halve the per-mark inset rather than overriding it flat, so the varied
+   * placement survives instead of snapping to one margin. */
+  .mark[data-side='left'] {
+    left: calc(var(--wm-inset) * -0.5);
+  }
+
+  .mark[data-side='right'] {
+    right: calc(var(--wm-inset) * -0.5);
+  }
+}
+
+@media print {
+  .mark {
+    display: none;
+  }
+}

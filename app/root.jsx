@@ -167,7 +167,10 @@ async function loadCriticalData({context}) {
     // Site-wide settings. Holds the newsletter band shown above the footer, so
     // that copy is edited once rather than per page.
     strapi.getSingle('option', {
-      populate: {newsletter: {populate: {backgroundImage: true}}},
+      populate: {
+        newsletter: {populate: {backgroundImage: true}},
+        watermark: true,
+      },
     }),
     // Three levels deep: footer → linkColumns → links → pageLink. `populate: '*'`
     // would stop at linkColumns and return them with no links at all.
