@@ -65,7 +65,9 @@
   width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;
-  padding-inline: var(--container-gutter);
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding-inline: var(--container-gutter-bleed);
 }
 
 .copy {

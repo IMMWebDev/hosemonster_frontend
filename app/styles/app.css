@@ -88,7 +88,9 @@ aside {
   position: fixed;
   right: calc(-1 * var(--aside-width));
   top: 0;
-  transition: transform 200ms ease-in-out;
+  /* Same duration and easing in both directions, so closing is the exact
+   * reverse of opening. */
+  transition: transform var(--duration-slide) var(--ease-default);
 }
 
 aside header {
@@ -158,10 +160,25 @@ aside li {
   position: fixed;
   right: 0;
   top: 0;
-  transition: opacity 400ms ease-in-out;
-  transition: opacity 400ms;
   visibility: hidden;
   z-index: 10;
+
+  /*
+   * ⚠ `visibility` is part of the transition, and that is what makes CLOSING
+   * animate at all.
+   *
+   * Without it the overlay flipped straight to `visibility: hidden` the moment
+   * the class came off, which hid the panel instantly — so the drawer appeared
+   * to slide in on open and simply vanish on close. Delaying visibility by the
+   * slide duration keeps the panel on screen long enough to slide back out.
+   *
+   * There were also two competing `transition` declarations here (400ms with
+   * easing, then 400ms without); the second silently won, and neither matched
+   * the 200ms on the panel itself. One declaration now, one duration token.
+   */
+  transition:
+    opacity var(--duration-slide) var(--ease-default),
+    visibility 0s linear var(--duration-slide);
 }
 
 .overlay .close-outside {
@@ -190,10 +207,24 @@ aside li {
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
+  /* Opening: visibility flips immediately so the slide-in is visible from the
+   * first frame. Only the closing direction needs the delay. */
+  transition:
+    opacity var(--duration-slide) var(--ease-default),
+    visibility 0s;
 }
 /* reveal aside */
 .overlay.expanded aside {
   transform: translateX(calc(var(--aside-width) * -1));
+}
+
+/* The drawer still opens and closes, just without the slide or fade. */
+@media (prefers-reduced-motion: reduce) {
+  aside,
+  .overlay,
+  .overlay.expanded {
+    transition: none;
+  }
 }
 
 button.reset {

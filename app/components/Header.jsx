@@ -447,14 +447,24 @@ function AccountLink({isLoggedIn, label}) {
 }
 
 function HeaderMenuMobileToggle() {
-  const {open} = useAside();
+  const {type, open, close} = useAside();
+  const isOpen = type === 'mobile';
+
   return (
     <button
       className={styles.menuToggle}
-      onClick={() => open('mobile')}
-      aria-label="Open menu"
+      /*
+       * A toggle, not an opener. This used to call open('mobile') on every
+       * click, so tapping the hamburger while the drawer was already open just
+       * reopened it — leaving no way to dismiss the menu from the control that
+       * summoned it.
+       */
+      onClick={() => (isOpen ? close() : open('mobile'))}
+      aria-expanded={isOpen}
+      aria-controls="mobile-menu-aside"
+      aria-label={isOpen ? 'Close menu' : 'Open menu'}
     >
-      ☰
+      {isOpen ? '\u2715' : '\u2630'}
     </button>
   );
 }
