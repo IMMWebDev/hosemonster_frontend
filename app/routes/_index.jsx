@@ -3,6 +3,16 @@ import {MockShopNotice} from '~/components/MockShopNotice';
 import BlockManager from '~/components/cms/BlockManager';
 
 const HOME_TITLE = 'Home Page | Hose Monster';
+/*
+ * Social share card. 5000x2625 (1.90:1), which sits inside the 1.91:1 that
+ * Facebook, LinkedIn and X all expect, so it crops cleanly on every platform.
+ *
+ * Absolute URL, not a path — scrapers fetch it without a page context, so a
+ * relative one resolves against nothing and the card renders blank.
+ */
+const HOME_OG_IMAGE =
+  'https://media.impactmit.com/image/upload/v1789141092/HM_OGI_Home_c1f4da3fb2.png';
+
 const HOME_DESCRIPTION =
   'Hose Monster makes the safest, most accurate and efficient flow testing ' +
   'equipment in the industry. Contact a sales rep to upgrade your fire ' +
@@ -32,7 +42,16 @@ export const meta = () => {
     {property: 'og:description', content: HOME_DESCRIPTION},
     {property: 'og:type', content: 'website'},
     {property: 'og:site_name', content: 'HoseMonster'},
+    {property: 'og:image', content: HOME_OG_IMAGE},
+    // Dimensions let a scraper reserve the right space before the image loads,
+    // and stop some platforms falling back to a smaller card layout.
+    {property: 'og:image:width', content: '5000'},
+    {property: 'og:image:height', content: '2625'},
+    {property: 'og:image:alt', content: HOME_TITLE},
     {name: 'twitter:card', content: 'summary_large_image'},
+    // X reads its own namespace first and does not fall back to og:image in
+    // every case, so it is stated explicitly rather than assumed.
+    {name: 'twitter:image', content: HOME_OG_IMAGE},
   ];
 };
 
