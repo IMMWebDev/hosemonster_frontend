@@ -74,9 +74,24 @@
   font-weight: var(--weight-medium);
   line-height: var(--leading-body);
   color: var(--body-ink);
-  white-space: pre-line;
   max-width: 520px; /* narrower than the heading, per the design */
   margin: 0;
+}
+
+/*
+ * Paragraph rhythm.
+ *
+ * `white-space: pre-line` used to do this by rendering the CMS's blank line as
+ * an empty line box — ~31px at this type size, which read as a gap between
+ * sections rather than between paragraphs. A margin set here is independent of
+ * the type scale, so changing the body size later will not reopen the gap.
+ */
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3); /* 12px */
 }
 
 /*
@@ -117,7 +132,9 @@
  */
 
 .media {
-  flex: 1 1 0; /* see the ratio note on .copy */
+  /* Was 1, against .copy's 1.25 — the video read as the smaller half despite
+   * being the thing the section is selling. Now it takes the larger share. */
+  flex: 1.45 1 0;
   min-width: 0;
   position: relative;
   aspect-ratio: 16 / 9;

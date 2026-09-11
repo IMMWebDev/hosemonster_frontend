@@ -48,7 +48,9 @@
   width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;
-  padding: var(--space-16) var(--container-gutter); /* 64px block */
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding: var(--space-16) var(--container-gutter-bleed); /* 64px block */
   text-align: center;
 }
 
@@ -72,6 +74,11 @@
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;
+  /* Evens the line lengths instead of filling each line to the max and leaving
+   * a short remainder. Centred display type is where ragged wrapping shows
+   * most. Ignored by browsers that do not support it — the text just wraps
+   * greedily, as it does today. */
+  text-wrap: balance;
 }
 
 /* Figma "B3" — 16px Gopher Regular */
@@ -82,7 +89,23 @@
   line-height: var(--leading-body);
   color: var(--hero-meta-ink);
   white-space: pre-line;
-  max-width: 600px;
+  /*
+   * `balance` rather than `pretty`: pretty only fixes the last line, and the
+   * problem here is the whole block — the first three lines run nearly full
+   * while the last two fall well short. Balance evens all of them.
+   *
+   * Chrome caps balancing at a handful of lines and gives up beyond that, so
+   * this degrades to normal wrapping on a very long paragraph rather than
+   * breaking.
+   */
+  text-wrap: balance;
+  /*
+   * Wide enough to sit under the heading rather than looking like a narrow
+   * column dropped beneath it. ~68 characters is still inside the comfortable
+   * reading range, and `text-wrap: balance` above keeps the lines even at this
+   * width instead of leaving a short last line.
+   */
+  max-width: 68ch;
   margin: 7px 0 0; /* the design's 7px lead-in above the copy */
 }
 

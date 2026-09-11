@@ -314,6 +314,24 @@
    * file, so consumers never need their own media queries for spacing — they
    * just read the token and get the right value. */
   --container-gutter: var(--space-8); /* 32px */
+
+  /*
+   * Gutter for FULL-BLEED sections (hero, CTA banner) — the ones that cancel
+   * <main>'s horizontal margin with a negative inline margin so their
+   * background reaches the viewport edge.
+   *
+   * Because they start --main-gutter further left than a normal section, using
+   * --container-gutter alone lands their content that much further left too,
+   * and their copy fails to line up with every section above and below. Adding
+   * the main gutter back puts them on the same vertical.
+   *
+   * ⚠ Derived, not a literal. At mobile --container-gutter and --main-gutter
+   * are both 16px, so a hardcoded value would cancel to zero and the copy would
+   * sit flush against the screen edge. That was the bug this fixes.
+   */
+  --container-gutter-bleed: calc(
+    var(--container-gutter) + var(--main-gutter)
+  );
   --container-block: var(--space-16); /* 64px */
 
   /* The width a centred wrapper should cap at so its CONTENT is exactly
@@ -352,6 +370,9 @@
    * Not specced in Figma. Derived from existing transition values in app.css.
    */
   --duration-fast: 200ms;
+  /* Drawer / aside slide. Used for both the panel transform and the overlay
+   * fade so the two stay in step in both directions. */
+  --duration-slide: 260ms;
   --duration-slow: 400ms;
   --ease-default: ease-in-out;
 }

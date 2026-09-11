@@ -53,6 +53,20 @@ export default function TextMedia({data, baseUrl}) {
    * back to the image, so a typo degrades to the old behaviour instead of
    * blanking the column.
    */
+  /*
+   * Split the body on blank lines into real paragraphs.
+   *
+   * It used to render as one <p> with `white-space: pre-line`, which turns a
+   * blank line in the CMS into a full empty line box — at 18px on a 1.7 line
+   * height that is ~31px of dead space between paragraphs, far more than the
+   * design wants. Real <p>s let the gap be set in CSS instead of being dictated
+   * by the type scale.
+   */
+  const paragraphs = (body ?? '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
   const videoId = youTubeId(videoUrl);
   const hasMedia = Boolean(videoId || imageUrl);
 
@@ -71,9 +85,11 @@ export default function TextMedia({data, baseUrl}) {
             {heading}
           </h2>
           {body ? (
-            <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
-              {body}
-            </p>
+            <div className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+              {paragraphs.map((para, i) => (
+                <p key={`para-${i}`}>{para}</p>
+              ))}
+            </div>
           ) : null}
 
           {bullets.length > 0 && (

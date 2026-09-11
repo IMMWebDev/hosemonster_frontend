@@ -65,7 +65,9 @@
   width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;
-  padding-inline: var(--container-gutter);
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding-inline: var(--container-gutter-bleed);
 }
 
 .copy {
@@ -108,7 +110,9 @@
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
+  /* Regular, not the B1 default of medium — this copy is reversed out on a dark
+   * photo, where the heavier weight reads as too dense. */
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text-inverse);
   white-space: pre-line;
