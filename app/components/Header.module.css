@@ -92,6 +92,14 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-5); /* 20px in the design */
+
+  /* Must be explicit now that .utilityBar is a grid container. As a grid item
+   * with `margin-inline: auto`, this box shrink-wraps its content instead of
+   * filling the track — the auto margins then centre that shrunken box and
+   * `justify-content: flex-end` has no free space left to push against, so the
+   * links read as centred. In the old block layout `width: auto` filled the bar
+   * and the auto margins resolved to 0, which is what this restores. */
+  width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;
   /* Figma has 8px top / 9px bottom. The 1px difference is almost certainly
