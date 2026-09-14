@@ -217,8 +217,8 @@
   /* Type scale — desktop values, exactly as specced in Figma.
    * Expressed in rem (÷16) so browser text-size settings are respected.
    * Figma style names are noted so design and code share vocabulary. */
-  --text-h1: 3.75rem; /* 60px — Figma "H1" */
-  --text-h2: 3.25rem; /* 52px — Figma "H2" */
+  --text-h1: 3.25rem; /* 52px — Figma "H1" */
+  --text-h2: 3rem; /* 48px — Figma "H2" */
   --text-h3: 1.125rem; /* 18px — Figma "H3" (Eyebrow) */
   --text-button: 1rem; /* 16px — Figma "H4" (Button) */
   /* ⚠ DELIBERATE DIVERGENCE FROM FIGMA. The styleguide specifies B1 at 14px and

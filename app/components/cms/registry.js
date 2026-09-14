@@ -1,4 +1,5 @@
 import Hero from '~/components/cms/modules/Hero';
+import HeroSearch from '~/components/cms/modules/HeroSearch';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
@@ -36,6 +37,16 @@ export const MODULE_REGISTRY = {
         trustItems: true,
         primaryCTA: {populate: {pageLink: true}},
         secondaryCTA: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.hero-search': {
+    Component: HeroSearch,
+    // Only the media needs naming — every other field is a scalar and comes
+    // back with the module. There are no link components here by design.
+    options: {
+      populate: {
+        backgroundImage: true,
       },
     },
   },

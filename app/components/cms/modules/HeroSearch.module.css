@@ -1,0 +1,310 @@
+/*
+ * Hero Search module — Figma "Shop" hifi (sprint-04/hifi_shop.html)
+ *
+ * Full-bleed navy panel with a background photo and a left-to-right scrim,
+ * copy constrained to the shared container so it lines up with the header and
+ * every other section. Differs from Hero in two ways: the panel is inset from
+ * the header rather than continuous with it, and the CTA row is a search bar.
+ */
+
+.section {
+  /* Full-bleed. <main> carries a horizontal margin (see reset.css), so cancel
+   * exactly that much and grow by the same amount on each side. Using the token
+   * rather than 100vw matters: 100vw includes the scrollbar and would cause
+   * horizontal overflow on every desktop browser that reserves gutter space. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+
+  /* No vertical padding, deliberately. The shop comp floats the panel 32px
+   * below the nav and 44px above what follows, but that is a mockup artifact —
+   * the homepage hero butts straight against the header and both heroes must
+   * read as the same component. Do not reintroduce the gap from the comp.
+   *
+   * Must be stated, not omitted: reset.css gives every bare <section> a
+   * `padding: 2rem 0` above 768px, so leaving this out silently reinstates a
+   * 32px band above and below the panel. */
+  padding-block: 0;
+}
+
+.panel {
+  position: relative;
+  isolation: isolate; /* keeps the scrim's z-index local to this section */
+  display: flex;
+  align-items: center;
+  min-height: 480px; /* panel height in the design */
+
+  /* Only bites when the copy is taller than the panel (narrow viewports); at
+   * desktop the copy is centred inside min-height and this is slack. Matches
+   * the 56px the comp puts around its content block. */
+  padding-block: var(--space-14);
+  background-color: var(--brand-navy); /* shows before the image loads */
+
+  /* `clip`, NOT `hidden`. Both crop the image to the panel, but `hidden`
+   * creates a scroll container, which would become the nearest scrollport for
+   * the parallax `animation-timeline: view()` inside — measuring the image
+   * against this panel instead of the document and killing the effect. `clip`
+   * creates no scroll container, so the parallax still resolves page-level. */
+  overflow: clip;
+}
+
+/*
+ * Layering — an explicit positive stack:
+ *   0  .background (image)
+ *   1  .scrim (gradient)
+ *   2  .inner (copy)
+ *
+ * Deliberately NOT negative z-index. A negative value puts these children at
+ * risk of painting behind .panel's own background-color, which silently hides
+ * the image; positive values on an explicit stack have no such ambiguity.
+ */
+
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center; /* keep the product cluster in frame as it narrows */
+  display: block;
+}
+
+/*
+ * Local gradient rather than --hero-overlay. The shared token fades navy at
+ * 57% opacity across the FULL width, which is tuned for the homepage photo.
+ * This background is busy on the left (the dragon) and needs a solid navy start
+ * that clears earlier, or the heading loses contrast against the flames.
+ */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to right,
+    rgb(28 58 85 / 100%) 0%,
+    rgb(28 58 85 / 0%) 62%
+  );
+  pointer-events: none;
+}
+
+/* Matches .container so the hero copy aligns with the header and footer */
+.inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 720px; /* copy column width in the design */
+}
+
+/*
+ * Figma "H3" / Eyebrow.
+ *
+ * ⚠ Deliberately matches Hero.module.css, NOT this page's hifi. The shop comp
+ * draws the eyebrow in Gopher 700 with 0.08em tracking; the homepage hero and
+ * the styleguide use nimbus-sans-extended 900, untracked. Rather than ship two
+ * eyebrow treatments, this follows the existing one — swap the three lines
+ * below if the designer confirms the shop comp is the new standard.
+ */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H1", reversed out to white */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Figma "B1" / Standard Body Copy, reversed out */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  /* Regular, not the B1 default of medium — this copy is reversed out on a dark
+   * photo, where the heavier weight reads as too dense. */
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-inverse);
+  white-space: pre-line;
+  max-width: 560px; /* narrower than the heading, per the design */
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * SEARCH BAR
+ * -----------------------------------------------------------------------------
+ * One pill split in two: the input takes the left half's rounding, the submit
+ * button the right's. Using --radius-pill on the outer corners rather than the
+ * design's literal 26px keeps it a true pill if the control's height changes.
+ */
+
+.search {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 560px;
+  margin-top: var(--space-4);
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  min-width: 0; /* lets the input shrink instead of forcing the pill to overflow */
+  height: 56px;
+
+  /* reset.css styles bare `input` with 0.25rem top / 0.5rem bottom margin and
+   * 0.5rem padding on all sides. Left alone, those 12px of margin grow the flex
+   * line to 68px and the button stretches to match, leaving it visibly taller
+   * than the input it is joined to. Zero both, explicitly. */
+  margin: 0;
+  padding-block: 0;
+  padding-inline: var(--space-6);
+  border: 0;
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  background-color: var(--white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+  /* Firefox dims placeholders by default; without this the muted token gets
+   * muted a second time and drops below the contrast floor. */
+  opacity: 1;
+}
+
+/*
+ * The ring is drawn INSIDE the pill (negative offset). A positive offset would
+ * run the ring through the adjoining button and get clipped by the panel.
+ */
+.searchInput:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: -4px;
+}
+
+.searchButton {
+  flex: 0 0 auto;
+  min-width: 70px; /* button width in the design */
+  padding-inline: var(--space-6);
+  border: 0;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  background-color: var(--color-action);
+  color: var(--color-action-text);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+/*
+ * Hover is NOT specced — the Figma has no interaction states, same as the
+ * styleguide buttons. The house default (.btn--primary:hover) goes to navy,
+ * which is wrong HERE specifically: this button sits on a navy panel, so navy
+ * hover reads as the button vanishing. Darkening its own red keeps the edge.
+ */
+.searchButton:hover {
+  background-color: color-mix(in srgb, var(--color-action) 85%, #000);
+}
+
+.searchButton:focus-visible {
+  outline: var(--border-width-thick) solid var(--white);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searchButton {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1440px frame. The type scale already
+ * steps down via tokens, so only the panel height and image framing change.
+ */
+
+/* tablet */
+@media (max-width: 1099px) {
+  .panel {
+    min-height: 420px;
+  }
+
+  .copy {
+    max-width: 100%;
+  }
+}
+
+/* mdTablet — the scrim becomes vertical, because at narrow widths the copy sits
+ * over the middle of the image rather than its darker left edge. */
+@media (max-width: 699px) {
+  .panel {
+    min-height: 380px;
+  }
+
+  .scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(28 58 85 / 88%) 0%,
+      rgb(28 58 85 / 65%) 100%
+    );
+  }
+
+  .backgroundImage {
+    object-position: center;
+  }
+}
+
+/* mobile — the pill would squeeze the placeholder to nothing beside a
+ * fixed-width button, so the two halves stack into full-width rounded rows. */
+@media (max-width: 499px) {
+  .panel {
+    padding-block: var(--space-8);
+  }
+
+  .search {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .searchInput,
+  .searchButton {
+    flex: 1 1 100%;
+    border-radius: var(--radius-pill);
+  }
+
+  .searchButton {
+    height: 52px;
+  }
+}

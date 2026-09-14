@@ -12,6 +12,27 @@
   z-index: 10;
   border-bottom: var(--border-width) solid var(--nav-rule);
   background: var(--color-surface);
+
+  /* Slides the whole header out of the way on downward scroll. Only transform
+   * is animated — animating `top` or height would relayout the page on every
+   * frame of the scroll. */
+  transition: transform var(--duration-slide) var(--ease-default);
+}
+
+/* -100%, not a pixel value: by the time this applies the utility bar has
+ * already collapsed, so the header's own height IS the main bar's height and
+ * it travels exactly as far as it needs to. */
+.header[data-hidden] {
+  transform: translateY(-100%);
+}
+
+/*
+ * Never hide the header while it holds keyboard focus. A tab into the nav can
+ * scroll the page, and sliding the focused element off-screen would leave a
+ * keyboard user's focus somewhere they cannot see.
+ */
+.header[data-hidden]:focus-within {
+  transform: none;
 }
 
 /*
@@ -28,12 +49,45 @@
  * on a 1920px monitor leaves ~1000px of dead space between them.
  */
 
+/*
+ * Collapses to nothing once the page has scrolled off the top.
+ *
+ * The 1fr -> 0fr grid row is what makes this animatable without hard-coding a
+ * height: `height: auto` is not interpolable, and a `max-height` guess either
+ * clips the content or spends most of the transition animating empty space.
+ * The inner wrapper needs `overflow: hidden` for the 0fr row to actually clip.
+ */
 .utilityBar {
+  display: grid;
+  grid-template-rows: 1fr;
   background: var(--brand-navy);
   border-bottom: var(--border-width) solid var(--nav-rule-utility);
+  transition:
+    grid-template-rows var(--duration-slide) var(--ease-default),
+    border-bottom-width var(--duration-slide) var(--ease-default);
+}
+
+/* The border collapses too — left at 1px it survives as a stray navy hairline
+ * under the main nav once the bar itself has gone. */
+.header[data-condensed] .utilityBar {
+  grid-template-rows: 0fr;
+  border-bottom-width: 0;
+}
+
+.header[data-condensed] .utilityInner {
+  padding-block: 0;
 }
 
 .utilityInner {
+  /* Required by the 0fr collapse above — without it the content keeps its
+   * height and the row never actually shrinks. */
+  overflow: hidden;
+
+  /* The padding has to go too. `box-sizing: border-box` cannot shrink a box
+   * below its own padding, so a 0fr row still leaves 8px top + 8px bottom
+   * standing — a 16px navy strip under the nav that looks like a bug. Same
+   * duration and easing as the row, so the two read as one movement. */
+  transition: padding-block var(--duration-slide) var(--ease-default);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -317,7 +371,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .dropdown,
-  .navCaret {
+  .navCaret,
+  .header,
+  .utilityBar,
+  .utilityInner {
     transition: none;
   }
 }
