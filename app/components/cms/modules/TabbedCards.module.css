@@ -8,7 +8,16 @@
  */
 
 .section {
-  padding-block-start: var(--space-16);
+  /*
+   * One shared section rhythm. --container-block is 64px and already steps to
+   * 48px at 1099 and 32px at 499, which is why there is no responsive override
+   * for it further down this file. Symmetric top and bottom, matching the comp
+   * (its content sections are padding: 64px).
+   *
+   * Must be stated, not omitted: reset.css gives every bare <section> a
+   * `padding: 2rem 0` above 768px, so leaving this out inherits that instead.
+   */
+  padding-block: var(--container-block);
 }
 
 .inner {
@@ -199,10 +208,6 @@
 /* tablet — the card stacks; four tabs no longer fit on one line, so the bar
  * becomes a 2x2 grid rather than shrinking the labels to nothing. */
 @media (max-width: 1099px) {
-  .section {
-    padding-block-start: var(--space-12);
-  }
-
   .tablist {
     flex-wrap: wrap;
   }
@@ -241,10 +246,6 @@
 
 /* mobile */
 @media (max-width: 499px) {
-  .section {
-    padding-block-start: var(--space-8);
-  }
-
   .cardActions {
     width: 100%;
   }

@@ -1,0 +1,232 @@
+/*
+ * Product Cards module — Figma "Shop" hifi (sprint-04/hifi_shop.html)
+ *
+ * Intro copy with a "view all" link opposite, above a four-up row of Shopify
+ * product cards. Shares its card chrome with Card Grid (2px border, 8px
+ * radius); the difference is what fills it — live price and title rather than
+ * authored copy.
+ */
+
+.section {
+  /* Shared section rhythm — --container-block is 64px and steps to 48/32, so
+   * there is no responsive override for it in this file. reset.css would
+   * otherwise apply its own `padding: 2rem 0` to a bare <section>. */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Copy left, "view all" opposite and baseline-ish with the body line. */
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.headCopy {
+  min-width: 0;
+}
+
+/* Figma "H3" / Eyebrow — matches Hero, Card Grid and Feature Cards */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: var(--space-2) 0 0;
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+  max-width: 68ch;
+  margin: var(--space-3) 0 0;
+}
+
+.viewAll {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/*
+ * Four up, as drawn. Fixed rather than auto-fit: auto-fit would reflow to five
+ * or six columns on a wide monitor and break the composition.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6); /* 24px in the design */
+  margin-top: var(--space-8);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+}
+
+/*
+ * Hover is not specced. Matched to Card Grid rather than invented separately,
+ * since the two card types sit on the same page. Every text element below sets
+ * its own colour because the site-wide `a:hover` would otherwise turn the whole
+ * card red.
+ */
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* 316x237 in the design — 4:3. Hydrogen's <Image> also emits width/height. */
+.cardImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* exact value from the design */
+  padding: 20px 22px 24px; /* exact values from the design */
+
+  /* Fills the height the image leaves, so `margin-top: auto` on the price block
+   * has slack to push against and the CTA lines up across cards whose titles
+   * run to a different number of lines. */
+  flex: 1 1 auto;
+}
+
+.cardLabel {
+  font-family: var(--font-body);
+  font-size: 0.75rem; /* 12px — below the scale's smallest, per the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  margin: 0;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.cardSpec {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-soft);
+  margin: 0;
+}
+
+/* Pinned to the foot with the CTA, so both align across the row. */
+.cardPrice {
+  margin: auto 0 0;
+  padding-top: 10px; /* exact value from the design */
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.from {
+  font-weight: var(--weight-regular);
+}
+
+.cardCta {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-action);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1440px frame.
+ */
+
+/* tablet */
+@media (max-width: 1099px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * mdTablet — one column, and the "view all" link drops under the copy.
+ *
+ * Single column here rather than at the 499px mobile breakpoint: two columns at
+ * 500px leaves each card ~214px wide, which is too narrow for a title, spec
+ * line, price and CTA to sit comfortably. Matches where Card Grid collapses.
+ */
+@media (max-width: 699px) {
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

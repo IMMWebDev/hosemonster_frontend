@@ -11,7 +11,8 @@
   display: flex;
   align-items: center;
   min-height: 584px; /* section height in the design */
-  padding-block: var(--space-16); /* 96px top / 97px bottom — the 1px is noise */
+  /* Shared section rhythm; the token already steps 64/48/32. */
+  padding-block: var(--container-block);
   overflow: hidden;
   background-color: var(--brand-navy); /* shows before the image loads */
 
@@ -38,7 +39,19 @@
 
 .background {
   position: absolute;
-  inset: 0;
+
+  /*
+   * Overscan, NOT inset: 0.
+   *
+   * `data-parallax` drifts this layer from +6% to -6% of its OWN height as the
+   * section passes (see app/styles/motion.css). At inset: 0 the layer is exactly
+   * the panel's height, so drifting it up uncovers ~29px of the panel's own
+   * navy background-color along the bottom edge — a dark band that grows as you
+   * scroll. Bleeding 8% past each edge gives the travel somewhere to go:
+   * the layer becomes 1.16x the panel, so 6% of it is 6.96% of the panel,
+   * comfortably inside the 8% of overhang available at each end.
+   */
+  inset: -8% 0;
   z-index: 0;
 }
 
@@ -171,7 +184,6 @@
 @media (max-width: 1099px) {
   .hero {
     min-height: 480px;
-    padding-block: var(--space-12);
   }
 
   .copy {
@@ -202,7 +214,6 @@
 /* mobile */
 @media (max-width: 499px) {
   .hero {
-    padding-block: var(--space-8);
   }
 
   .actions {

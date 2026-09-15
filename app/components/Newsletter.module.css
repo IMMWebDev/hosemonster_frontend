@@ -185,7 +185,9 @@
 }
 
 .formColumn :global(.hs-button:hover) {
-  background: var(--brand-navy);
+  /* Matches .btn--primary:hover — HubSpot renders its own markup, so the
+   * styleguide's class cannot be applied and the rule is mirrored instead. */
+  background: var(--color-action-hover);
 }
 
 .formColumn :global(.hs-button:focus-visible) {

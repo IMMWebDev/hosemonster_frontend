@@ -1,0 +1,168 @@
+/*
+ * CTA Bar module — Figma "Shop" hifi (sprint-04/hifi_shop.html)
+ *
+ * A rounded navy strip inset in the content column: copy left, button right.
+ * The compact counterpart to CTA Banner's full-bleed centred block.
+ */
+
+.section {
+  /*
+   * Shared section rhythm — see the same rule in every other content module.
+   * --container-block is 64px and already steps to 48/32, so there is no
+   * responsive override for it in this file.
+   *
+   * ⚠ The comp gives this section 0 top / 58px bottom, leaning on the card grid
+   * above for its top gap. Symmetric here instead: the house rule is that a
+   * module owns its own spacing and never depends on its neighbour, since the
+   * CMS can put these in any order.
+   */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+.bar {
+  position: relative;
+  isolation: isolate; /* keeps the background's z-index local to this card */
+  border-radius: var(--radius-md); /* 8px in the design */
+  background-color: var(--brand-navy); /* shows before the texture loads */
+
+  /* `clip`, not `hidden`: hidden would create a scroll container and become the
+   * nearest scrollport for the parallax inside, measuring the texture against
+   * this card instead of the document. */
+  overflow: clip;
+}
+
+/*
+ * The `background: red` variant.
+ *
+ * Both stops derive from --color-action (#EB3F21): the comp's darker end,
+ * #BC321A, is exactly that colour at 80% on black, so neither is a new hex.
+ * The first layer is the comp's vignette, painted OVER the gradient — stacking
+ * both in one background-image avoids adding an element just to darken a foot.
+ */
+.red {
+  background-color: var(--color-action);
+  background-image:
+    linear-gradient(0deg, rgb(0 0 0 / 20%), rgb(0 0 0 / 0%)),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-action) 80%, #000) 0%,
+      var(--color-action) 55%
+    );
+}
+
+/* Full white here, not the muted navy tint: --hero-meta-ink is tuned for copy
+ * on a dark navy fill and turns dirty against red. */
+.red .body {
+  color: var(--color-text-inverse);
+}
+
+/* The button is handled by the .btn--inverse variant in components.css, chosen
+ * in CtaBar.jsx — deliberately not overridden here. A button variant that only
+ * exists inside one module's stylesheet is how the hover states drifted apart
+ * in the first place. */
+
+/*
+ * Overscan, NOT inset: 0.
+ *
+ * `data-parallax="slow"` drifts this layer +/-3% of its own height. At inset: 0
+ * the layer is exactly the card's height, so drifting it uncovers a strip of
+ * the card's own navy at one edge. 5% of bleed at each end covers 3% of travel
+ * with room to spare.
+ */
+.background {
+  position: absolute;
+  inset: -5% 0;
+  z-index: 0;
+}
+
+.backgroundImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: 38px 42px; /* exact values from the design */
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0; /* lets the copy wrap instead of pushing the button off */
+}
+
+/*
+ * 24px, which falls between --text-h3 (18px) and --text-h2 (52px) with no token
+ * in the scale. Stated literally rather than forced onto a token that would be
+ * a third too small — one for the type-scale pass in STYLEGUIDE.md.
+ */
+.heading {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/*
+ * --hero-meta-ink is the house colour for light copy on a dark fill, and CTA
+ * Banner already uses it for exactly this. The comp asks for #C3D0DC, a cooler
+ * blue-grey; matched to the sibling module instead so the two CTAs agree —
+ * logged for the palette reconciliation pass.
+ */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+  max-width: 68ch;
+  margin: 0;
+}
+
+.action {
+  flex: 0 0 auto; /* the button keeps its width; the copy column absorbs the rest */
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1440px frame.
+ */
+
+/* mdTablet — side by side leaves the copy too narrow, so it stacks and the
+ * button goes full width rather than floating alone on a line. */
+@media (max-width: 699px) {
+  .content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-6);
+    padding: var(--space-6);
+  }
+
+  .action {
+    display: flex;
+  }
+
+  .action > * {
+    flex: 1 1 auto;
+  }
+}

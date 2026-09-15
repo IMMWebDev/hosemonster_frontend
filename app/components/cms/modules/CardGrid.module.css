@@ -1,0 +1,194 @@
+/*
+ * Card Grid module — Figma "Shop" hifi (sprint-04/hifi_shop.html)
+ *
+ * Intro copy above a three-up grid of bordered cards. Same content as Feature
+ * Cards, opposite treatment: light and outlined rather than dark and filled.
+ */
+
+.section {
+  /*
+   * One shared section rhythm. --container-block is 64px and already steps to
+   * 48px at 1099 and 32px at 499, which is why there is no responsive override
+   * for it further down this file. Symmetric top and bottom, matching the comp
+   * (its content sections are padding: 64px).
+   *
+   * Must be stated, not omitted: reset.css gives every bare <section> a
+   * `padding: 2rem 0` above 768px, so leaving this out inherits that instead.
+   */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Figma "H3" / Eyebrow — matches Hero and Feature Cards */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Figma "H2" */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: var(--space-2) 0 0;
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  max-width: 68ch;
+  margin: var(--space-3) 0 0;
+}
+
+/*
+ * Three up, as drawn. Fixed rather than auto-fit: auto-fit would silently
+ * reflow to four columns on a wide monitor and break the 2x3 composition the
+ * design is built around.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5); /* 20px in the design */
+  margin-top: var(--space-8);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  /* Clips the image to the rounded top corners. `hidden` is safe here — there
+   * is no parallax or sticky inside a card that a scroll container would
+   * break. */
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+}
+
+/*
+ * Hover is NOT specced — the Figma draws a single resting state. Kept
+ * deliberately quiet: the border firms up and the card lifts slightly. The
+ * site-wide `a:hover` turns link text red, which is why every piece of text
+ * below sets its own colour explicitly — without that the whole card would go
+ * red on hover.
+ */
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/*
+ * 434x271 in the design. Most of the uploaded art is square, so `cover` crops
+ * roughly a third of the height off those — see the note in the handover about
+ * getting landscape crops from the designer.
+ */
+.cardImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* exact value from the design */
+  padding: var(--space-6); /* 24px */
+
+  /*
+   * Grow to fill whatever height the image leaves. Without this the text block
+   * is only as tall as its own content, the slack pools BELOW it, and the
+   * `margin-top: auto` on .cardAction has no free space to absorb — so the
+   * label sits right under the description and lands at a different height on
+   * a one-line card than a two-line one.
+   */
+  flex: 1 1 auto;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* --color-text-soft: see tokens.css. The palette's only muted ink is
+ * --color-text-muted (#282727), a warm near-black that turns muddy beside a
+ * navy title, so supporting copy uses the soft navy instead. */
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-soft);
+  margin: 0;
+}
+
+/* Pushed to the card foot so the label lines up across cards whose copy runs
+ * to a different number of lines. */
+.cardAction {
+  margin-top: auto;
+  padding-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-action);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1440px frame.
+ */
+
+/* tablet */
+@media (max-width: 1099px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* mdTablet */
+@media (max-width: 699px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

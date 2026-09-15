@@ -85,6 +85,20 @@ export default async function handleRequest(
       "'self'",
       'https://www.youtube-nocookie.com',
       'https://www.youtube.com',
+      /*
+       * BugHerd and HubSpot are listed in defaultSrc above, but that does NOT
+       * cover them here: once frame-src exists it overrides default-src for
+       * frames entirely, and there is no fallback. Both embed themselves in an
+       * iframe, so both have to be repeated in this directive.
+       *
+       * BugHerd's sidebar is served from sidebar.bugherd.com; HubSpot serves
+       * the form from forms.hsforms.com whenever it falls back to an iframe
+       * rather than an inline embed.
+       */
+      'https://*.bugherd.com',
+      'https://www.bugherd.com',
+      'https://forms.hsforms.com',
+      'https://forms-na1.hsforms.com',
     ],
 
     // NOT merged — must be complete.

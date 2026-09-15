@@ -88,20 +88,41 @@
   color: var(--color-action-secondary-text);
 }
 
+/* Inverse — white fill, red text. For buttons on a red or otherwise saturated
+ * fill, where .btn--primary would be an invisible red-on-red button. Drawn in
+ * the Shop comp ("Shop Parts & Accessories"); not yet in the Figma styleguide,
+ * which still documents only primary and secondary. */
+.btn--inverse {
+  background-color: var(--color-surface);
+  border-color: var(--color-surface);
+  color: var(--color-action);
+}
+
 /*
- * Hover / focus states are NOT specced in the Figma styleguide — there are no
- * hover variants on either button component. These are a conservative default:
- * primary darkens toward navy, secondary fills with its own border color.
- * Replace once design provides interaction states.
+ * Hover states are NOT specced in the Figma styleguide — there are no hover
+ * variants on any button component. The house rule, chosen here: a button
+ * DARKENS WHAT IT ALREADY IS. Filled buttons go a shade darker; the outlined
+ * one fills with its own border colour, which is the same idea.
+ *
+ * Primary used to swap red -> navy. That broke twice as soon as dark sections
+ * arrived: navy-on-navy in the hero made the search button look like it had
+ * disappeared, and it left the inverse button below with no sensible target.
+ * Replace the lot once design provides real interaction states.
  */
 .btn--primary:hover {
-  background-color: var(--brand-navy);
-  border-color: var(--brand-navy);
+  background-color: var(--color-action-hover);
+  border-color: var(--color-action-hover);
 }
 
 .btn--secondary:hover {
   background-color: var(--color-action-secondary-border);
   color: var(--color-text-inverse);
+}
+
+.btn--inverse:hover {
+  background-color: var(--color-inverse-hover);
+  border-color: var(--color-inverse-hover);
+  color: var(--color-action);
 }
 
 /* Visible keyboard focus. Not in the design, but required for accessibility —

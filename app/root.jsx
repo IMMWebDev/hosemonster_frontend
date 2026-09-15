@@ -230,7 +230,16 @@ export function Layout({children}) {
   const nonce = useNonce();
 
   return (
-    <html lang="en">
+    /*
+      The `js` class is added to this element by the inline script below, before
+      hydration and by design. React never renders it, so it sees a class
+      attribute it did not put there and warns "Extra attributes from the
+      server". It leaves the class alone either way — the warning is the only
+      effect — but an unexplained hydration warning invites someone to "fix" it
+      by hardcoding className="js", which would apply the class with JS disabled
+      and leave every motion.css reveal target permanently hidden.
+    */
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -243,6 +252,28 @@ export function Layout({children}) {
         */}
         <script
           nonce={nonce}
+          /*
+            The nonce is UNAVOIDABLY different between server and client, and
+            that is not a bug to fix — it is how nonces work.
+
+            Browsers apply the nonce, then blank the content attribute so a page
+            cannot read its own nonce back out and forge a trusted script. React
+            hydrating this element therefore compares the DOM's "" against the
+            value it just rendered and reports a prop mismatch on every load,
+            then pointlessly writes the attribute back (CSP was already decided
+            at parse time, so the write changes nothing).
+
+            The nonce cannot simply be dropped the way it was on the BugHerd tag
+            below: that one is external and cleared by host allowlist, while
+            this is INLINE and the policy in app/entry.server.jsx admits inline
+            scripts only via 'nonce-…'. Remove it and the script is blocked, the
+            `js` class never lands, and every reveal in motion.css stays hidden
+            forever.
+
+            So the difference is declared expected instead. React then leaves
+            the attribute alone.
+          */
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: "document.documentElement.classList.add('js')",
           }}

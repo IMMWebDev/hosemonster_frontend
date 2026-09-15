@@ -11,9 +11,10 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
  *   blocks?: Array<{__component: string} & Record<string, any>>,
  *   baseUrl?: string,
  *   siteEnv?: Record<string, string | undefined>,
+ *   products?: Record<string, object>,
  * }} props
  */
-export default function BlockManager({blocks, baseUrl, siteEnv}) {
+export default function BlockManager({blocks, baseUrl, siteEnv, products}) {
   if (!blocks || blocks.length === 0) return null;
 
 
@@ -34,6 +35,10 @@ export default function BlockManager({blocks, baseUrl, siteEnv}) {
             data={rest}
             baseUrl={baseUrl}
             siteEnv={siteEnv}
+            /* Shopify products keyed by handle, resolved in the route loader —
+               see app/lib/module-products.js. Only module.product-cards reads
+               it; every other module ignores the prop. */
+            products={products}
           />
         );
       })}

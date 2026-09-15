@@ -1,4 +1,9 @@
 import Hero from '~/components/cms/modules/Hero';
+import HeroSearch from '~/components/cms/modules/HeroSearch';
+import CardGrid from '~/components/cms/modules/CardGrid';
+import CtaBar from '~/components/cms/modules/CtaBar';
+import ProductCards from '~/components/cms/modules/ProductCards';
+import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
@@ -36,6 +41,65 @@ export const MODULE_REGISTRY = {
         trustItems: true,
         primaryCTA: {populate: {pageLink: true}},
         secondaryCTA: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.hero-search': {
+    Component: HeroSearch,
+    // Only the media needs naming — every other field is a scalar and comes
+    // back with the module. There are no link components here by design.
+    options: {
+      populate: {
+        backgroundImage: true,
+      },
+    },
+  },
+  'module.card-grid': {
+    Component: CardGrid,
+    // Three levels: items -> image / link -> pageLink. populate: '*' stops at
+    // `items` and would return each card with no image and a dead link.
+    options: {
+      populate: {
+        items: {
+          populate: {
+            image: true,
+            link: {populate: {pageLink: true}},
+          },
+        },
+      },
+    },
+  },
+  'module.cta-bar': {
+    Component: CtaBar,
+    options: {
+      populate: {
+        backgroundImage: true,
+        cta: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.product-cards': {
+    Component: ProductCards,
+    // `items` carries only handles and copy — the products themselves are
+    // resolved from Shopify in the route loader, not populated from Strapi.
+    options: {
+      populate: {
+        items: true,
+        viewAllLink: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.link-cards': {
+    Component: LinkCards,
+    // Two levels: items -> link -> pageLink. The icon is an enum, not a
+    // relation, so it needs no populate of its own.
+    options: {
+      populate: {
+        items: {
+          populate: {
+            link: {populate: {pageLink: true}},
+          },
+        },
       },
     },
   },

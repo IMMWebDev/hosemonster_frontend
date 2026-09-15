@@ -1,6 +1,7 @@
 import {Suspense, useCallback, useEffect, useId, useRef, useState} from 'react';
 import {Await, NavLink, useAsyncValue, useLocation} from 'react-router';
 import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
+import {useHeaderScroll} from '~/lib/use-header-scroll';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
 import CmsLink from '~/components/cms/CmsLink';
@@ -41,8 +42,24 @@ export function Header({
   const showAccount = cmsHeader?.showAccount !== false;
   const showCart = cmsHeader?.showCart !== false;
 
+  /*
+   * Two separate signals, see use-header-scroll.js: the utility bar collapses
+   * once you leave the top of the page and stays collapsed, while the whole
+   * header slides away on downward scroll and returns on the first upward one.
+   */
+  const {condensed, hidden} = useHeaderScroll();
+
   return (
-    <header className={styles.header}>
+    /*
+     * Empty-string attributes, not booleans. React renders data-hidden="false"
+     * for a boolean false, and CSS attribute selectors match on presence — so
+     * the collapsed styles would apply permanently. `undefined` omits it.
+     */
+    <header
+      className={styles.header}
+      data-condensed={condensed ? '' : undefined}
+      data-hidden={hidden ? '' : undefined}
+    >
       <div className={styles.utilityBar}>
         <div className={styles.utilityInner}>
           {showSearch && <SearchToggle />}

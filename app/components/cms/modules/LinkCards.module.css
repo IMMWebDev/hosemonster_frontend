@@ -1,0 +1,185 @@
+/*
+ * Link Cards module — Figma "Shop" hifi (sprint-04/hifi_shop.html)
+ *
+ * A row of compact linked cards: icon tile, title, one line of copy, chevron.
+ * Shares its card chrome with Card Grid and Product Cards (2px border, 8px
+ * radius); the difference is that it is horizontal and carries no imagery.
+ */
+
+.section {
+  /* Shared section rhythm — --container-block is 64px and steps to 48/32, so
+   * there is no responsive override for it in this file. reset.css would
+   * otherwise apply its own `padding: 2rem 0` to a bare <section>. */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Figma "H3" / Eyebrow — matches every other module */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: var(--space-2) 0 0;
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+  max-width: 68ch;
+  margin: var(--space-3) 0 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5); /* 20px in the design */
+  margin-top: var(--space-8);
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4); /* 16px in the design */
+  padding: 20px 22px; /* exact values from the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+}
+
+/*
+ * Hover is not specced. Matched to Card Grid and Product Cards rather than
+ * invented separately, since all three card types sit on the same page. The
+ * chevron nudges to suggest direction. Every text element below sets its own
+ * colour because the site-wide `a:hover` would otherwise turn the card red.
+ */
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.card:hover .chevron {
+  transform: translateX(3px);
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* 52x52 tile in the design, on the section-tint grey. `flex: 0 0 auto` so a
+ * long title cannot squeeze it out of square. */
+.iconTile {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  /* The icon strokes with currentColor, so its colour is set here rather than
+   * in the generated component. */
+  color: var(--color-action);
+}
+
+.icon {
+  display: block;
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0; /* lets the copy wrap instead of pushing the chevron out */
+}
+
+.cardTitle {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
+  color: var(--color-text);
+}
+
+/*
+ * 13.5px in the design, below the smallest step in the scale. Stated literally
+ * rather than forced onto --text-body-sm, which would be 16px and crowd the
+ * card — one for the type-scale pass in STYLEGUIDE.md.
+ */
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: var(--weight-regular);
+  line-height: 1.45;
+  color: var(--color-text-soft);
+}
+
+/*
+ * The comp's #A5B3C0 is a pale blue-grey with no token — lighter than
+ * --color-text-soft, deliberately, because this is an affordance rather than
+ * content. Derived from the brand navy instead of adding another hex.
+ */
+.chevron {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 22px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--brand-navy) 40%, #fff);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only 1440px frame.
+ */
+
+/* tablet */
+@media (max-width: 1099px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* mdTablet — one column. These cards are wide and short, so a single column
+ * reads better than squeezing two. */
+@media (max-width: 699px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chevron {
+    transition: none;
+  }
+}

@@ -22,6 +22,7 @@ import styles from './TextMedia.module.css';
  *     image?: {url?: string, alternativeText?: string},
  *     videoUrl?: string,
  *     mediaSide?: 'left' | 'right',
+ *     background?: 'white' | 'grey',
  *   },
  *   baseUrl?: string,
  * }} props
@@ -36,6 +37,7 @@ export default function TextMedia({data, baseUrl}) {
     secondaryCTA,
     videoUrl,
     mediaSide = 'right',
+    background,
   } = data ?? {};
 
   if (!heading) return null;
@@ -70,8 +72,15 @@ export default function TextMedia({data, baseUrl}) {
   const videoId = youTubeId(videoUrl);
   const hasMedia = Boolean(videoId || imageUrl);
 
+  /*
+   * Only "grey" gets a class. Strapi applies an enum default on CREATE only, so
+   * a Text & Media authored before this field existed returns null rather than
+   * "white" — treating anything that is not "grey" as white covers both.
+   */
+  const backgroundClass = background === 'grey' ? styles.grey : '';
+
   return (
-    <section className={styles.section}>
+    <section className={`${styles.section} ${backgroundClass}`.trim()}>
       <div
         className={`${styles.inner} ${mediaSide === 'left' ? styles.mediaLeft : ''}`}
       >

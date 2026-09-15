@@ -6,7 +6,37 @@
  */
 
 .section {
-  padding-block-end: var(--space-16); /* 65px in the design */
+  /*
+   * One shared section rhythm. --container-block is 64px and already steps to
+   * 48px at 1099 and 32px at 499, which is why there is no responsive override
+   * for it further down this file. Symmetric top and bottom, matching the comp
+   * (its content sections are padding: 64px).
+   *
+   * Must be stated, not omitted: reset.css gives every bare <section> a
+   * `padding: 2rem 0` above 768px, so leaving this out inherits that instead.
+   */
+  padding-block: var(--container-block);
+
+  /*
+   * Full-bleed ALWAYS, not only when tinted. <main> carries a 16px horizontal
+   * margin, so without this a grey section would stop 16px short of each edge
+   * and read as a mistake. Doing it unconditionally keeps white and grey
+   * laying out identically — the only difference between them is the fill.
+   *
+   * .inner adds the same 16px back via --container-gutter-bleed, so the copy
+   * lands in exactly the same place it did before the bleed.
+   */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/*
+ * The `background` field on module.text-media. Null (an entry created before
+ * the field existed) and "white" both mean no class, so the default needs no
+ * rule of its own.
+ */
+.grey {
+  background-color: var(--color-surface-alt);
 }
 
 .inner {
@@ -16,7 +46,9 @@
   width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;
-  padding-inline: var(--container-gutter);
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding-inline: var(--container-gutter-bleed);
 }
 
 /*
@@ -228,10 +260,6 @@
 
 /* tablet — stack, media below the copy regardless of mediaSide. */
 @media (max-width: 1099px) {
-  .section {
-    padding-block-end: var(--space-12);
-  }
-
   .inner,
   .mediaLeft {
     flex-direction: column;
@@ -251,10 +279,6 @@
 
 /* mobile */
 @media (max-width: 499px) {
-  .section {
-    padding-block-end: var(--space-8);
-  }
-
   .actions {
     width: 100%;
   }

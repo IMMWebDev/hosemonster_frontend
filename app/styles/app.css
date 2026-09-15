@@ -663,12 +663,6 @@ button.reset:hover:not(:has(> *)) {
 * components/cms (Strapi dynamic-zone modules)
 * --------------------------------------------------
 */
-.cms-page {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-}
-
 /* module.wysiwyg */
 .cms-wysiwyg {
   max-width: 48rem;

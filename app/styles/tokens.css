@@ -33,6 +33,10 @@
    */
 
   /* Neutral ramp */
+  /* Section tint. Distinct from --neutral-100 and deliberately so: that one is
+   * the grey of a placeholder fill or a card, this is barely off-white and is
+   * only ever a background a whole section sits on. */
+  --neutral-50: #f5f6f7;
   --neutral-100: #e8e8e8; /* Figma: Neutral / 100 */
   --neutral-500: #282727; /* Figma: Neutral / 500 */
 
@@ -173,7 +177,16 @@
 
   /* Surfaces */
   --color-surface: var(--white); /* Default page background */
-  --color-surface-subtle: var(--neutral-100); /* Cards, alternating sections */
+  --color-surface-subtle: var(--neutral-100); /* Placeholder fills, cards */
+  /* A whole section lifted off the page background — see the `background`
+   * field on module.text-media. NOT interchangeable with -subtle above, which
+   * is four shades darker and reads as a grey block at section scale. */
+  --color-surface-alt: var(--neutral-50);
+  /* Muted navy for supporting copy beside a navy heading. Derived from the
+   * brand colour rather than adding another off-palette hex: the comps use
+   * several near-identical blue-greys (#5C7186, #41586E, #C3D0DC) that have no
+   * tokens. Lands within ~4 points of #5C7186. One for the palette pass. */
+  --color-text-soft: color-mix(in srgb, var(--brand-navy) 70%, #fff);
   --color-surface-inverse: var(--neutral-500); /* Footer, dark sections */
 
   /* Borders */
@@ -183,6 +196,14 @@
   /* Actions — primary = filled red, secondary = outlined navy */
   --color-action: var(--brand-red);
   --color-action-text: var(--white);
+  /* Hover fills. The house rule is that a button DARKENS WHAT IT ALREADY IS
+   * rather than swapping to another brand colour: red -> darker red, white ->
+   * off-white. A red-to-navy swap reads fine on white but makes a button on a
+   * navy panel look like it vanished, and leaves an inverse (white-on-red)
+   * button with nowhere sensible to go. Outlined buttons are the one exception
+   * and fill with their own border colour, which is the same idea. */
+  --color-action-hover: color-mix(in srgb, var(--color-action) 85%, #000);
+  --color-inverse-hover: var(--neutral-50);
   --color-action-secondary-border: var(--brand-navy);
   --color-action-secondary-text: var(--brand-navy);
 
@@ -217,8 +238,8 @@
   /* Type scale — desktop values, exactly as specced in Figma.
    * Expressed in rem (÷16) so browser text-size settings are respected.
    * Figma style names are noted so design and code share vocabulary. */
-  --text-h1: 3.75rem; /* 60px — Figma "H1" */
-  --text-h2: 3.25rem; /* 52px — Figma "H2" */
+  --text-h1: 3.25rem; /* 52px — Figma "H1" */
+  --text-h2: 3rem; /* 48px — Figma "H2" */
   --text-h3: 1.125rem; /* 18px — Figma "H3" (Eyebrow) */
   --text-button: 1rem; /* 16px — Figma "H4" (Button) */
   /* ⚠ DELIBERATE DIVERGENCE FROM FIGMA. The styleguide specifies B1 at 14px and
