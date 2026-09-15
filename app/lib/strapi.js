@@ -113,10 +113,56 @@ export function createStrapiClient({env, withCache}) {
   }
 
   /**
-   * Fetch a page by its Strapi `path` field, deeply populating only the
-   * dynamic-zone modules present on that page. Two-pass, mirroring the Next
-   * app: pass 1 discovers which `__component`s exist, pass 2 re-fetches with a
-   * per-module `populate` object assembled from MODULE_REGISTRY.
+   * Fetch one entry of a module-bearing collection type and deeply populate
+   * only the dynamic-zone modules actually on it.
+   *
+   * Two-pass, mirroring the Next app: pass 1 discovers which `__component`s
+   * exist, pass 2 re-fetches with a per-module `populate` object assembled from
+   * MODULE_REGISTRY. The second pass is not an optimisation — populating a
+   * module type that is NOT in this content type's dynamic zone makes Strapi
+   * answer `400 Invalid key`, so the populate has to be built from what the
+   * entry actually contains.
+   *
+   * @param {string} collection - plural API id, e.g. 'pages' or 'collections'
+   * @param {object} filters - Strapi filters object identifying the entry
+   * @param {'published' | 'draft'} status
+   * @returns {Promise<{page: StrapiPage | null, modules: StrapiModule[]}>}
+   */
+  async function getEntryWithModules(collection, filters, status) {
+    // Pass 1 — shallow: learn which module __components exist on this entry.
+    const shallow = await strapiFetch(collection, {
+      filters,
+      populate: {modules: true, seo: true},
+      status,
+    });
+
+    const found = shallow?.data?.[0];
+    if (!found) return {page: null, modules: []};
+
+    const on = {};
+    for (const dz of found.modules ?? []) {
+      const entry = MODULE_REGISTRY[dz.__component];
+      if (entry) on[dz.__component] = entry.options;
+    }
+
+    // No registered modules to deep-populate — return the shallow result.
+    if (Object.keys(on).length === 0) {
+      return {page: found, modules: found.modules ?? []};
+    }
+
+    // Pass 2 — deep: re-fetch with the per-module populate options.
+    const deep = await strapiFetch(collection, {
+      filters,
+      populate: {modules: {on}, seo: true},
+      status,
+    });
+
+    const page = deep?.data?.[0] ?? found;
+    return {page, modules: page.modules ?? []};
+  }
+
+  /**
+   * Fetch a CMS page by its Strapi `path` field.
    *
    * @param {string} path - leading-slash path, e.g. '/about'
    * @param {'published' | 'draft'} [status]
@@ -124,40 +170,37 @@ export function createStrapiClient({env, withCache}) {
    */
   async function getPage(path, status = 'published') {
     try {
-      // Pass 1 — shallow: learn which module __components exist on this page.
-      const shallow = await strapiFetch('pages', {
-        filters: {path: {$eq: path}},
-        populate: {modules: true, seo: true},
-        status,
-      });
-
-      const found = shallow?.data?.[0];
-      if (!found) return {page: null, modules: []};
-
-      // Build populate[modules][on][<__component>] from the registry —
-      // only the module types actually present on the page get populated.
-      const on = {};
-      for (const dz of found.modules ?? []) {
-        const entry = MODULE_REGISTRY[dz.__component];
-        if (entry) on[dz.__component] = entry.options;
-      }
-
-      // No registered modules to deep-populate — return the shallow result.
-      if (Object.keys(on).length === 0) {
-        return {page: found, modules: found.modules ?? []};
-      }
-
-      // Pass 2 — deep: re-fetch with the per-module populate options.
-      const deep = await strapiFetch('pages', {
-        filters: {path: {$eq: path}},
-        populate: {modules: {on}, seo: true},
-        status,
-      });
-
-      const page = deep?.data?.[0] ?? found;
-      return {page, modules: page.modules ?? []};
+      return await getEntryWithModules('pages', {path: {$eq: path}}, status);
     } catch (error) {
       console.error('Strapi getPage failed:', error);
+      return {page: null, modules: []};
+    }
+  }
+
+  /**
+   * Fetch the CMS content for a Shopify collection page, keyed by the Shopify
+   * collection handle.
+   *
+   * Separate from getPage because these are not Strapi-routed pages: the URL is
+   * owned by Hydrogen's `collections.$handle` route, and the entry exists only
+   * to hang CMS modules around the product grid. `shopifyCollectionHandle` is
+   * the contract with Shopify — it must equal the handle there exactly, and a
+   * mismatch yields no entry rather than an error, so the caller decides
+   * whether that is fatal.
+   *
+   * @param {string} handle - Shopify collection handle, e.g. 'smart-monster'
+   * @param {'published' | 'draft'} [status]
+   * @returns {Promise<{page: StrapiPage | null, modules: StrapiModule[]}>}
+   */
+  async function getCollectionPage(handle, status = 'published') {
+    try {
+      return await getEntryWithModules(
+        'collections',
+        {shopifyCollectionHandle: {$eq: handle}},
+        status,
+      );
+    } catch (error) {
+      console.error('Strapi getCollectionPage failed:', error);
       return {page: null, modules: []};
     }
   }
@@ -246,5 +289,5 @@ export function createStrapiClient({env, withCache}) {
     }
   }
 
-  return {fetch: strapiFetch, getPage, getSingle, getPreview};
+  return {fetch: strapiFetch, getPage, getCollectionPage, getSingle, getPreview};
 }

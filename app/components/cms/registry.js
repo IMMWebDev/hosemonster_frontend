@@ -1,5 +1,6 @@
 import Hero from '~/components/cms/modules/Hero';
 import HeroSearch from '~/components/cms/modules/HeroSearch';
+import PageHero from '~/components/cms/modules/PageHero';
 import CardGrid from '~/components/cms/modules/CardGrid';
 import CtaBar from '~/components/cms/modules/CtaBar';
 import ProductCards from '~/components/cms/modules/ProductCards';
@@ -39,8 +40,8 @@ export const MODULE_REGISTRY = {
       populate: {
         backgroundImage: true,
         trustItems: true,
-        primaryCTA: {populate: {pageLink: true}},
-        secondaryCTA: {populate: {pageLink: true}},
+        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -54,6 +55,19 @@ export const MODULE_REGISTRY = {
       },
     },
   },
+  'module.page-hero': {
+    Component: PageHero,
+    // Every component field must be named. populate: '*' stops one level down
+    // and would return breadcrumbParent without its pageLink relation, so the
+    // crumb would resolve to '#'.
+    options: {
+      populate: {
+        backgroundImage: true,
+        breadcrumbParent: {populate: {pageLink: true, collectionLink: true}},
+        infoColumns: true,
+      },
+    },
+  },
   'module.card-grid': {
     Component: CardGrid,
     // Three levels: items -> image / link -> pageLink. populate: '*' stops at
@@ -63,7 +77,7 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -74,7 +88,7 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
-        cta: {populate: {pageLink: true}},
+        cta: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -85,7 +99,7 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         items: true,
-        viewAllLink: {populate: {pageLink: true}},
+        viewAllLink: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -97,7 +111,7 @@ export const MODULE_REGISTRY = {
       populate: {
         items: {
           populate: {
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -112,8 +126,8 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            primaryCTA: {populate: {pageLink: true}},
-            secondaryCTA: {populate: {pageLink: true}},
+            primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+            secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -125,8 +139,8 @@ export const MODULE_REGISTRY = {
       populate: {
         image: true,
         bullets: true,
-        primaryCTA: {populate: {pageLink: true}},
-        secondaryCTA: {populate: {pageLink: true}},
+        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -135,11 +149,11 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         bannerImage: true,
-        bannerCta: {populate: {pageLink: true}},
+        bannerCta: {populate: {pageLink: true, collectionLink: true}},
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -150,8 +164,8 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
-        primaryCta: {populate: {pageLink: true}},
-        secondaryCta: {populate: {pageLink: true}},
+        primaryCta: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCta: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -162,7 +176,7 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },

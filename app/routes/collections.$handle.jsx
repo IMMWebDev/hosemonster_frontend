@@ -3,12 +3,30 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
+import BlockManager from '~/components/cms/BlockManager';
+import {getModuleProducts} from '~/lib/module-products';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  /*
+   * CMS first, Shopify second. A collection page's title is editorial, so the
+   * Strapi `seo` component wins when the handle has a CMS entry; a collection
+   * with no entry still gets a sensible title from Shopify rather than nothing.
+   */
+  const seo = data?.cmsPage?.seo;
+  const title = seo?.metaTitle || `${data?.collection?.title ?? ''} | Hose Monster`;
+
+  const tags = [{title}, {property: 'og:title', content: title}];
+  if (seo?.metaDescription) {
+    tags.push({name: 'description', content: seo.metaDescription});
+    tags.push({property: 'og:description', content: seo.metaDescription});
+  }
+  if (seo?.preventIndexing) {
+    tags.push({name: 'robots', content: 'noindex, nofollow'});
+  }
+  return tags;
 };
 
 /**
@@ -40,11 +58,18 @@ async function loadCriticalData({context, params, request, url}) {
     throw redirect('/collections');
   }
 
-  const [{collection}] = await Promise.all([
+  /*
+   * Shopify and Strapi in parallel. The CMS entry is keyed by
+   * `shopifyCollectionHandle`, so the same handle addresses both — see
+   * getCollectionPage. It is null-safe: a collection with no CMS entry renders
+   * the product grid alone rather than failing.
+   */
+  const [{collection}, cms] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
       variables: {handle, ...paginationVariables},
       // Add other queries here, so that they are loaded in parallel
     }),
+    context.strapi.getCollectionPage(handle),
   ]);
 
   if (!collection) {
@@ -56,8 +81,25 @@ async function loadCriticalData({context, params, request, url}) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(url, {handle, data: collection});
 
+  /*
+   * Modules cannot fetch — BlockManager renders straight from the CMS payload.
+   * module.product-cards stores only references, so its Storefront lookup
+   * happens here, same as on $.jsx and _index.jsx.
+   */
+  const products = await getModuleProducts({
+    storefront,
+    modules: cms.modules,
+  });
+
   return {
     collection,
+    cmsPage: cms.page,
+    cmsModules: cms.modules,
+    products,
+    strapiBaseUrl: context.env.STRAPI_API_URL,
+    // Read by PageLayout via useMatches to decide whether the newsletter band
+    // renders above the footer.
+    includeNewsletter: cms.page?.includeNewsletter ?? null,
   };
 }
 
@@ -73,12 +115,27 @@ function loadDeferredData({context}) {
 
 export default function Collection() {
   /** @type {LoaderReturnData} */
-  const {collection} = useLoaderData();
+  const {collection, cmsModules, strapiBaseUrl, products} = useLoaderData();
 
   return (
     <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
+      {/*
+        CMS modules render ABOVE the product grid — the hero, intro copy and
+        anything else authored for this collection. The grid below is still the
+        Hydrogen skeleton's; it becomes its own module when we build the feed.
+      */}
+      <BlockManager
+        blocks={cmsModules}
+        baseUrl={strapiBaseUrl}
+        products={products}
+      />
+
+      {/*
+        Shopify's title and description are deliberately NOT rendered. The page
+        heading comes from the Page Hero module so it is editorial and matches
+        the comp, and two <h1>s on one page is worse for SEO than none. The CMS
+        owns the words; Shopify owns the products.
+      */}
       <PaginatedResourceSection
         connection={collection.products}
         resourcesClassName="products-grid"

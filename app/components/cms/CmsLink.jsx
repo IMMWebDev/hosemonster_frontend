@@ -3,10 +3,19 @@ import {Link, NavLink} from 'react-router';
 /**
  * Resolves a Strapi "link" component to an anchor.
  *
- * Ported from nextjs-sample/components/utilities/link. A link may be external
- * (`linkUrl`) or an internal page relation (`pageLink.path`). Internal links
- * use React Router's <NavLink> for client-side navigation; external / new-tab
- * links use a plain <a>.
+ * Ported from nextjs-sample/components/utilities/link. A link has one of three
+ * destinations, resolved in this order:
+ *
+ *   linkUrl         typed in — external addresses, and anything with no CMS
+ *                   entry to point at
+ *   pageLink        relation to a CMS page
+ *   collectionLink  relation to a Shopify collection page, resolved through its
+ *                   `path`, which a Strapi lifecycle keeps derived from the
+ *                   Shopify handle
+ *
+ * The relations are preferred over a typed URL because they survive a path
+ * change. Internal links use React Router's <NavLink> for client-side
+ * navigation; external / new-tab links use a plain <a>.
  *
  * NavLink rather than Link so the browser gets `aria-current="page"` on the
  * link matching the current URL. That is what the current-page underline in the
@@ -14,7 +23,7 @@ import {Link, NavLink} from 'react-router';
  * active state simply never appears.
  *
  * @param {{
- *   link: {linkUrl?: string, openNewTab?: boolean, pageLink?: {path?: string}, linkText?: string},
+ *   link: {linkUrl?: string, openNewTab?: boolean, pageLink?: {path?: string}, collectionLink?: {path?: string}, linkText?: string},
  *   className?: string,
  *   children?: import('react').ReactNode,
  *   onClick?: (event: import('react').MouseEvent) => void,
@@ -33,8 +42,8 @@ export default function CmsLink({
   dataReveal,
 }) {
   if (!link) return null;
-  const {linkUrl, openNewTab, pageLink, linkText} = link;
-  const to = linkUrl || pageLink?.path || '#';
+  const {linkUrl, openNewTab, pageLink, collectionLink, linkText} = link;
+  const to = linkUrl || pageLink?.path || collectionLink?.path || '#';
   const label = children ?? linkText;
   const isExternal = /^https?:\/\//i.test(to) || to.startsWith('//');
 

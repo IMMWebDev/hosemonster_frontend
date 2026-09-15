@@ -151,15 +151,15 @@ async function loadCriticalData({context}) {
     strapi.getSingle('header', {
       populate: {
         logo: true,
-        utilityLinks: {populate: {pageLink: true}},
+        utilityLinks: {populate: {pageLink: true, collectionLink: true}},
         // Three levels: mainNav -> link / dropdownLinks -> pageLink. A nav item
         // WRAPS a utilities.link rather than redeclaring its fields, so adding
         // a relation to that one component (a new collection type, say) reaches
         // both the top-level item and every dropdown entry at once.
         mainNav: {
           populate: {
-            link: {populate: {pageLink: true}},
-            dropdownLinks: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
+            dropdownLinks: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -178,8 +178,8 @@ async function loadCriticalData({context}) {
       populate: {
         logo: true,
         socialLinks: true,
-        legalLinks: {populate: {pageLink: true}},
-        linkColumns: {populate: {links: {populate: {pageLink: true}}}},
+        legalLinks: {populate: {pageLink: true, collectionLink: true}},
+        linkColumns: {populate: {links: {populate: {pageLink: true, collectionLink: true}}}},
       },
     }),
   ]);
