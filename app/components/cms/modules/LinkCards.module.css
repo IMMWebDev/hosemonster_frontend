@@ -11,13 +11,37 @@
    * there is no responsive override for it in this file. reset.css would
    * otherwise apply its own `padding: 2rem 0` to a bare <section>. */
   padding-block: var(--container-block);
+
+  /*
+   * Full-bleed ALWAYS, not only when tinted — the same rule Text & Media uses.
+   * <main> carries a 16px horizontal margin, so without this a grey band would
+   * stop 16px short of each edge and read as a mistake. Doing it
+   * unconditionally keeps white and grey laying out identically; the only
+   * difference between them is the fill.
+   *
+   * .inner adds the same 16px back via --container-gutter-bleed, so the copy
+   * lands exactly where it did before the bleed.
+   */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/*
+ * The `background` field on module.link-cards. Null (an entry authored before
+ * the field existed) and "white" both mean no class, so the default needs no
+ * rule of its own.
+ */
+.grey {
+  background-color: var(--color-surface-alt);
 }
 
 .inner {
   width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;
-  padding-inline: var(--container-gutter);
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding-inline: var(--container-gutter-bleed);
 }
 
 /* Figma "H3" / Eyebrow — matches every other module */

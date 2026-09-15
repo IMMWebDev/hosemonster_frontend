@@ -8,6 +8,7 @@ import ProductFeed from '~/components/cms/modules/ProductFeed';
 import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
+import TextHighlights from '~/components/cms/modules/TextHighlights';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
 import CtaBanner from '~/components/cms/modules/CtaBanner';
 import FeatureCards from '~/components/cms/modules/FeatureCards';
@@ -154,6 +155,17 @@ export const MODULE_REGISTRY = {
         bullets: true,
         primaryCTA: {populate: {pageLink: true, collectionLink: true}},
         secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+      },
+    },
+  },
+  'module.text-highlights': {
+    Component: TextHighlights,
+    // Both repeatables hold nothing but scalars, so `true` is enough — there
+    // are no media or link relations to name.
+    options: {
+      populate: {
+        bullets: true,
+        highlights: true,
       },
     },
   },

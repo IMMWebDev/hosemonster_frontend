@@ -1,0 +1,169 @@
+/*
+ * Text & Highlights module — Smart Monster collection hifi
+ * (sprint-04/hifi_smartmonstercollection.html, "It fits what you already own")
+ *
+ * Intro lockup on the left, a grid of ruled notes on the right. No imagery, no
+ * fill — the only chrome is the 2px rule above each note.
+ */
+
+.section {
+  /* Shared section rhythm — --container-block is 64px and steps to 48/32, so
+   * there is no responsive override for it in this file. Must be stated:
+   * reset.css gives a bare <section> its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  display: flex;
+  /*
+   * Wrap rather than a breakpoint. The two columns have real flex bases, so
+   * they stack the moment they stop fitting — around 960px — instead of at a
+   * breakpoint that has nothing to do with this content. The gap tightens on
+   * the way down so the stacked version does not read as two sections.
+   */
+  flex-wrap: wrap;
+  gap: clamp(var(--space-7), 4vw, var(--space-14)); /* 28px → 56px */
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/*
+ * Bases, not ratios. Unlike Text & Media — where the image should keep growing
+ * with the viewport — the right column here is text at a fixed size, so past a
+ * point extra width just makes the lines long. The 380/460 split comes from the
+ * design; `min-width: 280px` stops either column collapsing before it wraps.
+ */
+.copy {
+  flex: 1 1 380px;
+  min-width: 280px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+  max-width: 48ch; /* from the design — shorter measure than the heading */
+  margin: var(--space-4) 0 0;
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3);
+}
+
+/*
+ * The dot is a pseudo-element, not a list marker.
+ *
+ * `::marker` can be coloured, but its size is tied to the font and its distance
+ * from the text is not settable — the design draws a 6px dot 12px clear of a
+ * label that is bold and larger than the dot. A pseudo-element gives both
+ * exactly. `role="list"` on the <ul> covers the semantics that
+ * `list-style: none` costs in Safari.
+ */
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3); /* 12px in the design */
+  list-style: none;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+}
+
+.bullet {
+  display: flex;
+  /* Baseline, not centre: the dot should sit on the text's baseline rather than
+   * float at the middle of a cap-height it is a quarter the size of. */
+  align-items: baseline;
+  gap: var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.bullet::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-action);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * HIGHLIGHTS
+ * -----------------------------------------------------------------------------
+ */
+
+.highlights {
+  flex: 1 1 460px;
+  min-width: 280px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-8); /* 24px / 32px in the design */
+  /* Own the top edge rather than stretching: the rules above the first row
+   * should line up with the heading, not with the middle of the copy column. */
+  align-content: start;
+}
+
+/*
+ * A border on the item, not a grid line — it has to appear above every note
+ * including the ones that start a new row after the grid reflows to one column.
+ */
+.highlight {
+  border-top: var(--border-width-thick) solid var(--color-border);
+  padding-top: var(--space-3); /* 14px in the design, on the 4px grid */
+}
+
+.highlightLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.highlightBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+  margin: var(--space-2) 0 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only frame. The column stack is handled by
+ * flex-wrap above; only the notes grid needs a breakpoint of its own.
+ */
+
+/* mdTablet — two 16px columns inside a stacked half get too narrow to read. */
+@media (max-width: 699px) {
+  .highlights {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
