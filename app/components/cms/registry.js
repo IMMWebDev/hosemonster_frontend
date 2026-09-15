@@ -4,6 +4,7 @@ import PageHero from '~/components/cms/modules/PageHero';
 import CardGrid from '~/components/cms/modules/CardGrid';
 import CtaBar from '~/components/cms/modules/CtaBar';
 import ProductCards from '~/components/cms/modules/ProductCards';
+import ProductFeed from '~/components/cms/modules/ProductFeed';
 import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
@@ -116,6 +117,18 @@ export const MODULE_REGISTRY = {
         },
       },
     },
+  },
+  'module.product-feed': {
+    Component: ProductFeed,
+    /*
+     * populate: '*' even though this module has only scalar fields.
+     *
+     * An empty `populate: {}` serialises to nothing, so the component drops out
+     * of `populate[modules][on]` entirely and Strapi omits it from the
+     * response — the module silently never renders. Every entry in this
+     * registry must produce at least one query parameter.
+     */
+    options: {populate: '*'},
   },
   'module.tabbed-cards': {
     Component: TabbedCards,
