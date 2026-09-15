@@ -6,7 +6,16 @@
  */
 
 .section {
-  padding-block: var(--space-16);
+  /*
+   * One shared section rhythm. --container-block is 64px and already steps to
+   * 48px at 1099 and 32px at 499, which is why there is no responsive override
+   * for it further down this file. Symmetric top and bottom, matching the comp
+   * (its content sections are padding: 64px).
+   *
+   * Must be stated, not omitted: reset.css gives every bare <section> a
+   * `padding: 2rem 0` above 768px, so leaving this out inherits that instead.
+   */
+  padding-block: var(--container-block);
 }
 
 .inner {
@@ -190,10 +199,6 @@
 
 /* tablet — four 298px cards no longer fit, so two per row. */
 @media (max-width: 1099px) {
-  .section {
-    padding-block: var(--space-12);
-  }
-
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -202,10 +207,6 @@
 /* mobile — one per row; the card's own height rule stops applying so the
  * image does not dominate a narrow screen. */
 @media (max-width: 499px) {
-  .section {
-    padding-block: var(--space-8);
-  }
-
   .grid {
     grid-template-columns: minmax(0, 1fr);
   }

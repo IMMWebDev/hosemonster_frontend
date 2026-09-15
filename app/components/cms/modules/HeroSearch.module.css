@@ -36,7 +36,7 @@
   /* Only bites when the copy is taller than the panel (narrow viewports); at
    * desktop the copy is centred inside min-height and this is slack. Matches
    * the 56px the comp puts around its content block. */
-  padding-block: var(--space-14);
+  padding-block: var(--container-block);
   background-color: var(--brand-navy); /* shows before the image loads */
 
   /* `clip`, NOT `hidden`. Both crop the image to the panel, but `hidden`
@@ -60,7 +60,19 @@
 
 .background {
   position: absolute;
-  inset: 0;
+
+  /*
+   * Overscan, NOT inset: 0.
+   *
+   * `data-parallax` drifts this layer from +6% to -6% of its OWN height as the
+   * section passes (see app/styles/motion.css). At inset: 0 the layer is exactly
+   * the panel's height, so drifting it up uncovers ~29px of the panel's own
+   * navy background-color along the bottom edge — a dark band that grows as you
+   * scroll. Bleeding 8% past each edge gives the travel somewhere to go:
+   * the layer becomes 1.16x the panel, so 6% of it is 6.96% of the panel,
+   * comfortably inside the 8% of overhang available at each end.
+   */
+  inset: -8% 0;
   z-index: 0;
 }
 
@@ -289,10 +301,6 @@
 /* mobile — the pill would squeeze the placeholder to nothing beside a
  * fixed-width button, so the two halves stack into full-width rounded rows. */
 @media (max-width: 499px) {
-  .panel {
-    padding-block: var(--space-8);
-  }
-
   .search {
     flex-wrap: wrap;
     gap: var(--space-2);

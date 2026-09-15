@@ -6,7 +6,16 @@
  */
 
 .section {
-  padding-block-end: var(--space-16); /* 65px in the design */
+  /*
+   * One shared section rhythm. --container-block is 64px and already steps to
+   * 48px at 1099 and 32px at 499, which is why there is no responsive override
+   * for it further down this file. Symmetric top and bottom, matching the comp
+   * (its content sections are padding: 64px).
+   *
+   * Must be stated, not omitted: reset.css gives every bare <section> a
+   * `padding: 2rem 0` above 768px, so leaving this out inherits that instead.
+   */
+  padding-block: var(--container-block);
 }
 
 .inner {
@@ -228,10 +237,6 @@
 
 /* tablet — stack, media below the copy regardless of mediaSide. */
 @media (max-width: 1099px) {
-  .section {
-    padding-block-end: var(--space-12);
-  }
-
   .inner,
   .mediaLeft {
     flex-direction: column;
@@ -251,10 +256,6 @@
 
 /* mobile */
 @media (max-width: 499px) {
-  .section {
-    padding-block-end: var(--space-8);
-  }
-
   .actions {
     width: 100%;
   }

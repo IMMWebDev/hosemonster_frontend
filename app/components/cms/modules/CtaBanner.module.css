@@ -11,6 +11,11 @@
   overflow: hidden;
   background-color: var(--brand-navy);
 
+  /* Zero, deliberately. This element IS the navy band and its padding lives on
+   * .inner below; without this, reset.css's `padding: 2rem 0` on a bare
+   * <section> stacks OUTSIDE that and makes the band 64px taller than drawn. */
+  padding-block: 0;
+
   /* Full-bleed. <main> carries a horizontal margin (see reset.css), so cancel
    * exactly that much and grow by the same amount on each side. Same approach
    * as the Hero — deliberately not 100vw, which includes the scrollbar and
@@ -50,7 +55,8 @@
   margin-inline: auto;
   /* Bleed gutter: this section cancels <main>'s margin, so its content needs
    * that width added back to line up with non-bleed sections. */
-  padding: var(--space-16) var(--container-gutter-bleed); /* 64px block */
+  /* Same rhythm as every content section — steps 64/48/32 with the token. */
+  padding: var(--container-block) var(--container-gutter-bleed);
   text-align: center;
 }
 

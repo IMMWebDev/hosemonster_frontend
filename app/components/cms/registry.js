@@ -1,5 +1,6 @@
 import Hero from '~/components/cms/modules/Hero';
 import HeroSearch from '~/components/cms/modules/HeroSearch';
+import CardGrid from '~/components/cms/modules/CardGrid';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
@@ -47,6 +48,21 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
+      },
+    },
+  },
+  'module.card-grid': {
+    Component: CardGrid,
+    // Three levels: items -> image / link -> pageLink. populate: '*' stops at
+    // `items` and would return each card with no image and a dead link.
+    options: {
+      populate: {
+        items: {
+          populate: {
+            image: true,
+            link: {populate: {pageLink: true}},
+          },
+        },
       },
     },
   },
