@@ -128,6 +128,14 @@ export default [
     rules: {
       'jsx-a11y/control-has-associated-label': 'off',
       'jsx-a11y/label-has-for': 'off',
+      /*
+       * `role="list"` on a <ul> is only redundant while the list has markers.
+       * Safari/VoiceOver drops list semantics the moment `list-style: none` is
+       * applied, which this codebase does in a dozen places (Footer, Header,
+       * Page Hero, Product Feed, Text & Highlights), so the role is the fix
+       * rather than the noise the default rule assumes.
+       */
+      'jsx-a11y/no-redundant-roles': ['error', {ul: ['list'], ol: ['list']}],
       'react/display-name': 'off',
       'react/no-array-index-key': 'warn',
       'react/prop-types': 'off',

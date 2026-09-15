@@ -9,6 +9,7 @@ import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import TextHighlights from '~/components/cms/modules/TextHighlights';
+import Faq from '~/components/cms/modules/Faq';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
 import CtaBanner from '~/components/cms/modules/CtaBanner';
 import FeatureCards from '~/components/cms/modules/FeatureCards';
@@ -166,6 +167,16 @@ export const MODULE_REGISTRY = {
       populate: {
         bullets: true,
         highlights: true,
+      },
+    },
+  },
+  'module.faq': {
+    Component: Faq,
+    // The repeatable holds a string and a rich-text string — no media or link
+    // relations to name, so `true` is enough.
+    options: {
+      populate: {
+        items: true,
       },
     },
   },

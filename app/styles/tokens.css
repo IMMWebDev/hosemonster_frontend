@@ -362,6 +362,21 @@
    */
   --container-outer: calc(var(--container-max) + 2 * var(--container-gutter));
 
+  /*
+   * The same cap for a FULL-BLEED section.
+   *
+   * A bleed section is 2 * --main-gutter wider than a normal one, so if its
+   * wrapper capped at --container-outer too, both wrappers would clamp to the
+   * identical width and centre on the identical vertical — and the extra
+   * --container-gutter-bleed padding would stop cancelling the breakout and
+   * become a plain indent. Above the cap that put every bleed module 16px
+   * right of its neighbours; below it the two cancelled exactly, which is why
+   * it only showed on displays wider than the cap.
+   */
+  --container-outer-bleed: calc(
+    var(--container-outer) + 2 * var(--main-gutter)
+  );
+
   /* Horizontal margin on <main>, inherited from the Hydrogen starter. It stops
    * any section reaching the viewport edge, so full-bleed modules cancel it out
    * with a negative margin of the same size (see .hero in Hero.module.css).

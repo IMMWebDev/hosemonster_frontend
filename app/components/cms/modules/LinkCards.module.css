@@ -37,7 +37,7 @@
 
 .inner {
   width: 100%;
-  max-width: var(--container-outer);
+  max-width: var(--container-outer-bleed);
   margin-inline: auto;
   /* Bleed gutter: this section cancels <main>'s margin, so its content needs
    * that width added back to line up with non-bleed sections. */

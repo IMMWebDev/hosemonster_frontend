@@ -1,0 +1,245 @@
+/*
+ * FAQ module — Smart Monster collection hifi
+ * (sprint-04/hifi_smartmonstercollection.html, "What buyers ask us")
+ *
+ * Two columns of <details> accordions. Card chrome matches Card Grid, Link
+ * Cards and Product Cards — 2px rule, 8px radius — so the panels read as the
+ * same family whether the band behind them is white or grey.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed ALWAYS, the same rule Text & Media and Link Cards use, so the
+   * grey variant reaches the viewport edge and the white one lays out
+   * identically. .inner adds the gutter back via --container-gutter-bleed. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* The `background` field on module.faq. White needs no rule of its own. */
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+/*
+ * The lockup is CENTRED, unlike every other module on the page.
+ *
+ * An FAQ is a list people scan rather than a column of prose, and with the
+ * accordion capped well short of the container a left-aligned heading over a
+ * centred list — or a narrow list stranded against the left edge of a 1376px
+ * band — both read as a mistake. Centring the whole thing makes the narrow
+ * measure look deliberate. The question rows inside stay left-aligned; they
+ * have to, with the toggle pinned to the right.
+ */
+
+/* Figma "H3" / Eyebrow — matches every other module. The comp tracks this one
+ * out by 0.08em; no other eyebrow on the site does, so it is left alone. */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  text-align: center;
+  margin: 0;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-align: center;
+  margin: var(--space-2) 0 0;
+}
+
+/*
+ * One column, capped.
+ *
+ * The comp draws two; see the comment in Faq.jsx for why stacked won. The cap
+ * is about measure, not taste — the container runs to 1376px here, and an
+ * answer set across that is roughly 165 characters a line, far past the point
+ * where the eye finds the next one. Left-aligned rather than centred so the
+ * rows start on the same vertical as the heading above them.
+ */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4); /* 16px in the design */
+  max-width: 900px;
+  margin-inline: auto;
+  margin-top: var(--space-7); /* 28px in the design */
+}
+
+.item {
+  background: var(--color-surface);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/*
+ * `list-style: none` plus the WebKit pseudo removes the disclosure triangle in
+ * every engine — the +/− tile is the affordance instead. `display: flex` on a
+ * <summary> is what makes the marker box go away in Safari specifically.
+ */
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5); /* 20px in the design */
+  padding: var(--space-5) var(--space-6); /* 22px / 24px in the design */
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The whole row is the control, so the ring goes round the row. `-2px` keeps it
+ * inside the card's own 8px corner instead of boxing it off squarely. */
+.summary:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: -2px;
+  border-radius: var(--radius-md);
+}
+
+.question {
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+.toggle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; /* from the design */
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: var(--color-action);
+  color: var(--color-action-text);
+}
+
+.toggle svg {
+  display: block;
+  /* The SVG carries no stroke of its own so it inherits the tile's colour — one
+   * place to change if the tile ever stops being red. */
+  stroke: currentColor;
+}
+
+/*
+ * Plus becomes minus: the upright bar fades out, leaving the crossbar.
+ *
+ * The comp squashes it with `transform: scaleY(0)`, which is the obvious way to
+ * do it and does not work — a transform on an SVG <line> is dropped by the
+ * renderer here (an explicit scaleY(0) computes back as the identity matrix and
+ * the line keeps its full height). Opacity is honoured on SVG children
+ * everywhere, transitions the same way, and reads as a cleaner change than a
+ * squash. One piece of markup either way.
+ */
+.toggleBar {
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.item[open] .toggleBar {
+  opacity: 0;
+}
+
+/*
+ * The element whose height is animated (see Faq.jsx). `overflow: hidden` is
+ * what makes a partial height clip the copy instead of spilling it over the
+ * question below. The padding is on .answer, not here, so it collapses with the
+ * content rather than holding the panel open at 24px when closed.
+ */
+.panel {
+  overflow: hidden;
+}
+
+.answer {
+  padding: 0 var(--space-6) var(--space-6); /* 0 / 24 / 24 in the design */
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+}
+
+/*
+ * The answer is CKEditor output, so the tags it can contain are bounded but not
+ * chosen here. These rules stop an editor's markup from arriving with UA
+ * margins that fight the padding above.
+ */
+.answer > :first-child {
+  margin-top: 0;
+}
+
+.answer > :last-child {
+  margin-bottom: 0;
+}
+
+.answer p {
+  margin: 0;
+}
+
+.answer p + p,
+.answer ul,
+.answer ol {
+  margin: var(--space-3) 0 0;
+}
+
+.answer ul,
+.answer ol {
+  padding-left: var(--space-5);
+}
+
+.answer a {
+  color: var(--color-text-accent);
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+  text-decoration-thickness: var(--underline-thickness);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in Figma — desktop-only frame.
+ */
+
+/* mobile — the tile and the question crowd each other at 375px. */
+@media (max-width: 499px) {
+  .summary {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .answer {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+}
+
+/*
+ * The toggle is the only moving part here; motion.css owns the reveal.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .toggleBar {
+    transition: none;
+  }
+}
