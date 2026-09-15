@@ -16,6 +16,27 @@
    * `padding: 2rem 0` above 768px, so leaving this out inherits that instead.
    */
   padding-block: var(--container-block);
+
+  /*
+   * Full-bleed ALWAYS, not only when tinted. <main> carries a 16px horizontal
+   * margin, so without this a grey section would stop 16px short of each edge
+   * and read as a mistake. Doing it unconditionally keeps white and grey
+   * laying out identically — the only difference between them is the fill.
+   *
+   * .inner adds the same 16px back via --container-gutter-bleed, so the copy
+   * lands in exactly the same place it did before the bleed.
+   */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/*
+ * The `background` field on module.text-media. Null (an entry created before
+ * the field existed) and "white" both mean no class, so the default needs no
+ * rule of its own.
+ */
+.grey {
+  background-color: var(--color-surface-alt);
 }
 
 .inner {
@@ -25,7 +46,9 @@
   width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;
-  padding-inline: var(--container-gutter);
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding-inline: var(--container-gutter-bleed);
 }
 
 /*

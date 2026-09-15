@@ -33,6 +33,10 @@
    */
 
   /* Neutral ramp */
+  /* Section tint. Distinct from --neutral-100 and deliberately so: that one is
+   * the grey of a placeholder fill or a card, this is barely off-white and is
+   * only ever a background a whole section sits on. */
+  --neutral-50: #f5f6f7;
   --neutral-100: #e8e8e8; /* Figma: Neutral / 100 */
   --neutral-500: #282727; /* Figma: Neutral / 500 */
 
@@ -173,7 +177,11 @@
 
   /* Surfaces */
   --color-surface: var(--white); /* Default page background */
-  --color-surface-subtle: var(--neutral-100); /* Cards, alternating sections */
+  --color-surface-subtle: var(--neutral-100); /* Placeholder fills, cards */
+  /* A whole section lifted off the page background — see the `background`
+   * field on module.text-media. NOT interchangeable with -subtle above, which
+   * is four shades darker and reads as a grey block at section scale. */
+  --color-surface-alt: var(--neutral-50);
   --color-surface-inverse: var(--neutral-500); /* Footer, dark sections */
 
   /* Borders */
