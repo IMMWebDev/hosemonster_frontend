@@ -238,14 +238,10 @@
   transition: background-color var(--duration-fast) var(--ease-default);
 }
 
-/*
- * Hover is NOT specced — the Figma has no interaction states, same as the
- * styleguide buttons. The house default (.btn--primary:hover) goes to navy,
- * which is wrong HERE specifically: this button sits on a navy panel, so navy
- * hover reads as the button vanishing. Darkening its own red keeps the edge.
- */
+/* Same hover token as every .btn--primary — this is a form submit rather than
+ * a .btn, but it should not behave differently for that reason. */
 .searchButton:hover {
-  background-color: color-mix(in srgb, var(--color-action) 85%, #000);
+  background-color: var(--color-action-hover);
 }
 
 .searchButton:focus-visible {

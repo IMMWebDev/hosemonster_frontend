@@ -182,6 +182,11 @@
    * field on module.text-media. NOT interchangeable with -subtle above, which
    * is four shades darker and reads as a grey block at section scale. */
   --color-surface-alt: var(--neutral-50);
+  /* Muted navy for supporting copy beside a navy heading. Derived from the
+   * brand colour rather than adding another off-palette hex: the comps use
+   * several near-identical blue-greys (#5C7186, #41586E, #C3D0DC) that have no
+   * tokens. Lands within ~4 points of #5C7186. One for the palette pass. */
+  --color-text-soft: color-mix(in srgb, var(--brand-navy) 70%, #fff);
   --color-surface-inverse: var(--neutral-500); /* Footer, dark sections */
 
   /* Borders */
@@ -191,6 +196,14 @@
   /* Actions — primary = filled red, secondary = outlined navy */
   --color-action: var(--brand-red);
   --color-action-text: var(--white);
+  /* Hover fills. The house rule is that a button DARKENS WHAT IT ALREADY IS
+   * rather than swapping to another brand colour: red -> darker red, white ->
+   * off-white. A red-to-navy swap reads fine on white but makes a button on a
+   * navy panel look like it vanished, and leaves an inverse (white-on-red)
+   * button with nowhere sensible to go. Outlined buttons are the one exception
+   * and fill with their own border colour, which is the same idea. */
+  --color-action-hover: color-mix(in srgb, var(--color-action) 85%, #000);
+  --color-inverse-hover: var(--neutral-50);
   --color-action-secondary-border: var(--brand-navy);
   --color-action-secondary-text: var(--brand-navy);
 

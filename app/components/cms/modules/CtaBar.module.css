@@ -39,6 +39,36 @@
 }
 
 /*
+ * The `background: red` variant.
+ *
+ * Both stops derive from --color-action (#EB3F21): the comp's darker end,
+ * #BC321A, is exactly that colour at 80% on black, so neither is a new hex.
+ * The first layer is the comp's vignette, painted OVER the gradient — stacking
+ * both in one background-image avoids adding an element just to darken a foot.
+ */
+.red {
+  background-color: var(--color-action);
+  background-image:
+    linear-gradient(0deg, rgb(0 0 0 / 20%), rgb(0 0 0 / 0%)),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-action) 80%, #000) 0%,
+      var(--color-action) 55%
+    );
+}
+
+/* Full white here, not the muted navy tint: --hero-meta-ink is tuned for copy
+ * on a dark navy fill and turns dirty against red. */
+.red .body {
+  color: var(--color-text-inverse);
+}
+
+/* The button is handled by the .btn--inverse variant in components.css, chosen
+ * in CtaBar.jsx — deliberately not overridden here. A button variant that only
+ * exists inside one module's stylesheet is how the hover states drifted apart
+ * in the first place. */
+
+/*
  * Overscan, NOT inset: 0.
  *
  * `data-parallax="slow"` drifts this layer +/-3% of its own height. At inset: 0

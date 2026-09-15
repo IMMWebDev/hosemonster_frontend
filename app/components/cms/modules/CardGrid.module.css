@@ -140,19 +140,15 @@
   margin: 0;
 }
 
-/*
- * The design's #5C7186 is a muted navy that has no token — the palette's only
- * muted ink is --color-text-muted (#282727), a warm near-black that turns
- * muddy beside the navy title. Derived from the brand colour instead of
- * hardcoding a tenth off-palette hex: 70% navy on white lands within ~4 points
- * of the comp. One for the palette reconciliation pass in STYLEGUIDE.md.
- */
+/* --color-text-soft: see tokens.css. The palette's only muted ink is
+ * --color-text-muted (#282727), a warm near-black that turns muddy beside a
+ * navy title, so supporting copy uses the soft navy instead. */
 .cardDescription {
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body-sm);
-  color: color-mix(in srgb, var(--brand-navy) 70%, #fff);
+  color: var(--color-text-soft);
   margin: 0;
 }
 

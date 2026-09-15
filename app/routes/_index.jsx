@@ -1,6 +1,7 @@
 import {useLoaderData} from 'react-router';
 import {MockShopNotice} from '~/components/MockShopNotice';
 import BlockManager from '~/components/cms/BlockManager';
+import {getModuleProducts} from '~/lib/module-products';
 
 const HOME_TITLE = 'Home Page | Hose Monster';
 /*
@@ -82,7 +83,15 @@ export async function loader(args) {
 async function loadCriticalData({context}) {
   const {page, modules} = await context.strapi.getPage('/');
 
+  // See the note in app/routes/$.jsx — module.product-cards needs Shopify data
+  // the CMS payload does not carry, and only a loader can fetch it.
+  const products = await getModuleProducts({
+    storefront: context.storefront,
+    modules,
+  });
+
   return {
+    products,
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     modules,
     strapiBaseUrl: context.env.STRAPI_API_URL,
@@ -100,7 +109,11 @@ export default function Homepage() {
   return (
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
-      <BlockManager blocks={data.modules} baseUrl={data.strapiBaseUrl} />
+      <BlockManager
+        blocks={data.modules}
+        baseUrl={data.strapiBaseUrl}
+        products={data.products}
+      />
     </div>
   );
 }

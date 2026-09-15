@@ -18,22 +18,39 @@ import styles from './CtaBar.module.css';
  *     heading?: string,
  *     body?: string,
  *     cta?: object,
+ *     background?: 'navy' | 'red',
  *     backgroundImage?: {url?: string},
  *   },
  *   baseUrl?: string,
  * }} props
  */
 export default function CtaBar({data, baseUrl}) {
-  const {heading, body, cta} = data ?? {};
+  const {heading, body, cta, background} = data ?? {};
 
   if (!heading) return null;
 
   const backgroundUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
 
+  /*
+   * Only "red" gets a class. Strapi applies an enum default on CREATE only, so
+   * a bar authored before this field existed returns null rather than "navy" —
+   * treating anything that is not "red" as navy covers both.
+   */
+  const isRed = background === 'red';
+  const backgroundClass = isRed ? styles.red : '';
+
+  /*
+   * A red fill needs the inverse button — .btn--primary on a red band is an
+   * invisible red-on-red button. This is a real styleguide variant (see
+   * app/styles/components.css), not a local override, so the class is chosen
+   * here rather than patched in this module's CSS.
+   */
+  const ctaClass = `btn ${isRed ? 'btn--inverse' : 'btn--primary'}`;
+
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
-        <div className={styles.bar} data-reveal>
+        <div className={`${styles.bar} ${backgroundClass}`.trim()} data-reveal>
           {backgroundUrl ? (
             /* Parallax sits on the wrapper, not the <img> — a CSS animation
                overrides a transition on the same property, so an element with
@@ -58,7 +75,7 @@ export default function CtaBar({data, baseUrl}) {
 
             {cta?.linkText ? (
               <div className={styles.action}>
-                <CmsLink link={cta} className="btn btn--primary" />
+                <CmsLink link={cta} className={ctaClass} />
               </div>
             ) : null}
           </div>

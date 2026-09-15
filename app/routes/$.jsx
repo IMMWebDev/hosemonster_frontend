@@ -1,6 +1,7 @@
 import {useLoaderData} from 'react-router';
 import BlockManager from '~/components/cms/BlockManager';
 import {strapiMedia} from '~/lib/strapi-media';
+import {getModuleProducts} from '~/lib/module-products';
 
 /**
  * Root catch-all. Serves Strapi CMS pages by `path`, mirroring the Next app's
@@ -22,9 +23,21 @@ export async function loader({context, params}) {
     throw new Response(`${path} not found`, {status: 404});
   }
 
+  /*
+   * Modules cannot fetch — BlockManager renders straight from the CMS payload.
+   * module.product-cards stores only handles, so the Storefront lookup happens
+   * here and the result is handed down. Awaited rather than deferred: the price
+   * is part of the card's layout, and streaming it in would shift the page.
+   */
+  const products = await getModuleProducts({
+    storefront: context.storefront,
+    modules,
+  });
+
   return {
     page,
     modules,
+    products,
     strapiBaseUrl: context.env.STRAPI_API_URL,
     // Read by PageLayout via useMatches to decide whether the newsletter band
     // renders above the footer.
@@ -66,7 +79,7 @@ export const meta = ({data}) => {
 
 export default function CmsPage() {
   /** @type {LoaderReturnData} */
-  const {page, modules, strapiBaseUrl} = useLoaderData();
+  const {page, modules, strapiBaseUrl, products} = useLoaderData();
 
   return (
     <div className="cms-page">
@@ -78,7 +91,11 @@ export default function CmsPage() {
           }}
         />
       ) : null}
-      <BlockManager blocks={modules} baseUrl={strapiBaseUrl} />
+      <BlockManager
+        blocks={modules}
+        baseUrl={strapiBaseUrl}
+        products={products}
+      />
     </div>
   );
 }

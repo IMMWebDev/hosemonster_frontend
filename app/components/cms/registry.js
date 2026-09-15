@@ -2,6 +2,7 @@ import Hero from '~/components/cms/modules/Hero';
 import HeroSearch from '~/components/cms/modules/HeroSearch';
 import CardGrid from '~/components/cms/modules/CardGrid';
 import CtaBar from '~/components/cms/modules/CtaBar';
+import ProductCards from '~/components/cms/modules/ProductCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
@@ -73,6 +74,17 @@ export const MODULE_REGISTRY = {
       populate: {
         backgroundImage: true,
         cta: {populate: {pageLink: true}},
+      },
+    },
+  },
+  'module.product-cards': {
+    Component: ProductCards,
+    // `items` carries only handles and copy — the products themselves are
+    // resolved from Shopify in the route loader, not populated from Strapi.
+    options: {
+      populate: {
+        items: true,
+        viewAllLink: {populate: {pageLink: true}},
       },
     },
   },

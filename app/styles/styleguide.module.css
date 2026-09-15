@@ -1,0 +1,257 @@
+/*
+ * Styleguide page — TEMPORARY, delete before launch alongside styleguide.jsx.
+ *
+ * Deliberately plain. This page documents the design system; it should not be
+ * an exercise in it, or a reader cannot tell which choices are the system and
+ * which are this page's own dressing.
+ */
+
+.page {
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: var(--space-16) var(--container-gutter) var(--space-16);
+}
+
+.masthead {
+  padding-bottom: var(--space-12);
+  border-bottom: var(--border-width-thick) solid var(--color-border);
+}
+
+.kicker {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: var(--space-2) 0 0;
+}
+
+.lede {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+  max-width: 62ch;
+  margin: var(--space-4) 0 0;
+}
+
+.warning {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-action);
+  border: var(--border-width-thick) solid var(--color-action);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-6) 0 0;
+}
+
+.section {
+  padding-block: var(--space-12) 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.sectionNote,
+.groupNote {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+  max-width: 68ch;
+  margin: var(--space-2) 0 0;
+}
+
+.group {
+  margin-top: var(--space-8);
+}
+
+.groupTitle {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  margin: 0 0 var(--space-4);
+}
+
+/* ---- colour ---- */
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swatch {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  grid-template-areas: 'chip name' 'chip value';
+  align-items: center;
+  gap: 0 var(--space-3);
+}
+
+.swatchChip {
+  grid-area: chip;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  /* An outline, not a border: without it #ffffff is an invisible swatch. */
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 15%);
+}
+
+.swatchName {
+  grid-area: name;
+  font-size: 12px;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.swatchValue {
+  grid-area: value;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-text-soft);
+}
+
+/* ---- typography ---- */
+
+.typeRow {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--space-6);
+  align-items: baseline;
+  padding-block: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.typeMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-text-soft);
+}
+
+.typeMeta strong {
+  font-size: var(--text-body-sm);
+  color: var(--color-text);
+}
+
+.sampleH1,
+.sampleH2,
+.sampleH3 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.sampleH1 {
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+}
+
+.sampleH2 {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+}
+
+.sampleH3 {
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-black);
+  color: var(--color-text-accent);
+}
+
+/* ---- generic token list ---- */
+
+.tokenList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tokenList li {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding-block: var(--space-3);
+  border-top: var(--border-width) solid var(--color-border);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-soft);
+}
+
+.tokenList code {
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+/* ---- buttons ---- */
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.onNavy,
+.onRed {
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+}
+
+.onNavy {
+  background: var(--brand-navy);
+}
+
+.onRed {
+  background: var(--color-action);
+}
+
+.onNavy .groupTitle,
+.onRed .groupTitle,
+.onRed .groupNote {
+  color: var(--color-text-inverse);
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 699px) {
+  .typeRow,
+  .tokenList li {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}
