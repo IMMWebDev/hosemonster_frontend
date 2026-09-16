@@ -250,8 +250,13 @@ Brand orange is a light colour, which constrains what may sit on it. Measured:
 
 - Orange text must be **19px and bold**. Below that the colour has to change.
   This is why `--text-eyebrow` and `--text-button` are both 19px.
-- **Orange on navy fails at every size.** Eyebrows on the hero, hero search,
-  CTA banner and newsletter bands are white for this reason.
+- **Orange on navy measures 2.95:1** — but §09 scopes the exception narrowly,
+  to "the footer eyebrow and required asterisks". In practice that is the
+  newsletter band, and that one is white. Every SECTION eyebrow in every
+  sprint-04 comp is `#EB3F21` whatever the ground, including ones on solid navy
+  (Fire Flow’s "Optional, not required", Shop’s "Everything, in one place").
+  Design has accepted the ratio there. Do not white them out without the comps
+  changing first — that was tried and reverted.
 
 ---
 

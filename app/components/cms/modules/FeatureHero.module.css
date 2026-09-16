@@ -1,0 +1,335 @@
+/*
+ * Feature Hero module — sprint-04 hifi_fireflow.html / hifi_smartmonsterfeature.html
+ *
+ * Full-bleed photo under a hard left-to-right navy scrim. Shares Home Hero's
+ * layering and full-bleed arithmetic; the scrim, the height and the meta bar
+ * are its own. See the note at the top of FeatureHero.jsx for why this is a
+ * separate module rather than a variant of Home Hero.
+ */
+
+.hero {
+  position: relative;
+  isolation: isolate; /* keeps the scrim's z-index local to this section */
+  display: flex;
+  align-items: center;
+
+  /*
+   * `size: standard`. A clamp rather than a fixed height with breakpoint
+   * overrides — the comp gives clamp(320px, 34vw, 420px) and it covers the
+   * whole range continuously.
+   */
+  min-height: clamp(320px, 34vw, 420px);
+  padding-block: var(--container-block);
+  overflow: hidden;
+  background-color: var(--brand-navy); /* shows before the image loads */
+
+  /* Full-bleed. <main> carries a horizontal margin (reset.css), so cancel
+   * exactly that and grow by the same amount each side. The token, not 100vw:
+   * 100vw includes the scrollbar and overflows on every desktop browser that
+   * reserves gutter space. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* `size: tall` — the Smart Monster feature page's taller masthead. */
+.tall {
+  min-height: clamp(420px, 44vw, 584px);
+}
+
+/*
+ * Layering — an explicit positive stack:
+ *   0  .background (image)
+ *   1  .scrim (gradient)
+ *   2  .inner (copy)
+ *
+ * Deliberately not negative z-index, which risks painting behind .hero's own
+ * background-color and silently hiding the image.
+ */
+
+.background {
+  position: absolute;
+
+  /*
+   * Overscan, NOT inset: 0. `data-parallax` drifts this layer ±6% of its own
+   * height, so at inset: 0 the drift uncovers a strip of the panel's own navy
+   * along one edge — a dark band that grows as you scroll. 8% of bleed at each
+   * end covers 6% of travel with room to spare.
+   */
+  inset: -8% 0;
+  z-index: 0;
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The comp pins this at 52% — the subject sits just right of centre and
+   * drifts out of frame under a centred crop as the panel narrows. */
+  object-position: 52% 50%;
+  display: block;
+}
+
+/*
+ * A HARDER scrim than Home Hero's.
+ *
+ * --hero-overlay fades from 57% across the full width, which is enough behind a
+ * 640px copy column. This one runs to 820px, so the tail of a heading would sit
+ * on bare photo. Solid navy to 30%, gone by 55%, per the comp — the right-hand
+ * 45% of the image stays completely clear.
+ *
+ * Local rather than a new token: it belongs to this module's copy width, and
+ * promoting it would invite someone to use it behind a narrow column where it
+ * would read as a black box.
+ */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    var(--brand-navy) 0%,
+    color-mix(in srgb, var(--brand-navy) 85%, transparent) 30%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+/* Matches .container so the copy aligns with the header and every section. */
+.inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  /* Bleed gutter: this section cancels <main>'s margin, so its content needs
+   * that width added back to line up with non-bleed sections. */
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 820px; /* copy column width in the design */
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  /*
+   * Orange, even on navy.
+   *
+   * §09 says orange on navy measures 2.95:1 and names the exceptions as "the
+   * footer eyebrow and required asterisks" — which is the newsletter band, and
+   * that one IS white. Every SECTION eyebrow in every sprint-04 comp is
+   * #EB3F21 regardless of ground, including ones on solid navy. The design has
+   * accepted the ratio here; do not white these out again without the designer
+   * changing the comps. Newsletter.module.css is the deliberate exception.
+   */
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-5); /* 20px in the design */
+}
+
+/*
+ * The CMS heading is a multi-line field and the comp breaks it deliberately
+ * ("NFPA-compliant / flow test reporting"), so author line breaks are kept.
+ */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  white-space: pre-line;
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  /* §01 On Navy — body copy on a dark ground, not full white. */
+  color: var(--color-text-on-navy);
+  white-space: pre-line;
+  max-width: 52ch; /* from the design */
+  margin: 0 0 var(--space-4);
+}
+
+/*
+ * Meta bar. Ruled off underneath and separated by pipes, where Home Hero's
+ * equivalent uses middots and no rule.
+ *
+ * `width: fit-content` is load-bearing: the rule should end where the text
+ * ends, not run the full 820px of the copy column.
+ */
+.trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px var(--space-4); /* 10px / 16px in the design */
+  width: fit-content;
+  max-width: 100%;
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0 0 var(--space-5);
+  border-bottom: var(--border-width) solid
+    color-mix(in srgb, var(--white) 20%, transparent);
+}
+
+.trustItem {
+  font-family: var(--font-body);
+  font-size: var(--text-detail); /* 13.5px in the design */
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/* Separators are decoration — generated here so they are never read aloud. */
+.trustItem + .trustItem::before {
+  content: '|';
+  margin-right: var(--space-4);
+  color: color-mix(in srgb, var(--white) 60%, transparent);
+  font-weight: var(--weight-regular);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3); /* 12px in the design */
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the comps are desktop-only. The height is a clamp and the
+ * type scale steps down via tokens, so only the scrim and the copy cap change.
+ */
+
+@media (max-width: 1099px) {
+  .copy {
+    max-width: 100%;
+  }
+}
+
+/*
+ * mdTablet — the scrim turns vertical. At narrow widths the copy sits over the
+ * middle of the image rather than its covered left edge, so a horizontal
+ * gradient stops protecting it. Same fix Home Hero uses.
+ */
+@media (max-width: 699px) {
+  .scrim {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand-navy) 55%, transparent) 0%,
+      color-mix(in srgb, var(--brand-navy) 90%, transparent) 100%
+    );
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CALLOUT PANEL
+ * -----------------------------------------------------------------------------
+ * Part of the hero in the CMS, its own <section> on the page. This is where the
+ * body copy goes when the hero itself stays visual — the comp puts almost
+ * nothing but the headline over the photo and moves the explanation down here,
+ * where it is on a light ground and actually readable.
+ *
+ * Same panel Page Hero renders from the same utilities.info-column component.
+ */
+
+.callout {
+  /*
+   * NOT --container-block. This section hugs the hero above it rather than
+   * standing on its own rhythm, so the comp gives it clamp(24px, 3vw, 36px) —
+   * roughly half the usual 64px. Stated as a clamp because it is a deliberate
+   * exception, not a token anyone else should reach for.
+   */
+  padding-block: clamp(24px, 3vw, 36px);
+}
+
+.calloutInner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+.calloutPanel {
+  display: grid;
+  /*
+   * auto-fit, not the comp's literal `1fr 1px 1fr`. That fixed three-track grid
+   * hard-codes exactly two columns plus a divider track; this takes however
+   * many the CMS supplies and wraps them when they stop fitting. The divider is
+   * a border on the item instead — see below.
+   */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(24px, 3vw, 40px);
+  padding: clamp(24px, 3vw, 32px) clamp(24px, 4vw, 40px);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+/*
+ * The divider is a border on the column, not a grid track, so it appears only
+ * between columns that share a row — including after the grid wraps, where a
+ * fixed track would leave a stray rule hanging.
+ *
+ * §06 draws this hairline as #E0E0E0 while §01 says #E8E8E8 is the one border
+ * colour for everything. Taking §06 at its word would add a sixth neutral for a
+ * 1px line nobody can tell apart, so this uses the token. See STYLEGUIDE.md
+ * open item H.
+ */
+.calloutColumn + .calloutColumn {
+  padding-left: clamp(24px, 3vw, 40px);
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+.calloutLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  /* The comp tracks this one at 0.12em against the eyebrow's 0.08em. Using the
+   * token: it is the same style doing the same job, and two near-identical
+   * tracking values is how a system starts to drift. */
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 10px; /* exact value from the design */
+}
+
+.calloutBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+/* mdTablet — stacked, so the vertical rule becomes a horizontal one. */
+@media (max-width: 699px) {
+  .calloutColumn + .calloutColumn {
+    padding-left: 0;
+    padding-top: var(--space-6);
+    border-left: 0;
+    border-top: var(--border-width) solid var(--color-border);
+  }
+}
