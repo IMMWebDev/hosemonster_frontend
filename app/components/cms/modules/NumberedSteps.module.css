@@ -1,0 +1,190 @@
+/*
+ * Numbered Steps module — sprint-04 hifi_fireflow.html, "How it works"
+ *
+ * Intro lockup, then a row of steps under a single top rule, each separated
+ * from the last by a vertical one. The big ghosted numerals are the only
+ * ornament.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed ALWAYS, the same rule Text & Media, Link Cards and FAQ use, so
+   * the grey variant reaches the viewport edge and the white one lays out
+   * identically. .inner adds the gutter back via --container-gutter-bleed. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* The `background` field on module.numbered-steps. White needs no rule. */
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+/*
+ * The LARGER of the two H2s — §03 calls it "H2 large · Major section" and gives
+ * it clamp(28px, 3.2vw, 42px), where a standard section heading is
+ * clamp(24px, 2.6vw, 32px). This section opens a page-length explanation, so it
+ * takes the bigger one.
+ */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-4);
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  /*
+   * 80ch, the comp’s value, not the 64ch --measure token.
+   *
+   * §03 says to cap "around 64ch", and that is right for copy beside something
+   * else. This paragraph opens a full-width section with nothing next to it, so
+   * the shorter measure left it stranded against the left edge under a 42px
+   * heading. Stated locally rather than promoted to a token until a second
+   * module wants it.
+   */
+  max-width: 80ch;
+  margin: 0 0 var(--space-9); /* 36px in the design */
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * STEPS
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * gap: 0 is deliberate. The columns are separated by RULES, not space, so a gap
+ * would put a channel either side of each line and the row would read as three
+ * detached cards instead of one divided band. The padding inside each step does
+ * the separating.
+ */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0;
+  border-top: var(--border-width) solid var(--color-border);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  padding: var(--space-7) var(--space-8) var(--space-2); /* 28 / 32 / 8 in the design */
+  margin: 0;
+}
+
+/*
+ * The rule goes on the item, not between grid tracks, so it appears only
+ * between steps that share a row — including after the grid wraps, where a
+ * column-gap rule would leave one hanging at the start of the next row.
+ *
+ * `:first-child` loses its left padding too: the first step should start on the
+ * container's vertical, not 32px inside it.
+ */
+.step:first-child {
+  padding-left: 0;
+}
+
+.step + .step {
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+/*
+ * The ghosted numeral, in the BORDER colour rather than an ink.
+ *
+ * That looks like a mistake and is not: at 56px this is a watermark behind the
+ * content, not text to be read, and §01's faint ink (#a5b3c0) is a blue-grey
+ * loud enough to compete with the step title under it. The comp uses #E8E8E8,
+ * which is what --color-border resolves to. It is hidden from screen readers in
+ * the markup — the <ol> already announces the position.
+ */
+.number {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 56px; /* from the design */
+  font-weight: var(--weight-bold);
+  line-height: 0.9;
+  color: var(--color-border);
+  margin-bottom: 14px; /* exact value from the design */
+}
+
+.stepTitle {
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  margin: 0 0 10px; /* exact value from the design */
+}
+
+.stepBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the comp is desktop-only. The grid wraps on its own via
+ * auto-fit; these rules only fix what the wrap leaves behind.
+ */
+
+/* mdTablet — one column, so the vertical rules become horizontal ones. */
+@media (max-width: 699px) {
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .step,
+  .step:first-child {
+    padding-inline: 0;
+  }
+
+  .step + .step {
+    border-left: 0;
+    border-top: var(--border-width) solid var(--color-border);
+  }
+}

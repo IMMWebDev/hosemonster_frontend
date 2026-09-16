@@ -10,6 +10,7 @@ import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import TextHighlights from '~/components/cms/modules/TextHighlights';
+import NumberedSteps from '~/components/cms/modules/NumberedSteps';
 import Faq from '~/components/cms/modules/Faq';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
 import CtaBanner from '~/components/cms/modules/CtaBanner';
@@ -61,12 +62,13 @@ export const MODULE_REGISTRY = {
   },
   'module.feature-hero': {
     Component: FeatureHero,
-    // Same shape as module.hero: the media and both CTA relations have to be
-    // named, everything else is a scalar and rides along.
+    // Same shape as module.hero, plus the callout panel. Every repeatable and
+    // relation has to be named or Strapi returns it as bare ids.
     options: {
       populate: {
         backgroundImage: true,
         trustItems: true,
+        infoColumns: true,
         primaryCTA: {populate: {pageLink: true, collectionLink: true}},
         secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
       },
@@ -191,6 +193,16 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         items: true,
+      },
+    },
+  },
+  'module.numbered-steps': {
+    Component: NumberedSteps,
+    // The steps hold nothing but scalars, so `true` is enough — no media or
+    // link relations to name.
+    options: {
+      populate: {
+        steps: true,
       },
     },
   },

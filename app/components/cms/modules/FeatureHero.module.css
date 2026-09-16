@@ -241,3 +241,95 @@
     flex: 1 1 auto;
   }
 }
+
+/*
+ * -----------------------------------------------------------------------------
+ * CALLOUT PANEL
+ * -----------------------------------------------------------------------------
+ * Part of the hero in the CMS, its own <section> on the page. This is where the
+ * body copy goes when the hero itself stays visual — the comp puts almost
+ * nothing but the headline over the photo and moves the explanation down here,
+ * where it is on a light ground and actually readable.
+ *
+ * Same panel Page Hero renders from the same utilities.info-column component.
+ */
+
+.callout {
+  /*
+   * NOT --container-block. This section hugs the hero above it rather than
+   * standing on its own rhythm, so the comp gives it clamp(24px, 3vw, 36px) —
+   * roughly half the usual 64px. Stated as a clamp because it is a deliberate
+   * exception, not a token anyone else should reach for.
+   */
+  padding-block: clamp(24px, 3vw, 36px);
+}
+
+.calloutInner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+.calloutPanel {
+  display: grid;
+  /*
+   * auto-fit, not the comp's literal `1fr 1px 1fr`. That fixed three-track grid
+   * hard-codes exactly two columns plus a divider track; this takes however
+   * many the CMS supplies and wraps them when they stop fitting. The divider is
+   * a border on the item instead — see below.
+   */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(24px, 3vw, 40px);
+  padding: clamp(24px, 3vw, 32px) clamp(24px, 4vw, 40px);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+/*
+ * The divider is a border on the column, not a grid track, so it appears only
+ * between columns that share a row — including after the grid wraps, where a
+ * fixed track would leave a stray rule hanging.
+ *
+ * §06 draws this hairline as #E0E0E0 while §01 says #E8E8E8 is the one border
+ * colour for everything. Taking §06 at its word would add a sixth neutral for a
+ * 1px line nobody can tell apart, so this uses the token. See STYLEGUIDE.md
+ * open item H.
+ */
+.calloutColumn + .calloutColumn {
+  padding-left: clamp(24px, 3vw, 40px);
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+.calloutLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  /* The comp tracks this one at 0.12em against the eyebrow's 0.08em. Using the
+   * token: it is the same style doing the same job, and two near-identical
+   * tracking values is how a system starts to drift. */
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 10px; /* exact value from the design */
+}
+
+.calloutBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+/* mdTablet — stacked, so the vertical rule becomes a horizontal one. */
+@media (max-width: 699px) {
+  .calloutColumn + .calloutColumn {
+    padding-left: 0;
+    padding-top: var(--space-6);
+    border-left: 0;
+    border-top: var(--border-width) solid var(--color-border);
+  }
+}

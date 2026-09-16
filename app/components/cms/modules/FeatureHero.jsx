@@ -31,6 +31,7 @@ import styles from './FeatureHero.module.css';
  *     secondaryCTA?: object,
  *     backgroundImage?: {url?: string, alternativeText?: string},
  *     size?: 'standard' | 'tall',
+ *     infoColumns?: Array<{id: number, label: string, body?: string}>,
  *   },
  *   baseUrl?: string,
  * }} props
@@ -46,6 +47,7 @@ export default function FeatureHero({data, baseUrl}) {
     primaryCTA,
     secondaryCTA,
     size,
+    infoColumns = [],
   } = data;
 
   const bgUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
@@ -58,91 +60,123 @@ export default function FeatureHero({data, baseUrl}) {
   const sizeClass = size === 'tall' ? styles.tall : '';
 
   return (
-    <section className={`${styles.hero} ${sizeClass}`.trim()}>
-      {bgUrl ? (
-        <div className={styles.background} data-parallax>
-          <img
-            src={bgUrl}
-            /* Decorative: the heading carries all the meaning, so an empty alt
+    <>
+      <section className={`${styles.hero} ${sizeClass}`.trim()}>
+        {bgUrl ? (
+          <div className={styles.background} data-parallax>
+            <img
+              src={bgUrl}
+              /* Decorative: the heading carries all the meaning, so an empty alt
                keeps a screen reader from announcing a filename. */
-            alt=""
-            className={styles.backgroundImage}
-            data-reveal="zoom"
-            /* This is the LCP element — loaded eagerly and flagged, never lazy. */
-            loading="eager"
-            /* Lowercase is deliberate: React 18 does not recognise the
+              alt=""
+              className={styles.backgroundImage}
+              data-reveal="zoom"
+              /* This is the LCP element — loaded eagerly and flagged, never lazy. */
+              loading="eager"
+              /* Lowercase is deliberate: React 18 does not recognise the
                camelCase prop and drops the attribute entirely. Revisit on 19. */
-            // eslint-disable-next-line react/no-unknown-property
-            fetchpriority="high"
-            decoding="async"
-          />
-        </div>
-      ) : null}
-      <div className={styles.scrim} aria-hidden="true" />
+              // eslint-disable-next-line react/no-unknown-property
+              fetchpriority="high"
+              decoding="async"
+            />
+          </div>
+        ) : null}
+        <div className={styles.scrim} aria-hidden="true" />
 
-      <div className={styles.inner}>
-        <div className={styles.copy}>
-          {eyebrow ? (
-            <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
-              {eyebrow}
-            </p>
-          ) : null}
+        <div className={styles.inner}>
+          <div className={styles.copy}>
+            {eyebrow ? (
+              <p
+                className={styles.eyebrow}
+                data-reveal
+                style={{'--reveal-i': 0}}
+              >
+                {eyebrow}
+              </p>
+            ) : null}
 
-          <h1
-            className={styles.heading}
-            data-reveal="focus"
-            style={{'--reveal-i': 1}}
-          >
-            {heading}
-          </h1>
-
-          {body ? (
-            <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
-              {body}
-            </p>
-          ) : null}
-
-          {trustItems.length > 0 ? (
-            /*
-             * `role="list"` is not redundant — `list-style: none` below silently
-             * strips list semantics in Safari. The pipe separators are drawn by
-             * CSS so they are never read aloud.
-             */
-            <ul
-              className={styles.trust}
-              role="list"
-              data-reveal
-              style={{'--reveal-i': 3}}
+            <h1
+              className={styles.heading}
+              data-reveal="focus"
+              style={{'--reveal-i': 1}}
             >
-              {trustItems.map((item, i) => (
-                <li className={styles.trustItem} key={item.id ?? i}>
-                  {item.label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
+              {heading}
+            </h1>
 
-          {primaryCTA?.linkText || secondaryCTA?.linkText ? (
-            <div className={styles.actions} data-reveal style={{'--reveal-i': 4}}>
-              {primaryCTA?.linkText ? (
-                <CmsLink link={primaryCTA} className="btn btn--primary" />
-              ) : null}
-              {/*
+            {body ? (
+              <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+                {body}
+              </p>
+            ) : null}
+
+            {trustItems.length > 0 ? (
+              /*
+               * `role="list"` is not redundant — `list-style: none` below silently
+               * strips list semantics in Safari. The pipe separators are drawn by
+               * CSS so they are never read aloud.
+               */
+              <ul
+                className={styles.trust}
+                role="list"
+                data-reveal
+                style={{'--reveal-i': 3}}
+              >
+                {trustItems.map((item, i) => (
+                  <li className={styles.trustItem} key={item.id ?? i}>
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            {primaryCTA?.linkText || secondaryCTA?.linkText ? (
+              <div
+                className={styles.actions}
+                data-reveal
+                style={{'--reveal-i': 4}}
+              >
+                {primaryCTA?.linkText ? (
+                  <CmsLink link={primaryCTA} className="btn btn--primary" />
+                ) : null}
+                {/*
                 The outlined-white fill, not .btn--secondary. Secondary is navy
                 on white and would disappear into the scrim; this is the
                 styleguide's "secondary on orange" geometry reused for any
                 saturated dark ground.
               */}
-              {secondaryCTA?.linkText ? (
-                <CmsLink
-                  link={secondaryCTA}
-                  className="btn btn--secondary-on-orange"
-                />
-              ) : null}
-            </div>
-          ) : null}
+                {secondaryCTA?.linkText ? (
+                  <CmsLink
+                    link={secondaryCTA}
+                    className="btn btn--secondary-on-orange"
+                  />
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/*
+        Part of the hero in the CMS, a separate <section> in the markup. The
+        panel sits on the page background underneath the scrim rather than
+        inside the photo, so it cannot be nested in the bleed section above.
+      */}
+      {infoColumns.length > 0 ? (
+        <section className={styles.callout}>
+          <div className={styles.calloutInner}>
+            <div className={styles.calloutPanel}>
+              {infoColumns.map((column, i) => (
+                <div className={styles.calloutColumn} key={column.id ?? i}>
+                  <p className={styles.calloutLabel}>{column.label}</p>
+                  {column.body ? (
+                    <p className={styles.calloutBody}>{column.body}</p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+    </>
   );
 }
