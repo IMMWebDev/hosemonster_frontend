@@ -44,7 +44,7 @@
   align-items: center;
   gap: var(--space-11); /* 44px */
   width: 100%;
-  max-width: var(--container-outer);
+  max-width: var(--container-outer-bleed);
   margin-inline: auto;
   /* Bleed gutter: this section cancels <main>'s margin, so its content needs
    * that width added back to line up with non-bleed sections. */
@@ -78,10 +78,13 @@
 
 /* Figma "H3" / Eyebrow */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
   margin: 0;
@@ -103,7 +106,7 @@
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--body-ink);
   max-width: 520px; /* narrower than the heading, per the design */
@@ -142,7 +145,7 @@
 
 .bullet {
   font-family: var(--font-body);
-  font-size: var(--text-button);
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
   line-height: var(--leading-button);
   text-transform: capitalize;

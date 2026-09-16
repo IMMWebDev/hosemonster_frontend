@@ -1,11 +1,15 @@
 import Hero from '~/components/cms/modules/Hero';
 import HeroSearch from '~/components/cms/modules/HeroSearch';
+import PageHero from '~/components/cms/modules/PageHero';
 import CardGrid from '~/components/cms/modules/CardGrid';
 import CtaBar from '~/components/cms/modules/CtaBar';
 import ProductCards from '~/components/cms/modules/ProductCards';
+import ProductFeed from '~/components/cms/modules/ProductFeed';
 import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
+import TextHighlights from '~/components/cms/modules/TextHighlights';
+import Faq from '~/components/cms/modules/Faq';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
 import CtaBanner from '~/components/cms/modules/CtaBanner';
 import FeatureCards from '~/components/cms/modules/FeatureCards';
@@ -39,8 +43,8 @@ export const MODULE_REGISTRY = {
       populate: {
         backgroundImage: true,
         trustItems: true,
-        primaryCTA: {populate: {pageLink: true}},
-        secondaryCTA: {populate: {pageLink: true}},
+        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -54,6 +58,19 @@ export const MODULE_REGISTRY = {
       },
     },
   },
+  'module.page-hero': {
+    Component: PageHero,
+    // Every component field must be named. populate: '*' stops one level down
+    // and would return breadcrumbParent without its pageLink relation, so the
+    // crumb would resolve to '#'.
+    options: {
+      populate: {
+        backgroundImage: true,
+        breadcrumbParent: {populate: {pageLink: true, collectionLink: true}},
+        infoColumns: true,
+      },
+    },
+  },
   'module.card-grid': {
     Component: CardGrid,
     // Three levels: items -> image / link -> pageLink. populate: '*' stops at
@@ -63,7 +80,7 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -74,7 +91,7 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
-        cta: {populate: {pageLink: true}},
+        cta: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -85,7 +102,7 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         items: true,
-        viewAllLink: {populate: {pageLink: true}},
+        viewAllLink: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -97,11 +114,23 @@ export const MODULE_REGISTRY = {
       populate: {
         items: {
           populate: {
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
     },
+  },
+  'module.product-feed': {
+    Component: ProductFeed,
+    /*
+     * populate: '*' even though this module has only scalar fields.
+     *
+     * An empty `populate: {}` serialises to nothing, so the component drops out
+     * of `populate[modules][on]` entirely and Strapi omits it from the
+     * response — the module silently never renders. Every entry in this
+     * registry must produce at least one query parameter.
+     */
+    options: {populate: '*'},
   },
   'module.tabbed-cards': {
     Component: TabbedCards,
@@ -112,8 +141,8 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            primaryCTA: {populate: {pageLink: true}},
-            secondaryCTA: {populate: {pageLink: true}},
+            primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+            secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -125,8 +154,29 @@ export const MODULE_REGISTRY = {
       populate: {
         image: true,
         bullets: true,
-        primaryCTA: {populate: {pageLink: true}},
-        secondaryCTA: {populate: {pageLink: true}},
+        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+      },
+    },
+  },
+  'module.text-highlights': {
+    Component: TextHighlights,
+    // Both repeatables hold nothing but scalars, so `true` is enough — there
+    // are no media or link relations to name.
+    options: {
+      populate: {
+        bullets: true,
+        highlights: true,
+      },
+    },
+  },
+  'module.faq': {
+    Component: Faq,
+    // The repeatable holds a string and a rich-text string — no media or link
+    // relations to name, so `true` is enough.
+    options: {
+      populate: {
+        items: true,
       },
     },
   },
@@ -135,11 +185,11 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         bannerImage: true,
-        bannerCta: {populate: {pageLink: true}},
+        bannerCta: {populate: {pageLink: true, collectionLink: true}},
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },
@@ -150,8 +200,8 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
-        primaryCta: {populate: {pageLink: true}},
-        secondaryCta: {populate: {pageLink: true}},
+        primaryCta: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCta: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -162,7 +212,7 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true}},
+            link: {populate: {pageLink: true, collectionLink: true}},
           },
         },
       },

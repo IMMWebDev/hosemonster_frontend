@@ -1,6 +1,10 @@
 # Hose Monster — Frontend Style Guide
 
-Source of truth: **Figma → Hose Monster → "Web Styleguide"**
+> Source of truth: **Hose Monster Web Styleguide, Sept 2026** (the designer's
+> bundled HTML). It supersedes the Figma "Web Styleguide" page this build was
+> originally made from; where the two disagree, the new document wins.
+
+Earlier source, kept for reference: Figma → Hose Monster → "Web Styleguide"
 <https://www.figma.com/design/YkA269pTHE9uSRKE3hsoud/Hose-Monster?node-id=1-3525>
 
 This document explains how the design system is wired into the Hydrogen
@@ -175,29 +179,79 @@ that indirection is what lets design swap a color in one place.
 
 ### Primitives
 
-| Token | Value | Figma name |
+Source: **Hose Monster Web Styleguide, Sept 2026** (§01). Two brand colours
+carry the identity; everything else is ink, surface or border.
+
+| Token | Value | Role |
 |---|---|---|
-| `--brand-navy` | `#1c3a55` | Brand / 100 |
-| `--brand-gold` | `#e1b14b` | Brand / 200 |
-| `--brand-red` | `#eb3f21` | Brand / 300 |
-| `--neutral-100` | `#e8e8e8` | Neutral / 100 |
-| `--neutral-500` | `#282727` | Neutral / 500 |
+| `--brand-orange` | `#eb3f21` | CTAs, eyebrows, accents, hover borders, active states |
+| `--brand-orange-hover` | `#c62f14` | Hover **fill** for orange buttons. Never a text colour. |
+| `--brand-navy` | `#1d3a54` | Headings, dark sections, outline buttons, hero scrims |
+| `--deep-navy-ink` | `#0b1721` | The only navy that clears 4.5:1 **on** orange |
+| `--neutral-50` | `#f5f6f7` | Light surface — alternating sections, callouts, icon tiles |
+| `--neutral-100` | `#e8e8e8` | Border — all 2px card and control strokes |
+| `--photo-well` | `#0e1a25` | Behind product images in cards |
+
+Four inks, and only four:
+
+| Token | Value | Use for |
+|---|---|---|
+| `--ink-body` | `#41586e` | Paragraph copy on white |
+| `--ink-muted` | `#5c7186` | Card specs, labels, secondary copy |
+| `--ink-on-navy` | `#c3d0dc` | Body copy on navy grounds |
+| `--ink-faint` | `#a5b3c0` | Counts, chevrons, **non-text marks only** |
+
+`--brand-gold` and `--neutral-500` are **retired** — the new palette contains no
+gold and no warm near-black. `--brand-red` survives as an alias of
+`--brand-orange` so existing references keep resolving; the colour has one name
+now and it is orange.
+
+The old block of fourteen one-off greys (`#4a4a4a`, `#3a3a3a`, `#666666`,
+`#2f2f2f`, `#9a9a9a` …) is gone. Those names still exist in `tokens.css` because
+a dozen stylesheets read them, but each is now an alias onto one of the four
+inks. Retire a name once its last consumer goes.
+
+**Still off-palette:** `--hero-meta-rule` and `--newsletter-input-border`. Both
+are rules on *navy* grounds, where the single `#E8E8E8` border is near-white and
+far too loud. Open with design.
 
 ### Semantic — use these
 
 | Token | Points at | Use for |
 |---|---|---|
-| `--color-text` | navy | Body copy, headings |
-| `--color-text-muted` | neutral-500 | De-emphasized text |
-| `--color-text-inverse` | white | Text on dark/red fills |
-| `--color-text-accent` | red | Eyebrows, emphasis |
+| `--color-text` | navy | Headings |
+| `--color-text-body` | ink-body | Paragraph copy on white |
+| `--color-text-muted` | ink-muted | Card specs, labels, secondary copy |
+| `--color-text-soft` | ink-muted | Older alias of the above |
+| `--color-text-inverse` | white | Text on dark or orange fills |
+| `--color-text-on-navy` | ink-on-navy | Body copy on navy grounds |
+| `--color-text-accent` | orange | Eyebrows, card CTAs — **19px / 700 only** |
+| `--color-text-on-orange` | deep-navy-ink | Text sitting on an orange fill |
+| `--color-text-faint` | ink-faint | Counts, chevrons, non-text marks |
 | `--color-surface` | white | Default background |
-| `--color-surface-subtle` | neutral-100 | Cards, alternating sections |
-| `--color-surface-inverse` | neutral-500 | Footer, dark sections |
-| `--color-border` | neutral-100 | Default borders |
+| `--color-surface-alt` | neutral-50 | Alternating sections |
+| `--color-surface-subtle` | neutral-100 | Placeholder fills |
+| `--color-surface-inverse` | **navy** | Footer, dark sections (was neutral-500) |
+| `--color-border` | neutral-100 | All 2px card and control strokes |
 | `--color-border-strong` | navy | Emphasized borders |
-| `--color-action` | red | Primary button fill |
-| `--color-accent` | gold | Accent details |
+| `--color-action` | orange | Primary button fill |
+| `--color-action-hover` | orange-hover | Hover fill |
+
+### Contrast rules for orange (§09) — not optional
+
+Brand orange is a light colour, which constrains what may sit on it. Measured:
+
+| Pairing | Ratio | Passes |
+|---|---|---|
+| `#EB3F21` on white | 3.99:1 | 19px / 700 only |
+| white on `#EB3F21` | 3.99:1 | 19px / 700 only |
+| white on `#BC321A` | 5.82:1 | any size |
+| `#1D3A54` on `#EB3F21` | 2.95:1 | **never use** |
+
+- Orange text must be **19px and bold**. Below that the colour has to change.
+  This is why `--text-eyebrow` and `--text-button` are both 19px.
+- **Orange on navy fails at every size.** Eyebrows on the hero, hero search,
+  CTA banner and newsletter bands are white for this reason.
 
 ---
 
@@ -208,15 +262,30 @@ Two commercial families:
 - **Nimbus Sans Extd** — display/headings. Bold 700, Black 900. Always uppercase.
 - **Gopher** — body and UI. Regular 400, Medium 500, Bold 700.
 
-| Figma style | Class | Size (desktop) | Font |
+| Style | Token | Size | Font |
 |---|---|---|---|
-| H1 | `.h1` / `<h1>` | 60px / 0.98, −3px tracking | Nimbus Bold |
-| H2 | `.h2` / `<h2>` | 52px / 1.0 | Nimbus Bold |
-| H3 (Eyebrow) | `.eyebrow` | 18px / 1.1, red | Nimbus Black |
-| H4 (Button) | applied by `.btn` | 16px / 1.0 | Gopher Bold |
-| B1 (Standard Body) | `.body` / default | **18px** / 1.7 | Gopher Medium |
-| B2 (Small Body) | `.body-sm` | **16px** / 1.5 | Gopher Regular |
-| B3 (Large Body) | `--text-body-lg` | **20px** / 1.7 | Gopher Regular |
+| H1 · Page headline | `--text-h1` | `clamp(26px, 3.1vw, 40px)` / 1.1 | Nimbus Bold |
+| H2 large · Major section | `--text-h2-lg` | `clamp(28px, 3.2vw, 42px)` / 1.1 | Nimbus Bold |
+| H2 · Standard section | `--text-h2` | `clamp(24px, 2.6vw, 32px)` / 1.1 | Nimbus Bold |
+| H3 · Sub-section | `--text-h3` | 20px / 1.2 | Nimbus Bold |
+| Section eyebrow | `--text-eyebrow` | 19px / 1.1, 0.08em, uppercase, orange | **Gopher Bold** |
+| Button | `--text-button` | 19px / 1.0 | Gopher Bold |
+| UI label | `--text-ui` | 16px | Gopher |
+| Body large | `--text-body` | 16px / 1.6 | Gopher |
+| Body | `--text-body-sm` | 15.5px / 1.6 | Gopher |
+| Detail | `--text-detail` | 13.5px / 1.6, muted ink | Gopher |
+| Card title | `--text-card-title` | 15px / 1.3, uppercase | Nimbus Bold |
+| Price | `--text-price` | 18px, navy | Gopher Bold |
+
+**The headings are clamps, and there is no mobile override any more.** A
+`:root` inside a media query overrides a clamp outright, pinning the heading to
+one size below the breakpoint — which is the opposite of what the clamp is for.
+The old step-down blocks for `--text-h1` / `--text-h2` / `--text-h3` have been
+deleted; do not add them back. Change the clamp instead.
+
+**The eyebrow is Gopher, not Nimbus.** It used to be Nimbus Black at 18px with
+no tracking. It is the one tracked style in the system, and its 19px is an
+accessibility floor rather than a preference — see the contrast rules above.
 
 Body text is the default — a bare `<p>` already renders as B1. No class needed.
 
@@ -227,126 +296,150 @@ needs to look like H1, use `<h2 className="h1">`.
 
 ## Buttons
 
-Two variants, both pill-shaped with a 2px border.
+One geometry, five fills (§04). Paired CTAs therefore always match in height.
+
+```
+font-size: 19px · font-weight: 700 · Gopher
+min-height: 56px · padding: 0 32px · box-sizing: border-box
+border-radius: 999px · white-space: nowrap · justify-content: center
+transition: 250ms ease
+```
 
 ```jsx
-<button className="btn btn--primary">Shop Equipment</button>
+<button className="btn btn--primary">Shop equipment</button>
 <a href="/smart-monster" className="btn btn--secondary">Explore Smart Monster™</a>
 ```
 
-| Variant | Fill | Border | Text |
-|---|---|---|---|
-| `.btn--primary` | red | red | white |
-| `.btn--secondary` | white | navy | navy |
+| Variant | Fill | Border | Text | Where |
+|---|---|---|---|---|
+| `.btn--primary` | orange | orange | white | light grounds |
+| `.btn--secondary` | white | navy | navy | light grounds |
+| `.btn--tertiary` | none | border grey | navy | light grounds (26px side padding) |
+| `.btn--inverse` | white | white | orange | orange grounds (§04 "primary on orange") |
+| `.btn--secondary-on-orange` | none | white | white | orange grounds |
 
-The primary's border matching its own fill is intentional — it keeps both
-variants the same height so they align side by side.
+Three rules that are easy to undo by accident:
 
-Strapi-driven content emits `.cms-button` classes, which are styled identically
-in `app.css`. In hand-written code, prefer `.btn`.
+1. **Height comes from `min-height`, never a fixed height**, so vertical padding
+   cannot fight it. There is no `--space-button-y` any more; reach for
+   `--button-height`.
+2. **19px / 700 is an accessibility constraint.** White on orange measures
+   3.99:1 and only clears AA as large text. Shrink the label and the primary
+   button stops being legal.
+3. **No text-transform.** Labels are sentence case as authored; `capitalize` was
+   mangling copy like "Shop parts & accessories". And no arrow glyphs in labels.
 
----
+Every variant carries a 2px border even where the spec draws none — on filled
+variants it matches the fill. That is what keeps all five the same height.
 
-## ⚠ Known discrepancies — needs design input
+Hover is the house rule, not the spec: **a button darkens what it already is.**
+§01 names the orange hover fill (`#c62f14`) but specs no hover for the other
+four. Outlined buttons fill with their own border colour; the tertiary borrows
+the navy it already uses for its label, since filling with its own pale border
+would read as disabled.
 
-These came out of reading the Figma file and should be resolved with whoever
-owns the design before the palette is considered final.
-
-### 1. Every ColorCard's hex label contradicts its own swatch
-
-On all five color cards, the printed hex text does not match the color of the
-swatch above it:
-
-| Card | Swatch fill | Printed label |
-|---|---|---|
-| Neutral / 100 | `#e8e8e8` | `#F8F6F5` |
-| Neutral / 500 | `#282727` | `#525252` |
-| Brand / 100 | `#1c3a55` (navy) | `#9E442A` (rust) |
-| Brand / 200 | `#e1b14b` (gold) | `#6D2613` (dark rust) |
-| Brand / 200 | `#eb4021` (red) | `#6D2613` (dark rust) |
-
-**`tokens.css` uses the swatch fills**, on this reasoning: the navy `#1c3a55`
-and red `#eb3f21` swatches are independently corroborated by the text styles
-(H1/H2 and body are all `#1c3a55`; the Eyebrow style is `#eb3f21`),
-whereas the printed labels include a duplicate (`#6D2613` twice) that looks
-like un-updated copy-paste. Worth confirming.
-
-### 2. Two cards are both named "Brand / 200"
-
-The gold and red swatches share a name. Tokens call the red one `--brand-red`
-and treat it as a third step; Figma should be renamed to match.
-
-### 2b. Components use colors that aren't in the palette
-
-The Navbar and Footer introduce four colors with no entry in the styleguide's
-Colors section. They're in `tokens.css` under an "Off-palette" heading, kept
-exact so the components match the design:
-
-| Token | Value | Used by |
-|---|---|---|
-| `--nav-ink` | `#2f2f2f` | Main nav link text |
-| `--nav-rule` | `#e2e2df` | Header bottom border |
-| `--nav-rule-utility` | `#ededed` | Utility bar bottom border |
-| `--legal-ink` | `#9a9a9a` | Footer legal line |
-
-`--nav-ink` (`#2f2f2f`) is very close to `--neutral-500` (`#282727`) and may
-have been meant as the same value. Worth confirming rather than assuming.
-
-### 3. Near-miss color drift
-
-The same color appears at two slightly different values:
-
-- Navy: `#1c3a55` (type styles, brand swatch, Footer headings) vs `#1d3a54`
-  (Button Explore border, Footer link text)
-- Red: `#eb3f21` (eyebrow, Button Shop) vs `#eb4021` (brand swatch)
-
-Tokens canonicalize to the more frequently used `#1c3a55` and `#eb3f21`.
-
-The navy pair now shows up in three separate components, so this is a pattern
-rather than a one-off. Defining it once as a Figma variable would stop it
-recurring.
-
-### 4. No mobile type scale
-
-The Figma page specs a Desktop scale only. A 60px H1 overflows a 375px
-viewport, so `tokens.css` includes step-downs at `48em` and `64em`. **These
-values are invented, not designed** — replace them when design provides a
-mobile scale.
-
-### 5. No spacing scale
-
-Spacing is not specced as a system. The `--space-*` scale is derived from
-observed values (12/44/60px gaps, 17px button padding) regularized onto a 4px
-grid. The 17px button padding is kept exact as `--space-button-*`.
-
-### 6. No interaction states
-
-Neither button component has hover, focus, active, or disabled variants in
-Figma. `components.css` ships conservative defaults (primary darkens to navy,
-secondary inverts) plus a `:focus-visible` outline required for accessibility.
-Replace with designed states when available.
-
-### 7. Body copy sizes raised above Figma — RESOLVED, code is intentionally ahead
-
-Figma specs B1 at 14px and B2 at 12px. Both were too small for long-form
-reading, and were raised on the client's instruction (2026-08-26):
-
-| Token | Figma | In code |
-|---|---|---|
-| `--text-body` (B1) | 14px | **18px** |
-| `--text-body-sm` (B2) | 12px | **16px** |
-| `--text-body-lg` (B3) | 16px | **20px** |
-
-B3 was scaled with the others because it exists to sit one step *above* body
-copy; left at 16px it would have been smaller than B1 and the name would lie.
-
-`Footer .columnHeading` also moved from `--text-button` (16px) to `--text-body`
-(18px) — at 16px it would have exactly matched the links beneath it, leaving
-only weight to carry the hierarchy.
-
-**Update the Figma styleguide to match. Do not "correct" these back.**
+Strapi-driven content emits `.cms-button`, styled identically in `app.css` —
+keep the two in step or a CMS button and a hand-written one will not line up.
+In hand-written code, prefer `.btn`.
 
 ---
+
+## ⚠ Open items — needs design input
+
+The **Hose Monster Web Styleguide (Sept 2026)** replaced the Figma-derived
+styleguide this build was originally made from. Items 1–6 below were all raised
+against that older document and are now closed by the new one: the palette is
+named by role, the type scale is given as clamps, the mobile scale is the clamp
+itself, and §05 finally specs interaction states. What follows is what the new
+styleguide leaves open.
+
+### A. Orange as a link hover, below 19px
+
+`reset.css` turns every non-button anchor orange on hover, and Header, Footer
+and Product Feed restate it. §09 forbids orange text below 19px / 700 — but the
+hover states were invented by this build because the old styleguide had none, so
+the spec condemns the colour without supplying a replacement. The footer cases
+are fixed (§09 says orange on navy is white); the light-ground ones are not.
+
+### B. The 1440px container
+
+`--container-outer` is `1440 + 2 × gutter`, so content lands at exactly 1440px
+with the gutters outside it — a deliberate house standard, recorded above under
+"One content width". §06 reads 1440px as the **outer** box, which would put
+content at 1353.6px. Related: `reset.css` puts a 16px margin on `<main>` that the
+legacy non-module routes rely on, so zeroing `--main-gutter` needs those checked
+first.
+
+### C. Card chrome is restated in eight modules
+
+§05 says "three patterns, one chrome", but there is no shared card class —
+Card Grid, Link Cards, Product Cards, Product Feed, Category Grid, Feature
+Cards, FAQ and Testimonials each declare their own border, radius, hover and
+timing. Building a shared `.card` is the difference between about 6 edits and
+about 24. The tokens are in place either way (`--shadow-card-hover`,
+`--card-lift`, `--card-image-scale`, `--duration-control`); nothing consumes them
+yet.
+
+### D. Sections do not alternate automatically
+
+§06 says sections alternate white and `#f5f6f7`. Only `faq`, `link-cards` and
+`text-media` have a background field, and `BlockManager` passes no index — so
+the rhythm is whatever an author sets. Either alternate by index in
+`BlockManager` (one edit, every page) or add the field to the nine remaining
+Strapi schemas (18 edits, and authors can still break it).
+
+### E. Controls that do not exist yet
+
+§07 specs removable filter chips and numbered pagination with a navy-filled
+current page. Neither is built. The sort select and its label are now on spec.
+
+### F. Eight literals below the smallest named step
+
+The scale now bottoms out at 13.5px (`--text-detail`). Product Feed, Product
+Cards, Page Hero, Link Cards and Newsletter each carry a literal below that
+(12px, 12.5px, 13px, 14px) with a comment saying it came from the design. Either
+the design has values the styleguide does not name, or they all move up.
+
+### G. Two rules on navy grounds
+
+`--hero-meta-rule` and `--newsletter-input-border` are the last off-palette
+hexes. §01 gives one border colour and it is a light-ground value.
+
+### H. The hero-callout divider
+
+§06 names a 1px `#E0E0E0` divider; §01 says `#E8E8E8` is the one border colour
+and covers all strokes. Either the spec contradicts itself or the callout
+hairline is a deliberate exception — taking §06 literally adds a sixth neutral.
+
+### I. FAQ behaviour
+
+§08 asks for a two-column flow with only one panel open at a time. The
+two-column layout was overridden deliberately (see the module comment); the
+single-open behaviour has not been decided.
+
+### J. Body copy sizes — CLOSED, on the designer’s values
+
+The original Figma specced B1 at 14px and B2 at 12px. Both were raised at the
+client’s direction on **2026-08-26** (to 18px and 16px) because 14px read as fine
+print on a large display. §03 of the Sept 2026 styleguide asks for **16px** and
+**15.5px** — between the two — and the client has taken the designer’s values.
+The divergence is closed and `tokens.css` no longer carries the do-not-revert
+note.
+
+Two things moved with them:
+
+- **`--text-body-lg` is retired.** It existed to sit one step *above* body copy,
+  which at 20px it no longer would once "Body large" became 16px. Its two
+  consumers (Tabbed Cards intro, CTA Banner body) now read `--text-body`.
+- **Prices were pinned first.** `.cardPrice` in Product Cards and Product Feed
+  used to ride `--text-body`; they are on `--text-price` (18px) so this change
+  did not silently shrink them.
+
+Still open from the same table: §03 sets body copy at **Gopher 400**, and
+sixteen rules currently pair a body size with `--weight-medium` (500) —
+including the `body` element default in `typography.css`. Taking that row is a
+separate, one-command change.
+
 
 ## Fonts — Adobe Fonts kit
 

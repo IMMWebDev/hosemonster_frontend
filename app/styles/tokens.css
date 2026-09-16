@@ -2,7 +2,9 @@
  * =============================================================================
  * DESIGN TOKENS
  * =============================================================================
- * Source of truth: Figma → Hose Monster → "Web Styleguide" page
+ * Source of truth: HOSE MONSTER WEB STYLEGUIDE, Sept 2026 (the designer's
+ * bundled HTML). Section numbers in the comments below (§01, §03 …) refer to it.
+ * It supersedes the Figma "Web Styleguide" page this file was first built from:
  * https://www.figma.com/design/YkA269pTHE9uSRKE3hsoud/Hose-Monster?node-id=1-3525
  *
  * This file is the ONLY place raw values (hex codes, px sizes, radii) may be
@@ -26,45 +28,66 @@
   /* ==========================================================================
    * 1. PRIMITIVES — raw palette
    * ==========================================================================
-   * Values taken from the ColorCard swatch fills in Figma, NOT the hex text
-   * labels printed on the cards. Those labels contradict their own swatches —
-   * see STYLEGUIDE.md § "Known discrepancies". Confirm with design before
-   * treating these as final.
+   * Values are the designer's, taken from §01 of the Sept 2026 styleguide. The
+   * older note about Figma swatch labels contradicting their own hex text no
+   * longer applies — that document has been superseded.
    */
 
-  /* Neutral ramp */
+  /* Surface ramp */
   /* Section tint. Distinct from --neutral-100 and deliberately so: that one is
    * the grey of a placeholder fill or a card, this is barely off-white and is
    * only ever a background a whole section sits on. */
-  --neutral-50: #f5f6f7;
-  --neutral-100: #e8e8e8; /* Figma: Neutral / 100 */
-  --neutral-500: #282727; /* Figma: Neutral / 500 */
+  --neutral-50: #f5f6f7; /* Styleguide §01: Light Surface */
+  --neutral-100: #e8e8e8; /* Styleguide §01: Border — ALL 2px card and control strokes */
+  --photo-well: #0e1a25; /* Styleguide §01: behind product images in cards */
 
-  /* Brand ramp */
-  --brand-navy: #1c3a55; /* Figma: Brand / 100 — headings, body text, secondary button */
-  --brand-gold: #e1b14b; /* Figma: Brand / 200 — accent */
-  --brand-red: #eb3f21; /* Figma: Brand / 300 — eyebrows, primary action */
+  /* Brand ramp — two colours carry the identity. Everything else is ink,
+   * surface or border (Styleguide §01). */
+  --brand-orange: #eb3f21; /* CTAs, eyebrows, accents, hover borders, active states */
+  --brand-orange-hover: #c62f14; /* Hover FILL for orange buttons. Never a text colour. */
+  --brand-navy: #1d3a54; /* Headings, dark sections, outline buttons, hero scrims */
+  --deep-navy-ink: #0b1721; /* The only navy that clears 4.5:1 on orange */
 
-  /* Absolutes — not from the Figma palette, but required for text on fills */
+  /* Kept so the existing `--brand-red` references keep resolving. The designer
+   * calls this colour orange; there is no separate red in the palette. */
+  --brand-red: var(--brand-orange);
+
+  /* Absolutes — not from the palette, but required for text on fills */
   --white: #ffffff;
   --black: #000000;
 
-  /* ⚠ Off-palette — introduced by the Navbar component, NOT present in the
-   * styleguide's Colors section. Kept exact so the header matches the design.
-   * Flag for design reconciliation: --nav-ink is very close to --neutral-500
-   * (#282727) and may have been intended as the same value. */
-  --nav-ink: #2f2f2f; /* Main nav link text */
-  --nav-rule: #e2e2df; /* Header bottom border */
-  --nav-rule-utility: #ededed; /* Utility bar bottom border */
-  --legal-ink: #9a9a9a; /* Footer legal/copyright line */
-  --newsletter-label-ink: #d6d6d2; /* Newsletter field label */
-  --newsletter-required-ink: #9a9a96; /* Newsletter required asterisk */
-  --newsletter-input-border: #565656; /* Newsletter input border */
-  --hero-meta-ink: #b7b7b2; /* Hero trust bar; also Discovery card description */
-  --hero-meta-rule: #c4c4c4; /* Hero trust separators; also Discovery tab dividers */
-  --muted-ink: #666666; /* Tabbed Cards intro copy */
-  --body-ink: #4a4a4a; /* Text & Media body copy */
-  --list-ink: #3a3a3a; /* Text & Media bullet list */
+  /*
+   * INK RAMP — Styleguide §01.
+   *
+   * Four inks, and only four. The block that used to live here held fourteen
+   * near-identical one-off greys, each introduced by whichever component needed
+   * it first (#4a4a4a, #3a3a3a, #666666, #2f2f2f, #9a9a9a …). The new palette
+   * has no warm greys at all — every ink is a blue-grey derived from the navy —
+   * so the one-offs below are now aliases onto the four real inks rather than
+   * separate colours. They are kept as names because a dozen stylesheets read
+   * them; retire a name once its last consumer is gone.
+   */
+  --ink-body: #41586e; /* Paragraph copy on white */
+  --ink-muted: #5c7186; /* Card specs, labels, secondary copy */
+  --ink-on-navy: #c3d0dc; /* Body copy on navy grounds */
+  --ink-faint: #a5b3c0; /* Counts, chevrons, non-text marks ONLY */
+
+  --nav-ink: var(--brand-navy); /* Main nav link text — was #2f2f2f */
+  --nav-rule: var(--neutral-100); /* Header bottom border — was #e2e2df */
+  --nav-rule-utility: var(--neutral-100); /* Utility bar border — was #ededed */
+  --legal-ink: var(--ink-muted); /* Footer legal line, on WHITE — was #9a9a9a */
+  --newsletter-label-ink: var(--ink-on-navy); /* was #d6d6d2 */
+  --newsletter-required-ink: var(--ink-on-navy); /* was #9a9a96 */
+  --hero-meta-ink: var(--ink-on-navy); /* Hero trust bar — was #b7b7b2 */
+  --muted-ink: var(--ink-muted); /* Tabbed Cards intro copy — was #666666 */
+  --body-ink: var(--ink-body); /* Text & Media body copy — was #4a4a4a */
+  --list-ink: var(--ink-body); /* Text & Media bullet list — was #3a3a3a */
+
+  /* ⚠ Still off-palette: rules and borders on NAVY grounds. §01 gives one
+   * border colour (#E8E8E8) and it is a light-ground value — on navy it is
+   * near-white and far too loud. Left exact pending a decision from design. */
+  --newsletter-input-border: #565656;
+  --hero-meta-rule: #c4c4c4;
 
   /* Testimonial card — navy with a slight top-to-bottom darkening. */
   --testimonial-bg: linear-gradient(
@@ -170,10 +193,20 @@
    * ========================================================================== */
 
   /* Text */
-  --color-text: var(--brand-navy); /* Default body + heading color */
-  --color-text-muted: var(--neutral-500);
-  --color-text-inverse: var(--white); /* Text on dark or red fills */
-  --color-text-accent: var(--brand-red); /* Eyebrows, emphasis */
+  --color-text: var(--brand-navy); /* Default heading colour */
+  --color-text-body: var(--ink-body); /* Paragraph copy on white */
+  --color-text-muted: var(--ink-muted); /* Card specs, labels, secondary copy */
+  --color-text-inverse: var(--white); /* Text on dark or orange fills */
+  --color-text-on-navy: var(--ink-on-navy); /* Body copy on navy grounds */
+  --color-text-faint: var(--ink-faint); /* Counts, chevrons, non-text marks ONLY */
+  /*
+   * Eyebrows, emphasis. §09: orange is a LIGHT colour and only clears AA as
+   * large text — 19px at weight 700. Never set this on anything smaller, and
+   * never on navy (2.95:1, fails at every size — use --color-text-inverse).
+   */
+  --color-text-accent: var(--brand-orange);
+  /* Text sitting ON an orange fill. The only navy that clears 4.5:1 there. */
+  --color-text-on-orange: var(--deep-navy-ink);
 
   /* Surfaces */
   --color-surface: var(--white); /* Default page background */
@@ -182,33 +215,37 @@
    * field on module.text-media. NOT interchangeable with -subtle above, which
    * is four shades darker and reads as a grey block at section scale. */
   --color-surface-alt: var(--neutral-50);
-  /* Muted navy for supporting copy beside a navy heading. Derived from the
-   * brand colour rather than adding another off-palette hex: the comps use
-   * several near-identical blue-greys (#5C7186, #41586E, #C3D0DC) that have no
-   * tokens. Lands within ~4 points of #5C7186. One for the palette pass. */
-  --color-text-soft: color-mix(in srgb, var(--brand-navy) 70%, #fff);
-  --color-surface-inverse: var(--neutral-500); /* Footer, dark sections */
+  /* Was a color-mix approximation of #5C7186, written before the palette named
+   * that colour. It is now the real ink. */
+  --color-text-soft: var(--ink-muted);
+  /* §01: brand navy is the colour of dark sections. Was #282727, a warm
+   * near-black that the new palette does not contain. */
+  --color-surface-inverse: var(--brand-navy);
 
   /* Borders */
   --color-border: var(--neutral-100);
   --color-border-strong: var(--brand-navy);
 
-  /* Actions — primary = filled red, secondary = outlined navy */
-  --color-action: var(--brand-red);
+  /*
+   * Actions — Styleguide §04, one geometry and five fills:
+   *   primary              orange fill, white text
+   *   secondary            transparent, navy border and text
+   *   tertiary             transparent, border-grey border, navy text
+   *   primary-on-orange    white fill, orange text
+   *   secondary-on-orange  transparent, white border and text
+   */
+  --color-action: var(--brand-orange);
   --color-action-text: var(--white);
-  /* Hover fills. The house rule is that a button DARKENS WHAT IT ALREADY IS
-   * rather than swapping to another brand colour: red -> darker red, white ->
-   * off-white. A red-to-navy swap reads fine on white but makes a button on a
-   * navy panel look like it vanished, and leaves an inverse (white-on-red)
-   * button with nowhere sensible to go. Outlined buttons are the one exception
-   * and fill with their own border colour, which is the same idea. */
-  --color-action-hover: color-mix(in srgb, var(--color-action) 85%, #000);
+  /* §01 names the hover fill outright now. It used to be a color-mix that
+   * resolved to #c83629 — close, but the designer's value is #c62f14. The
+   * house rule it encoded still holds: a button darkens what it already is
+   * rather than swapping to the other brand colour. */
+  --color-action-hover: var(--brand-orange-hover);
   --color-inverse-hover: var(--neutral-50);
   --color-action-secondary-border: var(--brand-navy);
   --color-action-secondary-text: var(--brand-navy);
-
-  /* Accent */
-  --color-accent: var(--brand-gold);
+  --color-action-tertiary-border: var(--neutral-100);
+  --color-action-tertiary-text: var(--brand-navy);
 
   /* ==========================================================================
    * 3. TYPOGRAPHY
@@ -235,36 +272,65 @@
   --weight-bold: 700;
   --weight-black: 900;
 
-  /* Type scale — desktop values, exactly as specced in Figma.
-   * Expressed in rem (÷16) so browser text-size settings are respected.
-   * Figma style names are noted so design and code share vocabulary. */
-  --text-h1: 3.25rem; /* 52px — Figma "H1" */
-  --text-h2: 3rem; /* 48px — Figma "H2" */
-  --text-h3: 1.125rem; /* 18px — Figma "H3" (Eyebrow) */
-  --text-button: 1rem; /* 16px — Figma "H4" (Button) */
-  /* ⚠ DELIBERATE DIVERGENCE FROM FIGMA. The styleguide specifies B1 at 14px and
-   * B2 at 12px. Both were raised for readability at the client's direction on
-   * 2026-08-26 — 14px body reads as fine print on a large display. Update the
-   * Figma styleguide to match rather than "correcting" these back. */
-  --text-body: 1.125rem; /* 18px — Figma "B1" (Standard Body Copy), was 14px */
-  --text-body-sm: 1rem; /* 16px — Figma "B2" (Small Body Copy), was 12px */
-  /* ⚠ Figma "B3" (Gopher Regular 16 / 1.7). Used by the Guided Discovery card
-   * but absent from the styleguide's Fonts page — flag for design.
-   * Scaled with B1 above: it exists to sit one step ABOVE body copy, so at 16px
-   * it would now be smaller than body and the name would lie. */
-  --text-body-lg: 1.25rem; /* 20px, was 16px */
+  /*
+   * Type scale — Styleguide §03.
+   *
+   * The headings are CLAMPS, not fixed sizes with breakpoint step-downs. That
+   * is why the :root overrides at the foot of this file no longer restate
+   * --text-h1 / --text-h2 / --text-h3: a media query at equal specificity
+   * would win over the clamp and silently pin the heading at one size, which
+   * is the opposite of what the spec asks for. Do not add them back.
+   */
+  --text-h1: clamp(1.625rem, 3.1vw, 2.5rem); /* 26 → 40px, "Page headline" */
+  --text-h2-lg: clamp(1.75rem, 3.2vw, 2.625rem); /* 28 → 42px, "Major section" */
+  --text-h2: clamp(1.5rem, 2.6vw, 2rem); /* 24 → 32px, "Standard section" */
+  --text-h3: 1.25rem; /* 20px — a real H3 now, NOT the eyebrow */
+
+  /*
+   * The eyebrow is GOPHER, not the display face, and 19px is not a style
+   * choice — §09 only clears orange text at 19px / 700. Shrink this and the
+   * colour has to change with it.
+   */
+  --text-eyebrow: 1.1875rem; /* 19px */
+
+  /* §04: every pill button, regardless of fill. Also gated by §09. */
+  --text-button: 1.1875rem; /* 19px */
+
+  /* Labels and UI text that are NOT buttons. Split out when --text-button went
+   * to 19px — seven non-button rules were riding it and would have grown. */
+  --text-ui: 1rem; /* 16px */
+
+  /*
+   * §03. These were 18 / 16 / 20 — raised from the original Figma 14 / 12 at
+   * the client’s direction on 2026-08-26. The Sept 2026 styleguide lands
+   * between the two and the client has taken the designer’s values, so the
+   * divergence is closed. See STYLEGUIDE.md §J for what moved with them.
+   */
+  --text-body: 1rem; /* 16px — "Body large": intro and callout copy */
+  --text-body-sm: 0.96875rem; /* 15.5px — "Body": standard section copy */
+
+  /* §03, sizes the old scale had no token for. */
+  --text-detail: 0.84375rem; /* 13.5px — card specs, filter labels */
+  --text-card-title: 0.9375rem; /* 15px — product card title, uppercase */
+  --text-price: 1.125rem; /* 18px — Gopher 700, navy */
 
   /* Line heights — unitless, so they scale with font-size */
-  --leading-h1: 0.98;
-  --leading-h2: 1;
-  --leading-h3: 1.1;
-  --leading-body: 1.7;
+  --leading-h1: 1.1; /* §03: every heading is 1.1 */
+  --leading-h2: 1.1;
+  --leading-h3: 1.2; /* the one exception the spec names */
+  --leading-eyebrow: 1.1;
+  --leading-card-title: 1.3;
+  --leading-body: 1.6; /* §03: 1.6 for paragraphs, was 1.7 */
   --leading-body-sm: 1.5;
   --leading-button: 1;
 
-  /* Letter spacing — only H1 is tracked tight in the design */
-  --tracking-h1: -0.05em; /* -3px at 60px */
+  /* Letter spacing */
+  --tracking-h1: -0.05em;
+  --tracking-eyebrow: 0.08em; /* §03 — the eyebrow is the only tracked style */
   --tracking-normal: 0;
+
+  /* §03: "Cap measure around 64ch and set text-wrap: pretty to avoid orphans." */
+  --measure: 64ch;
 
   /* ==========================================================================
    * 4. SPACING
@@ -289,10 +355,15 @@
   --space-15: 3.75rem; /* 60px — section padding in Figma */
   --space-16: 4rem; /* 64px */
 
-  /* Button padding is 17px in Figma — an off-grid one-off, kept exact
-   * so buttons match the design pixel for pixel. */
-  --space-button-y: 17px;
-  --space-button-x: 17px;
+  /*
+   * Button geometry — Styleguide §04. The height comes from min-height, NOT
+   * from vertical padding: "use min-height, never a fixed height, so vertical
+   * padding cannot fight it". --space-button-y is therefore gone; if you find
+   * yourself reaching for it, you want --button-height instead.
+   */
+  --button-height: 56px;
+  --space-button-x: 32px;
+  --space-button-x-tertiary: 26px; /* the tertiary fill is drawn tighter */
 
   /* ==========================================================================
    * 5. RADII
@@ -355,12 +426,37 @@
   );
   --container-block: var(--space-16); /* 64px */
 
+  /*
+   * NAMED GRID GAPS — Styleguide §06. Three, and only three. Every module used
+   * to pick a --space-* step and then hand-roll a smaller one in a media query;
+   * these clamps do that continuously, so a module that adopts one can delete
+   * its breakpoint override with it.
+   */
+  --gap-cards: clamp(14px, 2vw, 20px);
+  --gap-columns: clamp(24px, 3vw, 40px);
+  --gap-two-column: clamp(28px, 4vw, 56px);
+
   /* The width a centred wrapper should cap at so its CONTENT is exactly
    * --container-max with gutters sitting outside. Everything centred on the
    * page uses this, which is what makes the header, footer, and page sections
    * line up on the same vertical edges. Depends on border-box (see reset.css).
    */
   --container-outer: calc(var(--container-max) + 2 * var(--container-gutter));
+
+  /*
+   * The same cap for a FULL-BLEED section.
+   *
+   * A bleed section is 2 * --main-gutter wider than a normal one, so if its
+   * wrapper capped at --container-outer too, both wrappers would clamp to the
+   * identical width and centre on the identical vertical — and the extra
+   * --container-gutter-bleed padding would stop cancelling the breakout and
+   * become a plain indent. Above the cap that put every bleed module 16px
+   * right of its neighbours; below it the two cancelled exactly, which is why
+   * it only showed on displays wider than the cap.
+   */
+  --container-outer-bleed: calc(
+    var(--container-outer) + 2 * var(--main-gutter)
+  );
 
   /* Horizontal margin on <main>, inherited from the Hydrogen starter. It stops
    * any section reaching the viewport edge, so full-bleed modules cancel it out
@@ -385,6 +481,16 @@
   /* Header dropdown panel. Not specced in Figma — no dropdown frame exists. */
   --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.12);
 
+  /*
+   * CARD HOVER — Styleguide §05. One chrome across all three card patterns:
+   * the border turns, the card lifts, the image scales, all over 250ms.
+   */
+  --shadow-card-hover: 0 16px 40px rgba(15, 31, 44, 0.12),
+    0 2px 8px rgba(15, 31, 44, 0.05);
+  --card-lift: -4px;
+  --card-lift-row: -2px; /* cross-sell rows lift half as far */
+  --card-image-scale: 1.06;
+
   /* ==========================================================================
    * 9. MOTION
    * ==========================================================================
@@ -394,42 +500,32 @@
   /* Drawer / aside slide. Used for both the panel transform and the overlay
    * fade so the two stay in step in both directions. */
   --duration-slide: 260ms;
+  /* §04 buttons and §05 cards both transition at 250ms. */
+  --duration-control: 250ms;
+  --duration-image: 300ms; /* §05: the image scale runs slightly longer */
   --duration-slow: 400ms;
   --ease-default: ease-in-out;
 }
 
 /*
  * =============================================================================
- * RESPONSIVE TYPE SCALE
+ * RESPONSIVE CONTAINER
  * =============================================================================
- * The Figma page specs a "Desktop" scale only — there is no mobile frame.
- * A 60px H1 overflows a 375px viewport, so these step-downs are REQUIRED for
- * the site to function on mobile.
+ * The type scale is NO LONGER stepped down here.
  *
- * ⚠ These values are NOT from design. They are a proportional reduction
- * (~60% at H1, easing toward 100% at body) chosen so headings fit common
- * breakpoints. Replace them once design provides a mobile scale.
+ * It used to be: the old styleguide specced desktop sizes only, so this file
+ * carried a hand-made mobile ramp. The new styleguide §03 gives every heading
+ * as a clamp() instead, which covers the whole range continuously — and a
+ * `:root` inside a media query would override that clamp outright, pinning the
+ * heading to one size below 1099px. Adding --text-h1 / --text-h2 / --text-h3
+ * back to these blocks silently defeats the scale. Change the clamp instead.
  * =============================================================================
  */
 /* tablet (max-width: 1099px) */
 @media (max-width: 1099px) {
   :root {
-    --text-h1: 3rem; /* 48px */
-    --text-h2: 2.625rem; /* 42px */
-
     --container-gutter: var(--space-6); /* 24px */
     --container-block: var(--space-12); /* 48px */
-  }
-}
-
-/* mdTablet (max-width: 699px) — must follow the tablet block, since both are
- * max-width queries at equal specificity and the narrower one has to win. */
-@media (max-width: 699px) {
-  :root {
-    --text-h1: 2.25rem; /* 36px */
-    --text-h2: 2rem; /* 32px */
-    --text-h3: 1rem; /* 16px */
-    /* Body sizes hold — they are already at the small end. */
   }
 }
 

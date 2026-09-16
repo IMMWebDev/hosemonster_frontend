@@ -76,7 +76,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: var(--container-outer);
+  max-width: var(--container-outer-bleed);
   margin-inline: auto;
   /* Bleed gutter: this section cancels <main>'s margin, so its content needs
    * that width added back to line up with non-bleed sections. */
@@ -93,12 +93,16 @@
 
 /* Figma "H3" / Eyebrow */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-text-accent);
+  /* §09: orange on navy is 2.95:1 and fails at every size. */
+  color: var(--color-text-inverse);
   margin: 0;
 }
 

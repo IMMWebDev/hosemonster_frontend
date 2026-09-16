@@ -1,14 +1,34 @@
 import {redirect, useLoaderData} from 'react-router';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {ProductItem} from '~/components/ProductItem';
+import BlockManager from '~/components/cms/BlockManager';
+import {getModuleProducts} from '~/lib/module-products';
+import {
+  sortFromSearchParams,
+  filtersFromSearchParams,
+} from '~/lib/collection-filters';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  /*
+   * CMS first, Shopify second. A collection page's title is editorial, so the
+   * Strapi `seo` component wins when the handle has a CMS entry; a collection
+   * with no entry still gets a sensible title from Shopify rather than nothing.
+   */
+  const seo = data?.cmsPage?.seo;
+  const title = seo?.metaTitle || `${data?.collection?.title ?? ''} | Hose Monster`;
+
+  const tags = [{title}, {property: 'og:title', content: title}];
+  if (seo?.metaDescription) {
+    tags.push({name: 'description', content: seo.metaDescription});
+    tags.push({property: 'og:description', content: seo.metaDescription});
+  }
+  if (seo?.preventIndexing) {
+    tags.push({name: 'robots', content: 'noindex, nofollow'});
+  }
+  return tags;
 };
 
 /**
@@ -32,20 +52,47 @@ export async function loader(args) {
 async function loadCriticalData({context, params, request, url}) {
   const {handle} = params;
   const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
-  });
 
   if (!handle) {
     throw redirect('/collections');
   }
 
-  const [{collection}] = await Promise.all([
-    storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
-      // Add other queries here, so that they are loaded in parallel
-    }),
-  ]);
+  /*
+   * Strapi BEFORE Shopify, not in parallel — deliberately.
+   *
+   * The Product Feed module owns `productsPerPage`, and page size is a query
+   * variable, so the CMS answer is needed before Shopify can be asked. The cost
+   * is one extra round trip on a cached, null-safe call; the alternative is
+   * hard-coding a page size the CMS claims to control.
+   */
+  const cms = await context.strapi.getCollectionPage(handle);
+
+  const feed = (cms.modules ?? []).find(
+    (m) => m.__component === 'module.product-feed',
+  );
+
+  const paginationVariables = getPaginationVariables(request, {
+    pageBy: feed?.productsPerPage ?? 12,
+  });
+
+  /*
+   * Sort and filters come from the URL so the loader re-runs when they change —
+   * Shopify has to recompute the facet COUNTS, not just the products, so this
+   * cannot be done client-side.
+   */
+  const searchParams = new URL(request.url).searchParams;
+  const sort = sortFromSearchParams(searchParams);
+  const filters = filtersFromSearchParams(searchParams);
+
+  const {collection} = await storefront.query(COLLECTION_QUERY, {
+    variables: {
+      handle,
+      ...paginationVariables,
+      sortKey: sort.sortKey,
+      reverse: sort.reverse,
+      filters,
+    },
+  });
 
   if (!collection) {
     throw new Response(`Collection ${handle} not found`, {
@@ -56,8 +103,26 @@ async function loadCriticalData({context, params, request, url}) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(url, {handle, data: collection});
 
+  /*
+   * Modules cannot fetch — BlockManager renders straight from the CMS payload.
+   * module.product-cards stores only references, so its Storefront lookup
+   * happens here, same as on $.jsx and _index.jsx.
+   */
+  const products = await getModuleProducts({
+    storefront,
+    modules: cms.modules,
+  });
+
   return {
     collection,
+    activeSort: sort.value,
+    cmsPage: cms.page,
+    cmsModules: cms.modules,
+    products,
+    strapiBaseUrl: context.env.STRAPI_API_URL,
+    // Read by PageLayout via useMatches to decide whether the newsletter band
+    // renders above the footer.
+    includeNewsletter: cms.page?.includeNewsletter ?? null,
   };
 }
 
@@ -73,24 +138,31 @@ function loadDeferredData({context}) {
 
 export default function Collection() {
   /** @type {LoaderReturnData} */
-  const {collection} = useLoaderData();
+  const {collection, cmsModules, strapiBaseUrl, products, activeSort} =
+    useLoaderData();
 
   return (
     <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
-      <PaginatedResourceSection
-        connection={collection.products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
-        )}
-      </PaginatedResourceSection>
+      {/* Everything on this page is a CMS module, product grid included. */}
+      <BlockManager
+        blocks={cmsModules}
+        baseUrl={strapiBaseUrl}
+        products={products}
+        collection={collection}
+        activeSort={activeSort}
+      />
+
+      {/*
+        No grid here. The products are rendered by module.product-feed inside
+        BlockManager above, which owns the sort and filter controls too — the
+        skeleton's grid stayed behind when that module was built and rendered
+        every product a second time.
+
+        Shopify's title and description are deliberately not rendered either:
+        the heading comes from the Page Hero module so it is editorial, and two
+        <h1>s on one page is worse for SEO than none. The CMS owns the words,
+        Shopify owns the products.
+      */}
       <Analytics.CollectionView
         data={{
           collection: {
@@ -141,6 +213,9 @@ const COLLECTION_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
+    $sortKey: ProductCollectionSortKeys
+    $reverse: Boolean
+    $filters: [ProductFilter!]
   ) @inContext(country: $country, language: $language) {
     collection(handle: $handle) {
       id
@@ -151,8 +226,24 @@ const COLLECTION_QUERY = `#graphql
         first: $first,
         last: $last,
         before: $startCursor,
-        after: $endCursor
+        after: $endCursor,
+        sortKey: $sortKey,
+        reverse: $reverse,
+        filters: $filters
       ) {
+        # Facets, recomputed by Shopify for the CURRENT filter selection — which
+        # is why filtering has to round-trip rather than happen in the browser.
+        filters {
+          id
+          label
+          type
+          values {
+            id
+            label
+            count
+            input
+          }
+        }
         nodes {
           ...ProductItem
         }

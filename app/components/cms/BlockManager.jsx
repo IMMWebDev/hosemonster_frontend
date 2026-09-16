@@ -12,9 +12,18 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
  *   baseUrl?: string,
  *   siteEnv?: Record<string, string | undefined>,
  *   products?: Record<string, object>,
+ *   collection?: object,
+ *   activeSort?: string,
  * }} props
  */
-export default function BlockManager({blocks, baseUrl, siteEnv, products}) {
+export default function BlockManager({
+  blocks,
+  baseUrl,
+  siteEnv,
+  products,
+  collection,
+  activeSort,
+}) {
   if (!blocks || blocks.length === 0) return null;
 
 
@@ -39,6 +48,10 @@ export default function BlockManager({blocks, baseUrl, siteEnv, products}) {
                see app/lib/module-products.js. Only module.product-cards reads
                it; every other module ignores the prop. */
             products={products}
+            /* Shopify collection for module.product-feed, queried by the
+               collection route. Every other module ignores these. */
+            collection={collection}
+            activeSort={activeSort}
           />
         );
       })}

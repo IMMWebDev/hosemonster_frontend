@@ -15,6 +15,7 @@ import styles from './LinkCards.module.css';
  *
  * @param {{
  *   data: {
+ *     background?: 'white' | 'grey',
  *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
@@ -29,12 +30,20 @@ import styles from './LinkCards.module.css';
  * }} props
  */
 export default function LinkCards({data}) {
-  const {eyebrow, heading, body, items = []} = data ?? {};
+  const {eyebrow, heading, body, background, items = []} = data ?? {};
 
   if (!heading) return null;
 
+  /*
+   * Only "grey" gets a class, same as Text & Media. Strapi applies an enum
+   * default on CREATE only, so a Link Cards authored before this field existed
+   * comes back null rather than "white" — treating anything that is not "grey"
+   * as white covers both.
+   */
+  const backgroundClass = background === 'grey' ? styles.grey : '';
+
   return (
-    <section className={styles.section}>
+    <section className={`${styles.section} ${backgroundClass}`.trim()}>
       <div className={styles.inner}>
         {eyebrow ? (
           <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
