@@ -7,6 +7,15 @@
 
 .section {
   padding-block: var(--container-block);
+
+  /*
+   * The pager links to this section by fragment, and the site header is sticky
+   * — without this the browser scrolls the section's top edge to y=0 and the
+   * header sits on top of the heading. 96px clears the condensed nav (81px:
+   * 121px at rest, less the 40px utility bar that collapses on scroll) with a
+   * little air above the heading.
+   */
+  scroll-margin-top: 96px;
 }
 
 .inner {
@@ -467,6 +476,131 @@
 
 @media (prefers-reduced-motion: reduce) {
   .card {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * PAGINATION — styleguide §07
+ * -----------------------------------------------------------------------------
+ * "The current page fills navy." Everything else is a 2px bordered control on
+ * the house radius, the same chrome as the sort select beside it.
+ */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-10);
+}
+
+.pagerPages {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * reset.css:143 gives EVERY <li> a `margin-bottom: 0.5rem`, meant for prose
+ * lists. Here it made the <ol> 50px tall around 42px buttons, and because the
+ * nav centres its children that pushed the numbers 4px above Prev and Next —
+ * the row looked misaligned for no visible reason. Note reset.css resets `ul`
+ * but not `ol`, which is why this list sets its own margin and padding above.
+ */
+.pagerPages li {
+  margin: 0;
+  display: flex;
+}
+
+/*
+ * One box for a number and one for Prev/Next, sharing a min-width so the row
+ * does not jog as the page count changes. Prev/Next take their width from their
+ * label; the numbers stay square.
+ */
+.pagerPage,
+.pagerStep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px; /* matches the sort select's height */
+  height: 42px;
+  padding-inline: var(--space-3);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px, as on the sort label */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    background-color var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default);
+}
+
+.pagerStep {
+  gap: var(--space-1);
+}
+
+/*
+ * The site-wide `a:hover` turns links orange and underlines them. Both are
+ * wrong here — these are controls, not prose — so the colour is restated and
+ * the underline cancelled at equal specificity.
+ */
+.pagerPage:hover,
+.pagerStep:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.pagerPage:focus-visible,
+.pagerStep:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* §07: the current page fills navy. Not a link — see the component. */
+.pagerPageCurrent,
+.pagerPageCurrent:hover {
+  background-color: var(--brand-navy);
+  border-color: var(--brand-navy);
+  color: var(--color-text-inverse);
+}
+
+/*
+ * Prev on page one, Next on the last. Rendered as a <span> rather than a
+ * disabled link so there is nothing to focus or click, and dimmed rather than
+ * hidden so the row does not change width at either end.
+ */
+.pagerStepDisabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* mobile — the numbers wrap onto their own line under Prev/Next. */
+@media (max-width: 499px) {
+  .pager {
+    gap: var(--space-1);
+  }
+
+  .pagerPage,
+  .pagerStep {
+    min-width: 38px;
+    height: 38px;
+    padding-inline: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagerPage,
+  .pagerStep {
     transition: none;
   }
 }

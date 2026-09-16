@@ -203,8 +203,21 @@ export function clearFilters(searchParams) {
   return next;
 }
 
-/** Hydrogen's pagination cursors, which no longer point anywhere useful. */
+/*
+ * Back to page one.
+ *
+ * Called by every helper that changes WHICH products are in the list — sort,
+ * facet toggle, price range, clear all. "Page 3" means items 25-36 of one
+ * particular ordering; change the ordering and item 25 is a different product,
+ * so holding the page number would show an arbitrary slice of a list the
+ * visitor never saw the start of.
+ *
+ * `cursor` and `direction` are Hydrogen's, left here because an old bookmark or
+ * a stale link can still carry them and they would otherwise sit in the URL
+ * forever doing nothing.
+ */
 function clearPaging(searchParams) {
+  searchParams.delete('page');
   searchParams.delete('cursor');
   searchParams.delete('direction');
 }

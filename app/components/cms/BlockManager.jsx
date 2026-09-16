@@ -14,6 +14,7 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
  *   products?: Record<string, object>,
  *   collection?: object,
  *   activeSort?: string,
+ *   pagination?: object,
  * }} props
  */
 export default function BlockManager({
@@ -23,6 +24,7 @@ export default function BlockManager({
   products,
   collection,
   activeSort,
+  pagination,
 }) {
   if (!blocks || blocks.length === 0) return null;
 
@@ -52,6 +54,7 @@ export default function BlockManager({
                collection route. Every other module ignores these. */
             collection={collection}
             activeSort={activeSort}
+            pagination={pagination}
           />
         );
       })}
