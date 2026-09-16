@@ -75,8 +75,17 @@
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  /* §09: orange on navy is 2.95:1 and fails at every size. */
-  color: var(--color-text-inverse);
+  /*
+   * Orange, even on navy.
+   *
+   * §09 says orange on navy measures 2.95:1 and names the exceptions as "the
+   * footer eyebrow and required asterisks" — which is the newsletter band, and
+   * that one IS white. Every SECTION eyebrow in every sprint-04 comp is
+   * #EB3F21 regardless of ground, including ones on solid navy. The design has
+   * accepted the ratio here; do not white these out again without the designer
+   * changing the comps. Newsletter.module.css is the deliberate exception.
+   */
+  color: var(--color-text-accent);
   margin: 0;
 }
 

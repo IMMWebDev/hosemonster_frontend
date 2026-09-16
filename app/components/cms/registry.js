@@ -1,6 +1,7 @@
 import Hero from '~/components/cms/modules/Hero';
 import HeroSearch from '~/components/cms/modules/HeroSearch';
 import PageHero from '~/components/cms/modules/PageHero';
+import FeatureHero from '~/components/cms/modules/FeatureHero';
 import CardGrid from '~/components/cms/modules/CardGrid';
 import CtaBar from '~/components/cms/modules/CtaBar';
 import ProductCards from '~/components/cms/modules/ProductCards';
@@ -55,6 +56,19 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
+      },
+    },
+  },
+  'module.feature-hero': {
+    Component: FeatureHero,
+    // Same shape as module.hero: the media and both CTA relations have to be
+    // named, everything else is a scalar and rides along.
+    options: {
+      populate: {
+        backgroundImage: true,
+        trustItems: true,
+        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
