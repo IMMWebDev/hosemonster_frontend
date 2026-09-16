@@ -45,10 +45,13 @@
 /* Figma "H3" / Eyebrow — matches every other module. The comp tracks this one
  * out by 0.08em; no other eyebrow on the site does, so it is left alone. */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
   text-align: center;
@@ -119,7 +122,7 @@
 
 .question {
   font-family: var(--font-body);
-  font-size: var(--text-button);
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
   line-height: var(--leading-body-sm);
   color: var(--color-text);

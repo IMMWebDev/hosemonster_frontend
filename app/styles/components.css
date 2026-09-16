@@ -13,19 +13,31 @@
 
 /*
  * -----------------------------------------------------------------------------
- * BUTTONS
+ * BUTTONS — Styleguide §04, "one button spec, four fills"
  * -----------------------------------------------------------------------------
- * Figma → Web Styleguide → Elements → "Buttons, Links and Icons"
+ * Every pill button shares one geometry and one type, whatever the fill, so
+ * paired CTAs always match in height:
  *
- *   Button Shop    (8:1967) → .btn--primary
- *     red fill, 2px red border, white text, pill, 17px padding
- *   Button Explore (8:1968) → .btn--secondary
- *     white fill, 2px navy border, navy text, pill, 17px padding
+ *   19px / 700 Gopher · min-height 56px · padding 0 32px · radius 999px
+ *   white-space nowrap · centred · 250ms ease
  *
- * Both variants carry a 2px border. The primary's border matches its own fill,
- * which looks redundant but is intentional: it keeps both variants at an
- * identical height so they align when sat side by side, as they are in the
- * NFPA copy lockup.
+ * Five fills:
+ *   .btn--primary              orange fill, white text
+ *   .btn--secondary            transparent, navy border and text
+ *   .btn--tertiary             transparent, border-grey border, navy text
+ *   .btn--inverse              white fill, orange text      (spec: primary on orange)
+ *   .btn--secondary-on-orange  transparent, white border and text
+ *
+ * Two rules worth keeping in mind before editing:
+ *   - HEIGHT COMES FROM min-height, never a fixed height, so vertical padding
+ *     cannot fight it. Do not reintroduce padding-block.
+ *   - 19px / 700 is an ACCESSIBILITY constraint, not a taste one. §09 measures
+ *     white on orange at 3.99:1, which only passes AA as large text. Shrink the
+ *     label and the primary button stops being legal.
+ *
+ * Every variant carries a 2px border, even where the spec draws none — on the
+ * filled variants it matches the fill. That keeps all five the same height when
+ * they sit side by side, which is the whole point of the shared geometry.
  */
 
 .btn {
@@ -33,15 +45,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-button-y) var(--space-button-x);
+  min-height: var(--button-height);
+  padding: 0 var(--space-button-x);
 
-  /* Figma "H4" / Button text style */
+  /* §03 / §04 button text */
   font-family: var(--font-body);
   font-size: var(--text-button);
   font-weight: var(--weight-bold);
   line-height: var(--leading-button);
   text-align: center;
-  text-transform: capitalize;
+  /* Sentence case — the spec sets labels in Gopher with no transform, and
+   * `capitalize` was mangling copy like "Shop parts & accessories". */
+  text-transform: none;
   text-decoration: none;
   white-space: nowrap;
 
@@ -50,9 +65,9 @@
   border-radius: var(--radius-pill);
 
   cursor: pointer;
-  transition: background-color var(--duration-fast) var(--ease-default),
-    color var(--duration-fast) var(--ease-default),
-    border-color var(--duration-fast) var(--ease-default);
+  transition: background-color var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default),
+    border-color var(--duration-control) var(--ease-default);
 }
 
 /*
@@ -74,40 +89,59 @@
   cursor: not-allowed;
 }
 
-/* Primary — filled red */
+/* ON LIGHT GROUNDS */
+
+/* Primary — orange fill, white text */
 .btn--primary {
   background-color: var(--color-action);
   border-color: var(--color-action);
   color: var(--color-action-text);
 }
 
-/* Secondary — outlined navy on white */
+/* Secondary — outlined navy. The fill is white rather than transparent so the
+ * label stays legible where one of these sits over a photograph. */
 .btn--secondary {
   background-color: var(--color-surface);
   border-color: var(--color-action-secondary-border);
   color: var(--color-action-secondary-text);
 }
 
-/* Inverse — white fill, red text. For buttons on a red or otherwise saturated
- * fill, where .btn--primary would be an invisible red-on-red button. Drawn in
- * the Shop comp ("Shop Parts & Accessories"); not yet in the Figma styleguide,
- * which still documents only primary and secondary. */
+/* Tertiary — the quietest of the three: border-grey stroke, navy label. The
+ * spec gives it 26px of side padding rather than 32px. */
+.btn--tertiary {
+  background-color: transparent;
+  border-color: var(--color-action-tertiary-border);
+  color: var(--color-action-tertiary-text);
+  padding: 0 var(--space-button-x-tertiary);
+}
+
+/* ON ORANGE GROUNDS */
+
+/* Primary on orange — white fill, orange text. Where .btn--primary would be an
+ * invisible orange-on-orange button. */
 .btn--inverse {
   background-color: var(--color-surface);
   border-color: var(--color-surface);
   color: var(--color-action);
 }
 
+/* Secondary on orange — outlined white, white label. */
+.btn--secondary-on-orange {
+  background-color: transparent;
+  border-color: var(--color-text-inverse);
+  color: var(--color-text-inverse);
+}
+
 /*
- * Hover states are NOT specced in the Figma styleguide — there are no hover
- * variants on any button component. The house rule, chosen here: a button
- * DARKENS WHAT IT ALREADY IS. Filled buttons go a shade darker; the outlined
- * one fills with its own border colour, which is the same idea.
+ * Hover. §01 now names the orange hover fill (#c62f14) but still specs no
+ * hover for the other four, so the house rule stands: a button DARKENS WHAT IT
+ * ALREADY IS. Filled buttons go a shade darker; outlined ones fill with their
+ * own border colour, which is the same idea.
  *
- * Primary used to swap red -> navy. That broke twice as soon as dark sections
- * arrived: navy-on-navy in the hero made the search button look like it had
- * disappeared, and it left the inverse button below with no sensible target.
- * Replace the lot once design provides real interaction states.
+ * Primary used to swap orange -> navy. That broke twice as soon as dark
+ * sections arrived: navy-on-navy in the hero made the search button look like
+ * it had disappeared, and it left the inverse button below with no sensible
+ * target.
  */
 .btn--primary:hover {
   background-color: var(--color-action-hover);
@@ -119,9 +153,22 @@
   color: var(--color-text-inverse);
 }
 
+.btn--tertiary:hover {
+  /* The tertiary's own border is too pale to fill with — it would read as a
+   * disabled button. It borrows the navy it already uses for its label. */
+  background-color: var(--color-action-secondary-border);
+  border-color: var(--color-action-secondary-border);
+  color: var(--color-text-inverse);
+}
+
 .btn--inverse:hover {
   background-color: var(--color-inverse-hover);
   border-color: var(--color-inverse-hover);
+  color: var(--color-action);
+}
+
+.btn--secondary-on-orange:hover {
+  background-color: var(--color-text-inverse);
   color: var(--color-action);
 }
 

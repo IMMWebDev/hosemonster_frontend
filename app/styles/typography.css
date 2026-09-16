@@ -42,8 +42,11 @@
  *     gopher                400 Regular   --weight-regular  (B2 small body)
  *     gopher                500 Medium    --weight-medium   (B1 body copy)
  *     gopher                700 Bold      --weight-bold     (buttons)
- *     nimbus-sans-extended  700 Bold      --weight-bold     (H1, H2)
- *     nimbus-sans-extended  900 Black     --weight-black    (eyebrow / H3)
+ *     gopher                700 Bold      --weight-bold     (eyebrow, 0.08em)
+ *     nimbus-sans-extended  700 Bold      --weight-bold     (H1, H2, H3, card title)
+ *
+ *   900 Black is no longer used by anything. The Sept 2026 styleguide sets
+ *   every heading at 700 and moves the eyebrow to Gopher.
  *
  *   The kit also carries nimbus-sans, nimbus-sans-condensed and various
  *   italics that the site does not use. Not worth trimming: browsers only
@@ -95,10 +98,20 @@
 body {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text);
   background-color: var(--color-surface);
+}
+
+/*
+ * §03 asks for `text-wrap: pretty` alongside the 64ch cap, to keep a single
+ * word off the last line. Scoped to paragraphs rather than inherited from
+ * <body>: on a heading it would balance the lines instead, which fights the
+ * deliberate line breaks the comps draw into the display type.
+ */
+p {
+  text-wrap: pretty;
 }
 
 /*
@@ -143,10 +156,13 @@ h2,
  */
 h3,
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
   margin: 0;
@@ -161,7 +177,7 @@ h3,
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text);
 }

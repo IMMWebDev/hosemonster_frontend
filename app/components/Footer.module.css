@@ -73,7 +73,7 @@
 .contactLine {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text);
   text-decoration: none;
@@ -105,6 +105,10 @@ a.contactLine:hover {
 }
 
 .socialLink:hover {
+  /* ⚠ Open item A: §09 forbids orange text below 19px/700 and these links
+   * are 18px — but the spec supplies no replacement hover colour. Left orange
+   * pending a decision. The footer ground is white, so this is legible;
+   * the same treatment on a navy ground would not be. */
   color: var(--color-action);
 }
 
@@ -174,6 +178,10 @@ a.contactLine:hover {
 
 /* Colour and underline both come from the global a:hover. */
 .columnLink:hover {
+  /* ⚠ Open item A: §09 forbids orange text below 19px/700 and these links
+   * are 18px — but the spec supplies no replacement hover colour. Left orange
+   * pending a decision. The footer ground is white, so this is legible;
+   * the same treatment on a navy ground would not be. */
   color: var(--color-action);
 }
 

@@ -27,10 +27,13 @@
 
 /* Figma "H3" / Eyebrow — matches Hero and Feature Cards */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
   margin: 0;
@@ -53,7 +56,7 @@
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text);
-  max-width: 68ch;
+  max-width: var(--measure);
   margin: var(--space-3) 0 0;
 }
 
@@ -132,9 +135,9 @@
 
 .cardTitle {
   font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  font-size: var(--text-card-title); /* §03 card title, 15px */
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0;
@@ -158,7 +161,8 @@
   margin-top: auto;
   padding-top: var(--space-1);
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  /* 19px, not 16: §09 only clears orange text at 19px / 700. */
+  font-size: var(--text-button);
   font-weight: var(--weight-bold);
   line-height: var(--leading-body-sm);
   letter-spacing: 0.08em;

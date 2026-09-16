@@ -23,81 +23,91 @@ import styles from '~/styles/styleguide.module.css';
 
 const COLOR_GROUPS = [
   {
-    title: 'Brand',
-    note: 'The source palette. Everything else should reference these.',
-    tokens: ['--brand-navy', '--brand-red', '--brand-gold', '--white', '--black'],
-  },
-  {
-    title: 'Neutrals',
-    tokens: ['--neutral-50', '--neutral-100', '--neutral-500'],
-  },
-  {
-    title: 'Text',
-    tokens: [
-      '--color-text',
-      '--color-text-inverse',
-      '--color-text-accent',
-      '--color-text-muted',
-      '--color-text-soft',
-    ],
-  },
-  {
-    title: 'Surfaces',
-    tokens: [
-      '--color-surface',
-      '--color-surface-alt',
-      '--color-surface-subtle',
-      '--color-surface-inverse',
-    ],
-  },
-  {
-    title: 'Action',
-    note: 'Buttons and interactive states.',
-    tokens: [
-      '--color-action',
-      '--color-action-hover',
-      '--color-action-text',
-      '--color-inverse-hover',
-      '--color-action-secondary-border',
-      '--color-action-secondary-text',
-    ],
-  },
-  {
-    title: 'Borders',
-    tokens: ['--color-border', '--color-border-strong'],
-  },
-  {
-    title: 'Off-palette',
+    title: "Brand",
     note:
-      'Values the comps introduced that do not map to a brand colour. Flagged for a reconciliation pass — these are the ones to review.',
+      "Two colours carry the identity (styleguide \u00a701). Everything else is ink, surface or border.",
     tokens: [
-      '--nav-ink',
-      '--nav-rule',
-      '--nav-rule-utility',
-      '--hero-meta-ink',
-      '--hero-meta-rule',
-      '--body-ink',
-      '--muted-ink',
-      '--legal-ink',
-      '--list-ink',
-      '--newsletter-label-ink',
-      '--newsletter-required-ink',
-      '--newsletter-input-border',
+      "--brand-orange",
+      "--brand-orange-hover",
+      "--brand-navy",
+      "--deep-navy-ink",
+      "--white",
     ],
+  },
+  {
+    title: "Ink",
+    note:
+      "Four inks, and only four. Faint is for counts, chevrons and non-text marks \u2014 never body copy.",
+    tokens: ["--ink-body", "--ink-muted", "--ink-on-navy", "--ink-faint"],
+  },
+  {
+    title: "Surface & border",
+    tokens: ["--neutral-50", "--neutral-100", "--photo-well"],
+  },
+  {
+    title: "Text",
+    tokens: [
+      "--color-text",
+      "--color-text-body",
+      "--color-text-muted",
+      "--color-text-inverse",
+      "--color-text-on-navy",
+      "--color-text-accent",
+      "--color-text-on-orange",
+      "--color-text-faint",
+    ],
+  },
+  {
+    title: "Surfaces",
+    tokens: [
+      "--color-surface",
+      "--color-surface-alt",
+      "--color-surface-subtle",
+      "--color-surface-inverse",
+    ],
+  },
+  {
+    title: "Action",
+    note: "Buttons and interactive states.",
+    tokens: [
+      "--color-action",
+      "--color-action-hover",
+      "--color-action-text",
+      "--color-inverse-hover",
+      "--color-action-secondary-border",
+      "--color-action-secondary-text",
+      "--color-action-tertiary-border",
+      "--color-action-tertiary-text",
+    ],
+  },
+  {
+    title: "Borders",
+    tokens: ["--color-border", "--color-border-strong"],
+  },
+  {
+    title: "Still off-palette",
+    note:
+      "Everything else collapsed onto the four inks. These two are rules on NAVY grounds, where the single #E8E8E8 border is far too loud \u2014 open with design.",
+    tokens: ["--hero-meta-rule", "--newsletter-input-border"],
   },
 ];
 
 const HEADINGS = [
-  {tag: 'h1', token: '--text-h1', label: 'H1', sample: 'Flow like you mean it'},
-  {tag: 'h2', token: '--text-h2', label: 'H2', sample: 'Pick your test'},
-  {tag: 'h3', token: '--text-h3', label: 'H3 / Eyebrow', sample: 'Shop by category'},
+  {tag: "h1", token: "--text-h1", label: "H1 \u00b7 Page headline", sample: "Flow like you mean it"},
+  {tag: "h2", token: "--text-h2-lg", label: "H2 large \u00b7 Major section", sample: "What buyers ask us"},
+  {tag: "h2", token: "--text-h2", label: "H2 \u00b7 Standard section", sample: "Pick your test"},
+  {tag: "h3", token: "--text-h3", label: "H3 \u00b7 Sub-section", sample: "Shop by category"},
 ];
 
 const BODY_STYLES = [
-  {token: '--text-body-lg', label: 'Body large'},
-  {token: '--text-body', label: 'Body'},
-  {token: '--text-body-sm', label: 'Body small'},
-  {token: '--text-button', label: 'Button'},
+  {token: "--text-eyebrow", label: "Eyebrow \u00b7 Gopher 700, 0.08em"},
+  {token: "--text-body", label: "Body large \u00b7 intro and callout copy"},
+  {token: "--text-body-sm", label: "Body \u00b7 standard section copy"},
+  {token: "--text-detail", label: "Detail"},
+  {token: "--text-card-title", label: "Card title"},
+  {token: "--text-price", label: "Price"},
+  {token: "--text-button", label: "Button"},
+  {token: "--text-ui", label: "UI label"},
 ];
 
 const WEIGHTS = [
@@ -260,13 +270,20 @@ export default function Styleguide() {
       <Section
         id="buttons"
         title="Buttons"
-        note="Hover each one. The house rule is that a button darkens what it already is — filled buttons go a shade darker, the outlined one fills with its own border colour."
+        note="One geometry, five fills — 19px / 700 Gopher, min-height 56px, padding 0 32px, 250ms. The 19px is an accessibility constraint, not a preference: white on orange measures 3.99:1 and only clears AA as large text."
       >
         <div className={styles.group}>
-          <h3 className={styles.groupTitle}>On light</h3>
+          <h3 className={styles.groupTitle}>On light grounds</h3>
           <div className={styles.buttonRow}>
-            <button type="button" className="btn btn--primary">Primary</button>
-            <button type="button" className="btn btn--secondary">Secondary</button>
+            <button type="button" className="btn btn--primary">
+              Primary
+            </button>
+            <button type="button" className="btn btn--secondary">
+              Secondary
+            </button>
+            <button type="button" className="btn btn--tertiary">
+              Tertiary
+            </button>
             <button type="button" className="btn btn--primary" disabled>
               Disabled
             </button>
@@ -275,32 +292,45 @@ export default function Styleguide() {
 
         <div className={`${styles.group} ${styles.onNavy}`}>
           <h3 className={styles.groupTitle}>On navy</h3>
+          <p className={styles.groupNote}>
+            Not a case the styleguide covers. Primary holds up because its fill
+            is its own colour; secondary keeps a white fill here rather than the
+            specced transparent one, or it would vanish.
+          </p>
           <div className={styles.buttonRow}>
-            <button type="button" className="btn btn--primary">Primary</button>
-            <button type="button" className="btn btn--inverse">Inverse</button>
+            <button type="button" className="btn btn--primary">
+              Primary
+            </button>
+            <button type="button" className="btn btn--secondary">
+              Secondary
+            </button>
           </div>
         </div>
 
         <div className={`${styles.group} ${styles.onRed}`}>
-          <h3 className={styles.groupTitle}>On red</h3>
+          <h3 className={styles.groupTitle}>On orange</h3>
           <p className={styles.groupNote}>
-            Primary is shown here only to make the point — a red fill on a red
-            band is an invisible button. Use inverse.
+            The two fills the styleguide draws. Plain .btn--primary is not one of
+            them — an orange fill on an orange band is an invisible button.
           </p>
           <div className={styles.buttonRow}>
-            <button type="button" className="btn btn--primary">Primary</button>
-            <button type="button" className="btn btn--inverse">Inverse</button>
+            <button type="button" className="btn btn--inverse">
+              Primary on orange
+            </button>
+            <button type="button" className="btn btn--secondary-on-orange">
+              Secondary on orange
+            </button>
           </div>
         </div>
       </Section>
 
-      {/* ---------------------------------------------------------------- */}
+            {/* ---------------------------------------------------------------- */}
       <Section id="links" title="Links">
         <div className={styles.group}>
           <p>
             A standard <a href="#links">inline link</a> in body copy. Hover turns
-            it red; the underline is reserved for the current page in navigation,
-            which is why hovering does not add one.
+            it orange — which §09 now forbids at this size, and supplies no
+            replacement for. Open question for design.
           </p>
           <p>
             <a href="#links" aria-current="page">

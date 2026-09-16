@@ -737,19 +737,23 @@ button.reset:hover:not(:has(> *)) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-button-y) var(--space-button-x);
+  /* Height from min-height, padding on the sides only — Styleguide §04. Keep
+   * this in step with .btn in components.css; the two must stay identical or
+   * a CMS button and a hand-written one will not line up beside each other. */
+  min-height: var(--button-height);
+  padding: 0 var(--space-button-x);
   font-family: var(--font-body);
   font-size: var(--text-button);
   font-weight: var(--weight-bold);
   line-height: var(--leading-button);
-  text-transform: capitalize;
+  text-transform: none;
   text-decoration: none;
   white-space: nowrap;
   border: var(--border-width-thick) solid transparent;
   border-radius: var(--radius-pill);
-  transition: background-color var(--duration-fast) var(--ease-default),
-    color var(--duration-fast) var(--ease-default),
-    border-color var(--duration-fast) var(--ease-default);
+  transition: background-color var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default),
+    border-color var(--duration-control) var(--ease-default);
 }
 
 /* Same specificity trap as .btn — see the note in components.css. */

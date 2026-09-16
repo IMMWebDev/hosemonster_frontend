@@ -132,12 +132,16 @@
  * below if the designer confirms the shop comp is the new standard.
  */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-text-accent);
+  /* §09: orange on navy is 2.95:1 and fails at every size. */
+  color: var(--color-text-inverse);
   margin: 0;
 }
 

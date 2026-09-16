@@ -27,10 +27,13 @@
 
 /* Figma "H3" / Eyebrow */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
   margin: 0;
@@ -52,7 +55,7 @@
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--muted-ink);
   max-width: 640px;
@@ -156,9 +159,9 @@
 /* Figma "H3", reversed out */
 .cardTitle {
   font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  line-height: var(--leading-h3);
+  font-size: var(--text-card-title); /* §03 card title, 15px */
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;
@@ -169,7 +172,7 @@
 .cardDescription {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--hero-meta-ink);
   margin: 0;

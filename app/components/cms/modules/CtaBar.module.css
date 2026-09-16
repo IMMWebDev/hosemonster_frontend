@@ -107,25 +107,25 @@
 }
 
 /*
- * 24px, which falls between --text-h3 (18px) and --text-h2 (52px) with no token
- * in the scale. Stated literally rather than forced onto a token that would be
- * a third too small — one for the type-scale pass in STYLEGUIDE.md.
+ * Was a literal 1.5rem, written when --text-h2 was a fixed 52px and nothing in
+ * the scale sat near 24px. The new §03 H2 is clamp(24px, 2.6vw, 32px), whose
+ * floor is exactly the value this was reaching for, so the literal is gone.
  */
 .heading {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: var(--text-h2);
   font-weight: var(--weight-bold);
-  line-height: 1.2;
+  line-height: var(--leading-h2);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;
 }
 
 /*
- * --hero-meta-ink is the house colour for light copy on a dark fill, and CTA
- * Banner already uses it for exactly this. The comp asks for #C3D0DC, a cooler
- * blue-grey; matched to the sibling module instead so the two CTAs agree —
- * logged for the palette reconciliation pass.
+ * --hero-meta-ink is the house name for light copy on a dark fill, and CTA
+ * Banner uses it for exactly this. The divergence this comment used to record
+ * is closed: the comp asked for #C3D0DC, and that is now §01 On Navy, which is
+ * what --hero-meta-ink resolves to.
  */
 .body {
   font-family: var(--font-body);
@@ -133,7 +133,7 @@
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--hero-meta-ink);
-  max-width: 68ch;
+  max-width: var(--measure);
   margin: 0;
 }
 

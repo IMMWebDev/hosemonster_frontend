@@ -44,11 +44,12 @@
 
 .sortLabel {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  /* §07: 14px bold NAVY. Was 16px in the muted ink. */
+  font-size: 0.875rem;
   font-weight: var(--weight-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-text-soft);
+  color: var(--color-text);
   white-space: nowrap;
 }
 
@@ -58,12 +59,18 @@
  */
 .sortSelect {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-size: var(--text-ui);
   color: var(--color-text);
   background: var(--color-surface);
   border: var(--border-width-thick) solid var(--color-border);
-  border-radius: var(--radius-pill);
-  padding: 10px var(--space-4);
+  /*
+   * §07: 42px tall, 8px radius. The pill was wrong twice over — §06 reserves
+   * 999px for buttons and chips, and controls take 4-8px. The height governs,
+   * so the vertical padding goes.
+   */
+  height: 42px;
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
   cursor: pointer;
 }
 
@@ -189,7 +196,7 @@
   align-items: center;
   gap: 10px; /* exact value from the design */
   font-family: var(--font-body);
-  font-size: 0.84375rem; /* 13.5px — below the scale, per the design */
+  font-size: var(--text-detail);
   line-height: 1.2;
   color: var(--color-text-soft);
   cursor: pointer;
@@ -233,9 +240,10 @@
   flex: 1 1 auto;
 }
 
-/* Paler than the label — the count is supporting information, not a choice. */
+/* Paler than the label — the count is supporting information, not a choice.
+ * §01 Faint is the named ink for precisely this: "counts, chevrons". */
 .count {
-  color: color-mix(in srgb, var(--brand-navy) 40%, #fff);
+  color: var(--color-text-faint);
 }
 
 /* ---- price range ---- */
@@ -260,7 +268,7 @@
   width: 4.75rem;
   padding: 7px 9px;
   font-family: var(--font-body);
-  font-size: 0.84375rem;
+  font-size: var(--text-detail);
   color: var(--color-text);
   border: var(--border-width-thick) solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -281,7 +289,8 @@
   font-weight: var(--weight-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-action);
+  /* Navy, not orange: this control is 12px and §09 bans orange below 19px. */
+  color: var(--color-text);
   background: none;
   border: 0;
   padding: 0;
@@ -326,10 +335,11 @@
 }
 
 /* The comp shoots these on near-black; the product photography is cut out, so
- * the tile colour shows through rather than the image filling it. */
+ * the tile colour shows through rather than the image filling it. §01 names
+ * this colour: Photo Well. */
 .cardMedia {
   display: block;
-  background: #0e1a25;
+  background: var(--photo-well);
 }
 
 /*
@@ -354,10 +364,12 @@
 }
 
 .cardTitle {
-  font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  /* §03 card title: Nimbus Extd 700, 15px, 1.3, uppercase. */
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
   font-weight: var(--weight-bold);
-  line-height: 1.3;
+  line-height: var(--leading-card-title);
+  text-transform: uppercase;
   color: var(--color-text);
   margin: 0;
 }
@@ -375,7 +387,7 @@
 
 .cardPrice {
   font-family: var(--font-body);
-  font-size: var(--text-body);
+  font-size: var(--text-price); /* §03 price, 18px */
   font-weight: var(--weight-bold);
   color: var(--color-text);
   margin: 0;
@@ -389,7 +401,8 @@
   margin-top: auto;
   padding-top: var(--space-3);
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  /* 19px, not 16: §09 only clears orange text at 19px / 700. */
+  font-size: var(--text-button);
   font-weight: var(--weight-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;

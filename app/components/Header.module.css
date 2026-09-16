@@ -218,7 +218,7 @@
 /* Figma "H4" / Button style, reused for nav links */
 .navLink {
   font-family: var(--font-body);
-  font-size: var(--text-button);
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
   line-height: var(--leading-button);
   text-transform: capitalize;
