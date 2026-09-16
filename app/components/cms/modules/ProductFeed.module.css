@@ -334,12 +334,24 @@
   box-shadow: var(--shadow-dropdown);
 }
 
-/* The comp shoots these on near-black; the product photography is cut out, so
- * the tile colour shows through rather than the image filling it. §01 names
- * this colour: Photo Well. */
+/*
+ * The tile behind the image is the CARD, not a dark well.
+ *
+ * §01 names a Photo Well (#0e1a25) "behind product images in cards" and the
+ * comp uses it, because every image in the comp is cut-out product photography
+ * shot on that ground. The real Shopify library is not that: the sources are
+ * SQUARE (800x800, 2560x2560) and the card asks for 4:3, so the CDN pads them
+ * — with white for the JPEGs and with TRANSPARENCY for the PNGs. A dark well
+ * therefore showed as black bars down the sides of some cards and not others,
+ * which read as a background colour nobody chose.
+ *
+ * Matching the card surface makes the padding invisible whichever way an asset
+ * was saved. --photo-well stays in the palette for when the photography is
+ * genuinely cut out on dark.
+ */
 .cardMedia {
   display: block;
-  background: var(--photo-well);
+  background: var(--color-surface);
 }
 
 /*
