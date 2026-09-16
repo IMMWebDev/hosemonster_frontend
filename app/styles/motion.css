@@ -197,3 +197,28 @@ html.js [data-reveal][data-reveal-in] {
     animation: none;
   }
 }
+
+/*
+ * -----------------------------------------------------------------------------
+ * SMOOTH SCROLLING
+ * -----------------------------------------------------------------------------
+ * Set on the scroll container, because that is the only place the property has
+ * any effect — it cannot be scoped to one link or one target.
+ *
+ * It applies to programmatic scrolls too, so React Router's <ScrollRestoration>
+ * inherits it: a fragment jump (the Product Feed pager) eases into place, and so
+ * does the scroll-to-top on an ordinary page navigation. That second one is the
+ * trade-off. It is only noticeable when leaving a page you had scrolled a long
+ * way down, and the alternative — driving the scroll from JS in the pager —
+ * costs a click handler, breaks the plain-anchor behaviour and stops working
+ * before hydration.
+ *
+ * Guarded on no-preference rather than switched off under `reduce`: the default
+ * is then `auto`, so a visitor who has asked for less motion gets the instant
+ * jump they would have had before this rule existed.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

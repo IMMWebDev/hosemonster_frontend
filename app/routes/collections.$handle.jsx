@@ -1,5 +1,5 @@
 import {redirect, useLoaderData} from 'react-router';
-import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
+import {Analytics} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import BlockManager from '~/components/cms/BlockManager';
 import {getModuleProducts} from '~/lib/module-products';
@@ -11,7 +11,7 @@ import {
 /**
  * @type {Route.MetaFunction}
  */
-export const meta = ({data}) => {
+export const meta = ({data, location}) => {
   /*
    * CMS first, Shopify second. A collection page's title is editorial, so the
    * Strapi `seo` component wins when the handle has a CMS entry; a collection
@@ -28,6 +28,22 @@ export const meta = ({data}) => {
   if (seo?.preventIndexing) {
     tags.push({name: 'robots', content: 'noindex, nofollow'});
   }
+
+  /*
+   * Page 2 must canonicalise to ITSELF, not to page 1.
+   *
+   * Hydrogen strips query parameters from the canonical URL by default, which
+   * would point every paginated page back at page 1 — the one thing Google's
+   * pagination guidance explicitly says not to do, because it tells the crawler
+   * the other pages are duplicates and their products need not be indexed.
+   * Sort and filter params are deliberately NOT carried: those are the same
+   * products in a different order, which is what canonical is for.
+   */
+  const page = new URLSearchParams(location?.search ?? '').get('page');
+  if (page && page !== '1') {
+    tags.push({rel: 'canonical', href: `${location.pathname}?page=${page}`});
+  }
+
   return tags;
 };
 
@@ -71,9 +87,7 @@ async function loadCriticalData({context, params, request, url}) {
     (m) => m.__component === 'module.product-feed',
   );
 
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: feed?.productsPerPage ?? 12,
-  });
+  const pageSize = feed?.productsPerPage ?? 12;
 
   /*
    * Sort and filters come from the URL so the loader re-runs when they change —
@@ -84,10 +98,26 @@ async function loadCriticalData({context, params, request, url}) {
   const sort = sortFromSearchParams(searchParams);
   const filters = filtersFromSearchParams(searchParams);
 
+  /*
+   * The WHOLE collection in one query, then sliced here — not Shopify's cursors.
+   *
+   * The Storefront API is relay-cursor only: there is no offset, no skip, and a
+   * product connection reports neither a total nor a page count. You therefore
+   * cannot answer "give me page 3" directly, and you cannot render "1 2 3"
+   * without a total, which is why Hydrogen ships Load-more and why headless
+   * stores overwhelmingly use it.
+   *
+   * Fetching everything sidesteps both problems: the loader holds the real list,
+   * so the total is arithmetic and any page is reachable cold from a URL. That
+   * is only defensible because this catalogue is small — 92 products, largest
+   * collection 24. PAGE_FETCH_LIMIT is the ceiling; past it this has to go back
+   * to cursors and the design loses its page numbers. The guard below says so
+   * out loud rather than silently truncating a collection.
+   */
   const {collection} = await storefront.query(COLLECTION_QUERY, {
     variables: {
       handle,
-      ...paginationVariables,
+      first: PAGE_FETCH_LIMIT,
       sortKey: sort.sortKey,
       reverse: sort.reverse,
       filters,
@@ -99,6 +129,30 @@ async function loadCriticalData({context, params, request, url}) {
       status: 404,
     });
   }
+
+  const allProducts = collection.products?.nodes ?? [];
+
+  if (allProducts.length === PAGE_FETCH_LIMIT) {
+    console.warn(
+      `[collection] "${handle}" returned ${PAGE_FETCH_LIMIT} products, the Storefront ` +
+        `API's per-query maximum. Anything beyond that is NOT being shown. This route ` +
+        `needs to move back to cursor pagination.`,
+    );
+  }
+
+  /*
+   * Page is clamped, never trusted. A bookmarked ?page=3 on a collection that
+   * has since shrunk, or a hand-typed ?page=99, lands on the last real page
+   * rather than an empty grid.
+   */
+  const pageCount = Math.max(1, Math.ceil(allProducts.length / pageSize));
+  const requestedPage = Number.parseInt(searchParams.get('page') ?? '1', 10);
+  const page = Math.min(
+    Math.max(Number.isFinite(requestedPage) ? requestedPage : 1, 1),
+    pageCount,
+  );
+  const start = (page - 1) * pageSize;
+  const pageProducts = allProducts.slice(start, start + pageSize);
 
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(url, {handle, data: collection});
@@ -114,7 +168,25 @@ async function loadCriticalData({context, params, request, url}) {
   });
 
   return {
-    collection,
+    /*
+     * The connection is handed on with `nodes` REPLACED by this page's slice, so
+     * the module renders what it is given and never has to know about paging.
+     * `filters` still carries Shopify's facet counts for the whole filtered set,
+     * which is what the rail needs.
+     */
+    collection: {
+      ...collection,
+      products: {...collection.products, nodes: pageProducts},
+    },
+    pagination: {
+      page,
+      pageCount,
+      pageSize,
+      total: allProducts.length,
+      // 1-based, inclusive, for "Showing 13–24 of 24".
+      from: allProducts.length === 0 ? 0 : start + 1,
+      to: start + pageProducts.length,
+    },
     activeSort: sort.value,
     cmsPage: cms.page,
     cmsModules: cms.modules,
@@ -138,7 +210,7 @@ function loadDeferredData({context}) {
 
 export default function Collection() {
   /** @type {LoaderReturnData} */
-  const {collection, cmsModules, strapiBaseUrl, products, activeSort} =
+  const {collection, cmsModules, strapiBaseUrl, products, activeSort, pagination} =
     useLoaderData();
 
   return (
@@ -148,6 +220,7 @@ export default function Collection() {
         blocks={cmsModules}
         baseUrl={strapiBaseUrl}
         products={products}
+        pagination={pagination}
         collection={collection}
         activeSort={activeSort}
       />
@@ -202,6 +275,12 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
   }
 `;
 
+/*
+ * Shopify’s hard maximum for a single products() request. Also the point at
+ * which this route’s whole approach stops working — see the loader.
+ */
+const PAGE_FETCH_LIMIT = 250;
+
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
@@ -210,9 +289,6 @@ const COLLECTION_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
     $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
     $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
     $filters: [ProductFilter!]
@@ -224,9 +300,6 @@ const COLLECTION_QUERY = `#graphql
       description
       products(
         first: $first,
-        last: $last,
-        before: $startCursor,
-        after: $endCursor,
         sortKey: $sortKey,
         reverse: $reverse,
         filters: $filters
@@ -246,12 +319,6 @@ const COLLECTION_QUERY = `#graphql
         }
         nodes {
           ...ProductItem
-        }
-        pageInfo {
-          hasPreviousPage
-          hasNextPage
-          endCursor
-          startCursor
         }
       }
     }

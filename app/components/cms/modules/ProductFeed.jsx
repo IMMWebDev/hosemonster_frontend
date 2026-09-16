@@ -1,7 +1,6 @@
 import {useId, useState} from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {
   SORT_OPTIONS,
   FILTER_PARAM,
@@ -12,6 +11,9 @@ import {
   setPriceRange,
 } from '~/lib/collection-filters';
 import styles from './ProductFeed.module.css';
+
+/** Anchor the pager scrolls to. See the <section> and hrefFor(). */
+const FEED_ANCHOR = 'products';
 
 /**
  * Product Feed module — Figma "Smart Monster Collection" hifi
@@ -34,9 +36,10 @@ import styles from './ProductFeed.module.css';
  *   data: {heading?: string, showFilters?: boolean, showSort?: boolean},
  *   collection?: object,
  *   activeSort?: string,
+ *   pagination?: {page: number, pageCount: number, total: number, from: number, to: number},
  * }} props
  */
-export default function ProductFeed({data, collection, activeSort}) {
+export default function ProductFeed({data, collection, activeSort, pagination}) {
   const {heading, showFilters = true, showSort = true} = data ?? {};
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -54,13 +57,34 @@ export default function ProductFeed({data, collection, activeSort}) {
     (f) => (f.values ?? []).length > 0,
   );
   const hasActiveFilters = searchParams.getAll(FILTER_PARAM).length > 0;
+
+  /*
+   * The TOTAL across all pages, not this page’s slice.
+   *
+   * This used to read products.nodes.length, which was the page size — so the
+   * aria-live line announced “Showing 12 products” while the grid held 24.
+   * The loader knows the real figure; fall back to the slice only when this
+   * module is rendered somewhere that does not supply pagination.
+   */
+  const total = pagination?.total ?? products.nodes.length;
   const count = products.nodes.length;
 
+  /*
+   * preventScrollReset is right for sort and filters — the controls are at the
+   * top and the visitor is already looking at them. It is wrong for a page
+   * link, where they expect to arrive at the start of the new page.
+   */
   const go = (next) =>
     navigate(`?${next.toString()}`, {preventScrollReset: true});
 
   return (
-    <section className={styles.section}>
+    /*
+     * A STABLE id, not useId(): the pager links to it, so it has to be the same
+     * string in the href and on the element, and it has to survive into a URL
+     * somebody pastes. Assumes one Product Feed per page, which is what a
+     * collection page is for.
+     */
+    <section className={styles.section} id={FEED_ANCHOR}>
       <div className={styles.inner}>
         <div className={styles.head}>
           {heading ? <h2 className={styles.heading}>{heading}</h2> : null}
@@ -129,9 +153,11 @@ export default function ProductFeed({data, collection, activeSort}) {
 
           <div className={styles.results}>
             <p className={styles.showing} aria-live="polite">
-              {count === 0
+              {total === 0
                 ? 'No products match these filters'
-                : `Showing ${count} product${count === 1 ? '' : 's'}`}
+                : pagination && pagination.pageCount > 1
+                  ? `Showing ${pagination.from}–${pagination.to} of ${total} products`
+                  : `Showing ${total} product${total === 1 ? '' : 's'}`}
             </p>
 
             {count === 0 ? (
@@ -145,18 +171,19 @@ export default function ProductFeed({data, collection, activeSort}) {
                 </button>
               ) : null
             ) : (
-              <PaginatedResourceSection
-                connection={products}
-                resourcesClassName={styles.grid}
-              >
-                {({node: product, index}) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    loading={index < 4 ? 'eager' : 'lazy'}
-                  />
-                )}
-              </PaginatedResourceSection>
+              <>
+                <div className={styles.grid}>
+                  {products.nodes.map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      loading={index < 4 ? 'eager' : 'lazy'}
+                    />
+                  ))}
+                </div>
+
+                <Pager pagination={pagination} searchParams={searchParams} />
+              </>
             )}
           </div>
         </div>
@@ -376,3 +403,96 @@ function ProductCard({product, loading}) {
     </div>
   );
 }
+
+/**
+ * Numbered pagination — styleguide §07, "the current page fills navy".
+ *
+ * Real <Link>s, not buttons: a page is a distinct URL, so it should be
+ * middle-clickable, shareable and crawlable. That is the whole reason the
+ * loader fetches the collection in one go — Shopify's cursors cannot produce a
+ * link you can paste.
+ *
+ * Every page is listed. With a ceiling of 250 products and a page size of 12
+ * that is at most 21 links, and this store's largest collection makes two — so
+ * the ellipsis logic a generic paginator ships would be dead code.
+ *
+ * @param {{
+ *   pagination?: {page: number, pageCount: number},
+ *   searchParams: URLSearchParams,
+ * }} props
+ */
+function Pager({pagination, searchParams}) {
+  if (!pagination || pagination.pageCount <= 1) return null;
+
+  const {page, pageCount} = pagination;
+
+  /* Sort and filters have to survive a page change — only `page` is replaced. */
+  const hrefFor = (n) => {
+    const next = new URLSearchParams(searchParams);
+    if (n <= 1) next.delete('page');
+    else next.set('page', String(n));
+    /*
+     * The fragment is what stops a page change jumping to the masthead.
+     * <ScrollRestoration> in root.jsx scrolls to the element whose id matches,
+     * so the visitor lands on the feed with the heading and sort in view rather
+     * than having to scroll back down past the hero every time.
+     */
+    const qs = next.toString();
+    return `${qs ? `?${qs}` : ''}#${FEED_ANCHOR}`;
+  };
+
+  const pages = Array.from({length: pageCount}, (_, i) => i + 1);
+
+  return (
+    <nav className={styles.pager} aria-label="Pagination">
+      {page > 1 ? (
+        <Link className={styles.pagerStep} to={hrefFor(page - 1)} rel="prev">
+          <span aria-hidden="true">‹</span> Prev
+        </Link>
+      ) : (
+        <span className={`${styles.pagerStep} ${styles.pagerStepDisabled}`}>
+          <span aria-hidden="true">‹</span> Prev
+        </span>
+      )}
+
+      <ol className={styles.pagerPages}>
+        {pages.map((n) => (
+          <li key={n}>
+            {n === page ? (
+              /*
+                The current page is not a link to itself. aria-current is what
+                tells a screen reader which one it is — the navy fill only says
+                it to people who can see it.
+              */
+              <span
+                className={`${styles.pagerPage} ${styles.pagerPageCurrent}`}
+                aria-current="page"
+              >
+                {n}
+              </span>
+            ) : (
+              <Link
+                className={styles.pagerPage}
+                to={hrefFor(n)}
+                aria-label={`Page ${n}`}
+              >
+                {n}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ol>
+
+      {page < pageCount ? (
+        <Link className={styles.pagerStep} to={hrefFor(page + 1)} rel="next">
+          Next <span aria-hidden="true">›</span>
+        </Link>
+      ) : (
+        <span className={`${styles.pagerStep} ${styles.pagerStepDisabled}`}>
+          Next <span aria-hidden="true">›</span>
+        </span>
+      )}
+    </nav>
+  );
+}
+
