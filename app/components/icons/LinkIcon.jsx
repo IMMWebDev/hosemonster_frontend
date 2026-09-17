@@ -16,6 +16,14 @@
  */
 
 const ICONS = {
+  archive: (
+    <>
+      <path d="M4 7h16v13H4z"/>
+      <path d="M4 7l8-4 8 4"/>
+      <path d="M9 12h6"/>
+      <path d="M9 16h6"/>
+    </>
+  ),
   chart: (
     <>
       <path d="M4 20V10M12 20V4M20 20v-7"/>
@@ -24,6 +32,22 @@ const ICONS = {
   chat: (
     <>
       <path d="M4 5h16v10H8l-4 4V5Z"/>
+    </>
+  ),
+  clipboard: (
+    <>
+      <path d="M9 3h4v3H9z"/>
+      <path d="M8 6h6l1 12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L8 6Z"/>
+      <path d="M6 11h10"/>
+      <path d="M6 16h10"/>
+    </>
+  ),
+  devices: (
+    <>
+      <path d="M3 5h13v10H3z"/>
+      <path d="M8 19h3"/>
+      <path d="M17 8h4v13h-4z"/>
+      <path d="M18 18h2"/>
     </>
   ),
   flame: (
@@ -41,6 +65,12 @@ const ICONS = {
     <>
       <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/>
       <circle cx="12" cy="10" r="2.5"/>
+    </>
+  ),
+  pump: (
+    <>
+      <path d="M4 15h4l2-6h6l2 6h4"/>
+      <path d="M9 9V5h4v4"/>
     </>
   ),
   wrench: (

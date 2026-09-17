@@ -79,6 +79,20 @@ export default function LinkCards({data}) {
 function Card({item, index = 0}) {
   const {icon, title, description, link} = item;
 
+  /*
+   * Does this card actually go anywhere?
+   *
+   * Not `if (link)` — a link component exists the moment an editor types the
+   * text, and Strapi keeps it with an empty or "#" destination. Checking the
+   * object rather than its contents left cards that lead nowhere looking and
+   * behaving like links. All three destinations utilities.link models count.
+   */
+  const hasDestination = Boolean(
+    (link?.linkUrl && link.linkUrl !== '#') ||
+    link?.pageLink?.path ||
+    link?.collectionLink?.path,
+  );
+
   const inner = (
     <>
       {icon ? (
@@ -96,18 +110,29 @@ function Card({item, index = 0}) {
         ) : null}
       </span>
 
-      {/* Chevron, not a character in the copy: it is an affordance, so it is
-          generated here and hidden from screen readers. */}
-      <span className={styles.chevron} aria-hidden="true">
-        ›
-      </span>
+      {/*
+        The chevron is an affordance, so it only appears when there is
+        somewhere to go. On a card that does not link it reads as a promise the
+        card cannot keep — the same reason .static below cancels the hover.
+        Generated here rather than typed into the copy, and hidden from screen
+        readers since the link itself already announces.
+      */}
+      {hasDestination ? (
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      ) : null}
     </>
   );
 
-  // With nothing to link to, render a plain container rather than a dead anchor.
-  if (!link) {
+  // Nothing to link to: a plain container, not a dead anchor.
+  if (!hasDestination) {
     return (
-      <div className={styles.card} data-reveal style={{'--reveal-i': index + 3}}>
+      <div
+        className={`${styles.card} ${styles.static}`}
+        data-reveal
+        style={{'--reveal-i': index + 3}}
+      >
         {inner}
       </div>
     );
