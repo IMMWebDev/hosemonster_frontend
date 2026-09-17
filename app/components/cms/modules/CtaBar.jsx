@@ -15,6 +15,7 @@ import styles from './CtaBar.module.css';
  *
  * @param {{
  *   data: {
+ *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
  *     cta?: object,
@@ -25,7 +26,7 @@ import styles from './CtaBar.module.css';
  * }} props
  */
 export default function CtaBar({data, baseUrl}) {
-  const {heading, body, cta, background} = data ?? {};
+  const {eyebrow, heading, body, cta, background} = data ?? {};
 
   if (!heading) return null;
 
@@ -67,8 +68,20 @@ export default function CtaBar({data, baseUrl}) {
             </div>
           ) : null}
 
+          {/*
+            Scrim, only when there is a photo to protect. The copy is white on
+            a light image otherwise — see the comp, which fades navy from full
+            strength at the left to nothing by 75%, leaving the right quarter
+            of the picture clean. Sits between the image and the content, so
+            the button and text stay untouched.
+          */}
+          {backgroundUrl ? (
+            <div className={styles.scrim} aria-hidden="true" />
+          ) : null}
+
           <div className={styles.content}>
             <div className={styles.copy}>
+              {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
               <h2 className={styles.heading}>{heading}</h2>
               {body ? <p className={styles.body}>{body}</p> : null}
             </div>

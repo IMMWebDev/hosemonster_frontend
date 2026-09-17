@@ -89,6 +89,41 @@
   object-fit: cover;
 }
 
+/*
+ * Sits between the photo and the copy — z-index 1, against the image's 0 and
+ * the content's 2.
+ *
+ * Rendered only when there IS a background image (see CtaBar.jsx). Four of the
+ * six CTA Bars on the site have none, and over a flat fill this would just be
+ * a darker patch on the left for no reason.
+ *
+ * Full strength to 35%, gone by 75%, per the comp: the copy column gets solid
+ * cover while the right quarter of the picture stays clean. Without it the
+ * white heading sat straight on a pale photograph and was close to unreadable.
+ */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    var(--brand-navy) 0%,
+    color-mix(in srgb, var(--brand-navy) 75%, transparent) 35%,
+    transparent 75%
+  );
+  pointer-events: none;
+}
+
+/* The red variant tints with its own colour — navy over red turns muddy. */
+.red .scrim {
+  background: linear-gradient(
+    90deg,
+    var(--color-action) 0%,
+    color-mix(in srgb, var(--color-action) 75%, transparent) 35%,
+    transparent 75%
+  );
+}
+
 .content {
   position: relative;
   z-index: 2;
@@ -104,6 +139,28 @@
   flex-direction: column;
   gap: var(--space-2);
   min-width: 0; /* lets the copy wrap instead of pushing the button off */
+}
+
+/*
+ * Orange, on navy, at 2.95:1 — which §09 says fails at every size, and which
+ * the comp draws anyway. Same call as every other section eyebrow on a dark
+ * ground (see Hero, Hero Search, CTA Banner): the design has accepted the ratio
+ * and the newsletter band is the one documented exception. Do not white this
+ * out without the comps changing first.
+ *
+ * No margin — .copy is a flex column with its own gap, and adding one here
+ * would stack on top of it and space the eyebrow differently from the heading
+ * and body below.
+ */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
 }
 
 /*
