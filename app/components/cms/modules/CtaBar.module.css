@@ -194,8 +194,13 @@
   margin: 0;
 }
 
+/* A row, because there can be two. `flex: 0 0 auto` keeps the buttons at their
+ * own width and lets the copy column absorb the rest. */
 .action {
-  flex: 0 0 auto; /* the button keeps its width; the copy column absorbs the rest */
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3); /* 12px in the design */
 }
 
 /*

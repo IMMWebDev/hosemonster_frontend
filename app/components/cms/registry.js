@@ -110,6 +110,7 @@ export const MODULE_REGISTRY = {
       populate: {
         backgroundImage: true,
         cta: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
