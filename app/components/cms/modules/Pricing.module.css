@@ -1,0 +1,333 @@
+/*
+ * Pricing module — sprint-04 hifi_fireflow.html, "Pricing"
+ *
+ * Intro lockup, a row of plan cards, then a comparison table behind a toggle.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed ALWAYS, the same rule the other tinted bands use. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+/* The larger H2 — §03's "H2 large", as Numbered Steps and Document Cards use. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 14px; /* exact value from the design */
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: 80ch;
+  margin: 0 0 var(--space-8); /* 32px in the design */
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * PLAN CARDS
+ * -----------------------------------------------------------------------------
+ */
+
+/* `align-items: stretch` is the default and is what matters here — every card
+ * takes the height of the tallest, so the buttons land on one line. */
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-5); /* 20px in the design */
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6); /* 24px in the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/*
+ * Smaller and more tracked than a section eyebrow, and NAVY-MUTED rather than
+ * orange: three of these stacked beside each other in orange would fight the
+ * prices for attention, which are the thing being compared.
+ */
+.planLabel {
+  font-family: var(--font-body);
+  font-size: 0.75rem; /* 12px in the design */
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 14px; /* exact value from the design */
+}
+
+.prices {
+  margin-bottom: 6px; /* exact value from the design */
+}
+
+.headlinePrice {
+  margin-bottom: var(--space-3); /* 12px in the design */
+}
+
+/* Baseline, not centre: the unit should sit on the figure's baseline rather
+ * than float at the middle of a number twice its size. */
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 6px;
+}
+
+.priceValue {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 22px; /* rate-card size, from the design */
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+/* A lone price with no unit is the plan's headline, so it is set larger. */
+.headlinePrice .priceValue {
+  font-size: 28px; /* from the design */
+}
+
+.priceUnit {
+  font-family: var(--font-body);
+  font-size: var(--text-detail); /* 13.5px in the design */
+  color: var(--color-text-muted);
+}
+
+/*
+ * `flex: 1` is what pins the button to the floor of the card. The list absorbs
+ * the slack, so a plan with two features and one with five still line their
+ * buttons up.
+ */
+.features {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2); /* 8px in the design */
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+}
+
+.feature {
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px in the design */
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+/* The bullet is a pseudo-element so it can be a middot at a fixed distance;
+ * `::marker` cannot be positioned. `role="list"` in the JSX covers the
+ * semantics that `list-style: none` costs in Safari. */
+.feature::before {
+  content: '·';
+  margin-right: var(--space-2);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-faint);
+}
+
+/* Full width, on the floor of the card. The comp gives these a 24px radius
+ * rather than the pill, which contradicts §04 — using the house button so
+ * every button on the site keeps one shape. */
+.planCta {
+  width: 100%;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * COMPARISON TABLE
+ * -----------------------------------------------------------------------------
+ */
+
+.comparison {
+  margin-top: var(--space-6); /* 24px in the design */
+  text-align: center;
+}
+
+/*
+ * `display: inline-flex` on a <summary> removes the disclosure triangle in
+ * every engine, and `list-style: none` covers the rest. The caret below is the
+ * affordance instead.
+ */
+.comparisonToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* exact value from the design */
+  min-height: var(--button-height);
+  padding: 0 28px; /* exact value from the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.comparisonToggle::-webkit-details-marker {
+  display: none;
+}
+
+.comparisonToggle:hover {
+  border-color: var(--color-border-strong);
+}
+
+.comparisonToggle:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/*
+ * Both labels live in the markup and CSS picks one. The alternative is holding
+ * the open state in React, which would cost this module the thing <details>
+ * was chosen for — working before hydration.
+ */
+.comparisonToggleClose,
+.comparison[open] .comparisonToggleOpen {
+  display: none;
+}
+
+.comparison[open] .comparisonToggleClose {
+  display: inline;
+}
+
+.caret {
+  font-size: 12px; /* exact value from the design */
+  color: var(--color-text-muted);
+  transition: transform var(--duration-control) var(--ease-default);
+}
+
+.comparison[open] .caret {
+  transform: rotate(180deg);
+}
+
+/*
+ * The table scrolls sideways rather than squashing. Four columns of real
+ * sentences do not fit a phone, and a squashed matrix is unreadable in a way a
+ * scrolled one is not.
+ */
+.tableWrap {
+  margin-top: var(--space-4); /* 16px in the design */
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  text-align: left;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+}
+
+.table th,
+.table td {
+  padding: 12px var(--space-4); /* 12 / 16 in the design */
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.table tr:last-child th,
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Column headers — the grey band across the top. */
+.table thead th {
+  background: var(--color-surface-alt);
+  font-size: 0.78125rem; /* 12.5px in the design */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* The corner cell and the feature names are the row axis: left, wider, darker. */
+.table thead th:first-child,
+.table tbody th {
+  text-align: left;
+  width: 40%;
+  font-size: 0.8125rem; /* 13px in the design */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.table tbody td {
+  font-size: 0.8125rem; /* 13px in the design */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-align: center;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the comp is desktop-only. The plan grid wraps on its own via
+ * auto-fit, and the table scrolls, so there is little left to do.
+ */
+
+@media (max-width: 499px) {
+  .comparisonToggle {
+    width: 100%;
+  }
+
+  .table th,
+  .table td {
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    transition: none;
+  }
+}
