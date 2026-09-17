@@ -11,6 +11,7 @@ import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import TextHighlights from '~/components/cms/modules/TextHighlights';
 import NumberedSteps from '~/components/cms/modules/NumberedSteps';
+import DocumentCards from '~/components/cms/modules/DocumentCards';
 import Faq from '~/components/cms/modules/Faq';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
 import CtaBanner from '~/components/cms/modules/CtaBanner';
@@ -203,6 +204,19 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         steps: true,
+      },
+    },
+  },
+  'module.document-cards': {
+    Component: DocumentCards,
+    options: {
+      populate: {
+        items: {
+          populate: {
+            image: true,
+            link: {populate: {pageLink: true, collectionLink: true}},
+          },
+        },
       },
     },
   },

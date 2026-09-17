@@ -1,0 +1,167 @@
+/*
+ * Document Cards module — sprint-04 hifi_fireflow.html, "Sample reports"
+ *
+ * Intro lockup over a row of wide cards: document thumbnail on the left, title,
+ * copy and a button on the right.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed ALWAYS, the same rule the other tinted bands use, so the grey
+   * variant reaches the viewport edge and white lays out identically. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* The `background` field. White needs no rule of its own. */
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+/* The larger H2 — §03's "H2 large · Major section", same as Numbered Steps. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-4);
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  /* The comp runs this to 90ch; 80ch matches the intro in Numbered Steps, so
+   * two sections on the same page do not wrap at different measures. */
+  max-width: 80ch;
+  margin: 0 0 var(--space-8); /* 32px in the design */
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CARDS
+ * -----------------------------------------------------------------------------
+ */
+
+.grid {
+  display: grid;
+  /* 340px, not the house 240px: these cards are horizontal, and below about
+   * 340px the thumbnail and the copy beside it both become unusable. */
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--space-6); /* 24px in the design */
+}
+
+/*
+ * The comp draws these as white cards on a white section with no border and no
+ * shadow, which makes them invisible as cards. Given the house chrome already
+ * exists — 2px border, 8px radius, shared with Card Grid, Link Cards and
+ * Product Cards — they take that instead, so the row reads as cards on either
+ * background variant.
+ */
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px; /* exact value from the design */
+  padding: var(--space-6) 26px; /* 24 / 26 in the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/*
+ * A fixed 92x119 — roughly A4 proportions, which is what these documents are.
+ * `flex: 0 0 auto` so a long title cannot squeeze the page out of shape, and
+ * `object-position: top` because the first thing on a report is its header.
+ */
+.thumb {
+  flex: 0 0 auto;
+  width: 92px;
+  height: 119px;
+  object-fit: cover;
+  object-position: center top;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt); /* shows while the page renders */
+  display: block;
+}
+
+.cardText {
+  flex: 1 1 0;
+  min-width: 0; /* lets the copy wrap instead of pushing the card wider */
+}
+
+.cardTitle {
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  margin: 0 0 var(--space-2);
+}
+
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-detail); /* 13.5px in the design */
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.cardCta {
+  margin-top: var(--space-4); /* 16px in the design */
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the comp is desktop-only. The grid wraps on its own via
+ * auto-fit; only the card's internals need a breakpoint.
+ */
+
+/* mobile — the thumbnail and a 56px button side by side leave the copy about
+ * 120px wide, so the card stacks. */
+@media (max-width: 499px) {
+  .card {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .cardCta {
+    width: 100%;
+  }
+}
