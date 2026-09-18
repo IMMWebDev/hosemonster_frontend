@@ -8,7 +8,23 @@
 
 .header {
   position: sticky;
-  top: 0;
+  /*
+   * NEGATIVE top offset, equal to the utility bar's height.
+   *
+   * This is what makes the navy bar scroll away while the main nav pins. The
+   * whole header sticks, shifted up by exactly the row we want gone — so the
+   * bar leaves with the page, at page speed, and the nav lands against the top.
+   *
+   * It replaces an animated 1fr -> 0fr collapse. That version changed the
+   * header's HEIGHT, so every time it ran the page below reflowed: arriving
+   * back at the top, content was pushed down as the bar re-expanded and then
+   * appeared to scroll up again. Nothing here changes layout at all.
+   *
+   * --utility-h is measured in Header.jsx, not typed: the bar wraps at narrow
+   * widths, so a constant would be wrong on mobile. The fallback only has to
+   * survive the first frame before the measurement lands.
+   */
+  top: calc(var(--utility-h, 40px) * -1);
   z-index: 10;
   border-bottom: var(--border-width) solid var(--nav-rule);
   background: var(--color-surface);
@@ -19,9 +35,10 @@
   transition: transform var(--duration-slide) var(--ease-default);
 }
 
-/* -100%, not a pixel value: by the time this applies the utility bar has
- * already collapsed, so the header's own height IS the main bar's height and
- * it travels exactly as far as it needs to. */
+/* -100% clears the whole header, utility bar included. That is further than
+ * the pinned nav strictly needs, but the bar is already above the fold line by
+ * then, so the effect is simply that everything leaves the screen. Transform
+ * only — the header keeps its layout box, so nothing below it moves. */
 .header[data-hidden] {
   transform: translateY(-100%);
 }
@@ -57,48 +74,27 @@
  * clips the content or spends most of the transition animating empty space.
  * The inner wrapper needs `overflow: hidden` for the 0fr row to actually clip.
  */
+/*
+ * A plain block. It used to be a grid whose single row animated 1fr -> 0fr to
+ * collapse the bar; the header's negative sticky offset does that job now,
+ * without touching layout. Anything to do with that collapse — the grid, the
+ * overflow clip, the padding transition — has gone with it.
+ */
 .utilityBar {
-  display: grid;
-  grid-template-rows: 1fr;
   background: var(--brand-navy);
   border-bottom: var(--border-width) solid var(--nav-rule-utility);
-  transition:
-    grid-template-rows var(--duration-slide) var(--ease-default),
-    border-bottom-width var(--duration-slide) var(--ease-default);
-}
-
-/* The border collapses too — left at 1px it survives as a stray navy hairline
- * under the main nav once the bar itself has gone. */
-.header[data-condensed] .utilityBar {
-  grid-template-rows: 0fr;
-  border-bottom-width: 0;
-}
-
-.header[data-condensed] .utilityInner {
-  padding-block: 0;
 }
 
 .utilityInner {
-  /* Required by the 0fr collapse above — without it the content keeps its
-   * height and the row never actually shrinks. */
-  overflow: hidden;
-
-  /* The padding has to go too. `box-sizing: border-box` cannot shrink a box
-   * below its own padding, so a 0fr row still leaves 8px top + 8px bottom
-   * standing — a 16px navy strip under the nav that looks like a bug. Same
-   * duration and easing as the row, so the two read as one movement. */
-  transition: padding-block var(--duration-slide) var(--ease-default);
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-5); /* 20px in the design */
 
-  /* Must be explicit now that .utilityBar is a grid container. As a grid item
-   * with `margin-inline: auto`, this box shrink-wraps its content instead of
-   * filling the track — the auto margins then centre that shrunken box and
-   * `justify-content: flex-end` has no free space left to push against, so the
-   * links read as centred. In the old block layout `width: auto` filled the bar
-   * and the auto margins resolved to 0, which is what this restores. */
+  /* Explicit, and load-bearing: with `margin-inline: auto` and no width this
+   * box shrink-wraps its content, the auto margins centre the shrunken box, and
+   * `justify-content: flex-end` has no free space left to push against — the
+   * links end up centred instead of right-aligned. */
   width: 100%;
   max-width: var(--container-outer);
   margin-inline: auto;

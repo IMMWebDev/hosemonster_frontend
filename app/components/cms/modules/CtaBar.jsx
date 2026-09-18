@@ -15,9 +15,11 @@ import styles from './CtaBar.module.css';
  *
  * @param {{
  *   data: {
+ *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
  *     cta?: object,
+ *     secondaryCTA?: object,
  *     background?: 'navy' | 'red',
  *     backgroundImage?: {url?: string},
  *   },
@@ -25,7 +27,7 @@ import styles from './CtaBar.module.css';
  * }} props
  */
 export default function CtaBar({data, baseUrl}) {
-  const {heading, body, cta, background} = data ?? {};
+  const {eyebrow, heading, body, cta, secondaryCTA, background} = data ?? {};
 
   if (!heading) return null;
 
@@ -47,6 +49,16 @@ export default function CtaBar({data, baseUrl}) {
    */
   const ctaClass = `btn ${isRed ? 'btn--inverse' : 'btn--primary'}`;
 
+  /*
+   * The secondary is outlined WHITE on both fills, not .btn--secondary.
+   *
+   * Secondary is navy on white, which disappears into a navy band and fights a
+   * red one. The styleguide only names this variant for orange grounds, but the
+   * geometry is right for any saturated dark fill — Feature Hero uses it over
+   * the navy scrim for the same reason.
+   */
+  const secondaryClass = 'btn btn--secondary-on-orange';
+
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
@@ -67,15 +79,32 @@ export default function CtaBar({data, baseUrl}) {
             </div>
           ) : null}
 
+          {/*
+            Scrim, only when there is a photo to protect. The copy is white on
+            a light image otherwise — see the comp, which fades navy from full
+            strength at the left to nothing by 75%, leaving the right quarter
+            of the picture clean. Sits between the image and the content, so
+            the button and text stay untouched.
+          */}
+          {backgroundUrl ? (
+            <div className={styles.scrim} aria-hidden="true" />
+          ) : null}
+
           <div className={styles.content}>
             <div className={styles.copy}>
+              {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
               <h2 className={styles.heading}>{heading}</h2>
               {body ? <p className={styles.body}>{body}</p> : null}
             </div>
 
-            {cta?.linkText ? (
+            {cta?.linkText || secondaryCTA?.linkText ? (
               <div className={styles.action}>
-                <CmsLink link={cta} className={ctaClass} />
+                {cta?.linkText ? (
+                  <CmsLink link={cta} className={ctaClass} />
+                ) : null}
+                {secondaryCTA?.linkText ? (
+                  <CmsLink link={secondaryCTA} className={secondaryClass} />
+                ) : null}
               </div>
             ) : null}
           </div>

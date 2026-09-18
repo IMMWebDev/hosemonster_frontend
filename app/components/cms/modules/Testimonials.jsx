@@ -112,7 +112,9 @@ export default function Testimonials({data, baseUrl}) {
    */
   function pageStep(el) {
     const max = el.scrollWidth - el.clientWidth;
-    const pages = el.clientWidth ? Math.ceil(el.scrollWidth / el.clientWidth) : 1;
+    const pages = el.clientWidth
+      ? Math.ceil(el.scrollWidth / el.clientWidth)
+      : 1;
     return pages > 1 ? max / (pages - 1) : max;
   }
 
@@ -136,18 +138,18 @@ export default function Testimonials({data, baseUrl}) {
     <section className={styles.section}>
       <div className={styles.inner}>
         {eyebrow ? (
-            <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
-              {eyebrow}
-            </p>
-          ) : null}
+          <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+            {eyebrow}
+          </p>
+        ) : null}
         <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
-            {heading}
-          </h2>
+          {heading}
+        </h2>
         {body ? (
-            <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
-              {body}
-            </p>
-          ) : null}
+          <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+            {body}
+          </p>
+        ) : null}
 
         <div
           className={styles.track}
@@ -166,7 +168,22 @@ export default function Testimonials({data, baseUrl}) {
         >
           {items.map((item, i) => (
             <article className={styles.card} key={item.id ?? i}>
-              <div className={styles.quoteMark} aria-hidden="true" />
+              {/*
+                The comp's own mark, not a typographic quote character. It is
+                two shapes rather than a glyph, so no font substitution can
+                change it — the previous \u201C rendered differently wherever
+                Gopher had not loaded yet. Decorative: <blockquote> already
+                says this is a quotation.
+              */}
+              <svg
+                className={styles.quoteMark}
+                viewBox="0 0 44 32"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M0 32V19.5C0 8.5 5.8 1.8 15 0L17 5.3C11.4 7 8.6 10.7 8.3 15H17V32H0Z" />
+                <path d="M23 32V19.5C23 8.5 28.8 1.8 38 0L40 5.3C34.4 7 31.6 10.7 31.3 15H40V32H23Z" />
+              </svg>
               <blockquote className={styles.quote}>{item.quote}</blockquote>
               <footer className={styles.author}>
                 <Avatar item={item} baseUrl={baseUrl} />

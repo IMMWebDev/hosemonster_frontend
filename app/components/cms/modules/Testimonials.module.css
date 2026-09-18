@@ -110,26 +110,54 @@
 }
 
 .card {
-  flex: 0 0 calc((100% - 2 * var(--space-5)) / 3); /* three across, per the design */
+  /*
+   * GROW, do not shrink: `1 0`, not `0 0`.
+   *
+   * The basis is still a third of the track, which is what the design draws
+   * with three or more quotes. With FEWER the cards now expand to fill the row
+   * — two quotes used to sit at a third each and leave the last third empty,
+   * which read as a missing card rather than a deliberate pair.
+   *
+   * flex-shrink stays 0 so four or more still overflow into the scroll track
+   * instead of squeezing. `1 1` would squash them and quietly kill the
+   * carousel.
+   */
+  flex: 1 0 calc((100% - 2 * var(--space-5)) / 3);
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  min-height: 370px;
+  /*
+   * NO min-height.
+   *
+   * It used to be 370px, taken from the design where the cards are a third of
+   * the row and a quote wraps to six or seven lines. Once two quotes share the
+   * width each line is twice as long, the copy comes in at three lines, and the
+   * floor left a dead band between the quote and the author — the card looked
+   * like it had lost something.
+   *
+   * Nothing is needed in its place: these are flex items in a row, so they
+   * already stretch to the tallest of them and stay level.
+   */
   padding: 33px 33px 34px;
   border: var(--border-width-thick) solid var(--brand-navy);
   border-radius: var(--radius-md);
   background: var(--testimonial-bg);
 }
 
-/* Figma draws this as a 42px Helvetica quote glyph. Rendering it as text would
- * put a stray “ into the accessibility tree, so it is a decorative pseudo. */
-.quoteMark::before {
-  content: '\201C';
+/*
+ * The comp's quote mark, at its drawn size of 44x32.
+ *
+ * Was a \u201C set at 42px in the body face, from before the SVG was available.
+ * Two paths cannot be substituted by a font, so the mark is now the same shape
+ * whatever has loaded; `fill: currentColor` keeps its colour in this file
+ * rather than baked into the path data.
+ */
+.quoteMark {
   display: block;
-  font-family: var(--font-body);
-  font-size: 42px;
-  font-weight: var(--weight-bold);
-  line-height: 1;
+  width: 44px;
+  height: 32px;
+  margin-bottom: 18px; /* exact value from the design */
+  fill: currentColor;
   color: var(--color-text-accent);
 }
 

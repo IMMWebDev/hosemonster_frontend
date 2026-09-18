@@ -119,6 +119,25 @@
   outline-offset: 2px;
 }
 
+/*
+ * A card with nowhere to go.
+ *
+ * It keeps the chrome so the row stays visually even, but loses everything that
+ * says "click me": no chevron (the component omits it), no border change, no
+ * lift, and the default cursor. Hover feedback on something inert is the same
+ * false promise as the arrow.
+ *
+ * MUST come after .card:hover. `.static:hover` and `.card:hover` are both one
+ * class plus a pseudo-class, so specificity cannot break the tie — source order
+ * does, and declared earlier this rule silently loses.
+ */
+.static,
+.static:hover {
+  border-color: var(--color-border);
+  box-shadow: none;
+  cursor: default;
+}
+
 /* 52x52 tile in the design, on the section-tint grey. `flex: 0 0 auto` so a
  * long title cannot squeeze it out of square. */
 .iconTile {

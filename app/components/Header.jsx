@@ -2,6 +2,7 @@ import {Suspense, useCallback, useEffect, useId, useRef, useState} from 'react';
 import {Await, NavLink, useAsyncValue, useLocation} from 'react-router';
 import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
 import {useHeaderScroll} from '~/lib/use-header-scroll';
+import {useUtilityBarHeight} from '~/lib/use-utility-bar-height';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
 import CmsLink from '~/components/cms/CmsLink';
@@ -18,13 +19,7 @@ import styles from './Header.module.css';
  *
  * @param {HeaderProps}
  */
-export function Header({
-  header,
-  isLoggedIn,
-  cart,
-  cmsHeader,
-  strapiBaseUrl,
-}) {
+export function Header({header, isLoggedIn, cart, cmsHeader, strapiBaseUrl}) {
   const {shop} = header;
 
   const logoUrl = strapiMedia(cmsHeader?.logo?.url, strapiBaseUrl);
@@ -43,11 +38,16 @@ export function Header({
   const showCart = cmsHeader?.showCart !== false;
 
   /*
-   * Two separate signals, see use-header-scroll.js: the utility bar collapses
-   * once you leave the top of the page and stays collapsed, while the whole
-   * header slides away on downward scroll and returns on the first upward one.
+   * The whole header slides away on downward scroll and returns on the first
+   * upward one — see use-header-scroll.js.
+   *
+   * The utility bar is NOT part of that. It scrolls away on its own because the
+   * header pins at a negative offset equal to the bar's height (Header.module.css),
+   * which is measured here rather than typed: the bar wraps at narrow widths, so
+   * a constant would be wrong on mobile.
    */
-  const {condensed, hidden} = useHeaderScroll();
+  const {hidden} = useHeaderScroll();
+  const [headerRef, utilityBarRef] = useUtilityBarHeight();
 
   return (
     /*
@@ -57,10 +57,10 @@ export function Header({
      */
     <header
       className={styles.header}
-      data-condensed={condensed ? '' : undefined}
+      ref={headerRef}
       data-hidden={hidden ? '' : undefined}
     >
-      <div className={styles.utilityBar}>
+      <div className={styles.utilityBar} ref={utilityBarRef}>
         <div className={styles.utilityInner}>
           {showSearch && <SearchToggle />}
 
@@ -93,33 +93,33 @@ export function Header({
 
       <div className={styles.mainBar}>
         <div className={styles.mainBarInner}>
-        <NavLink prefetch="intent" to="/" className={styles.logo} end>
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={logoAlt}
-              className={styles.logoImage}
-              width={cmsHeader?.logo?.width ?? 185}
-              height={cmsHeader?.logo?.height ?? 48}
-            />
-          ) : (
-            <span className={styles.logoFallback}>{shop.name}</span>
-          )}
-        </NavLink>
-
-        <nav className={styles.nav} role="navigation">
-          {mainNav.map((item, i) =>
-            item?.isDropdown ? (
-              <NavDropdown key={item.id ?? i} item={item} />
-            ) : (
-              <CmsLink
-                key={item.id ?? i}
-                link={item?.link}
-                className={styles.navLink}
+          <NavLink prefetch="intent" to="/" className={styles.logo} end>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={logoAlt}
+                className={styles.logoImage}
+                width={cmsHeader?.logo?.width ?? 185}
+                height={cmsHeader?.logo?.height ?? 48}
               />
-            ),
-          )}
-        </nav>
+            ) : (
+              <span className={styles.logoFallback}>{shop.name}</span>
+            )}
+          </NavLink>
+
+          <nav className={styles.nav} role="navigation">
+            {mainNav.map((item, i) =>
+              item?.isDropdown ? (
+                <NavDropdown key={item.id ?? i} item={item} />
+              ) : (
+                <CmsLink
+                  key={item.id ?? i}
+                  link={item?.link}
+                  className={styles.navLink}
+                />
+              ),
+            )}
+          </nav>
 
           <HeaderMenuMobileToggle />
         </div>
