@@ -21,12 +21,13 @@
  *   19px / 700 Gopher · min-height 56px · padding 0 32px · radius 999px
  *   white-space nowrap · centred · 250ms ease
  *
- * Five fills:
+ * Six fills:
  *   .btn--primary              orange fill, white text
  *   .btn--secondary            transparent, navy border and text
  *   .btn--tertiary             transparent, border-grey border, navy text
  *   .btn--inverse              white fill, orange text      (spec: primary on orange)
  *   .btn--secondary-on-orange  transparent, white border and text
+ *   .btn--inverse-navy         white fill, navy text        (on navy grounds)
  *
  * Two rules worth keeping in mind before editing:
  *   - HEIGHT COMES FROM min-height, never a fixed height, so vertical padding
@@ -36,7 +37,7 @@
  *     label and the primary button stops being legal.
  *
  * Every variant carries a 2px border, even where the spec draws none — on the
- * filled variants it matches the fill. That keeps all five the same height when
+ * filled variants it matches the fill. That keeps all six the same height when
  * they sit side by side, which is the whole point of the shared geometry.
  */
 
@@ -132,6 +133,17 @@
   color: var(--color-text-inverse);
 }
 
+/* ON NAVY GROUNDS */
+
+/* White fill, navy label — the dechlorination comp's "Still deciding?" button.
+ * .btn--secondary looks the same at rest, but its hover fills navy, which
+ * vanishes into a navy band. */
+.btn--inverse-navy {
+  background-color: var(--color-surface);
+  border-color: var(--color-surface);
+  color: var(--brand-navy);
+}
+
 /*
  * Hover. §01 now names the orange hover fill (#c62f14) but still specs no
  * hover for the other four, so the house rule stands: a button DARKENS WHAT IT
@@ -170,6 +182,12 @@
 .btn--secondary-on-orange:hover {
   background-color: var(--color-text-inverse);
   color: var(--color-action);
+}
+
+.btn--inverse-navy:hover {
+  background-color: var(--color-inverse-hover);
+  border-color: var(--color-inverse-hover);
+  color: var(--brand-navy);
 }
 
 /* Visible keyboard focus. Not in the design, but required for accessibility —

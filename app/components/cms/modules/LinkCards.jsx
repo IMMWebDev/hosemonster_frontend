@@ -2,6 +2,9 @@ import CmsLink from '~/components/cms/CmsLink';
 import {LinkIcon} from '~/components/icons/LinkIcon';
 import styles from './LinkCards.module.css';
 
+/** Columns Per Row in Strapi -> cards across on desktop. */
+const COLUMNS = {two: 2, three: 3, four: 4};
+
 /**
  * Link Cards module — Figma "Shop" hifi (sprint-04/hifi_shop.html).
  *
@@ -16,6 +19,7 @@ import styles from './LinkCards.module.css';
  * @param {{
  *   data: {
  *     background?: 'white' | 'grey',
+ *     columnsPerRow?: 'two' | 'three' | 'four',
  *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
@@ -30,9 +34,14 @@ import styles from './LinkCards.module.css';
  * }} props
  */
 export default function LinkCards({data}) {
-  const {eyebrow, heading, body, background, items = []} = data ?? {};
+  const {eyebrow, heading, body, background, columnsPerRow, items = []} =
+    data ?? {};
 
   if (!heading) return null;
+
+  // Strapi applies the enum default on create only; anything unset is three,
+  // the design's row.
+  const columns = COLUMNS[columnsPerRow] ?? 3;
 
   /*
    * Only "grey" gets a class, same as Text & Media. Strapi applies an enum
@@ -62,7 +71,13 @@ export default function LinkCards({data}) {
         ) : null}
 
         {items.length > 0 && (
-          <div className={styles.grid}>
+          /* Columns Per Row from Strapi (desktop); extra cards wrap to a new
+             row. Fewer cards than columns share the row rather than leave
+             empty slots. */
+          <div
+            className={styles.grid}
+            style={{'--cols': Math.min(items.length, columns)}}
+          >
             {items.map((item, i) => (
               <Card key={item.id ?? i} item={item} index={i} />
             ))}

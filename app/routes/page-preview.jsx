@@ -1,5 +1,6 @@
 import {useLoaderData} from 'react-router';
 import BlockManager from '~/components/cms/BlockManager';
+import {getModuleProducts} from '~/lib/module-products';
 
 /**
  * Maps the friendly `type` in the preview URL to a Strapi collection API id.
@@ -41,9 +42,17 @@ export async function loader({request, context}) {
     throw new Response('Preview not found', {status: 404});
   }
 
+  // Product cards and bundle builders read their Shopify data from here, the
+  // same as on the published page — without it they preview as empty.
+  const products = await getModuleProducts({
+    storefront: context.storefront,
+    modules,
+  });
+
   return {
     page,
     modules,
+    products,
     strapiBaseUrl: context.env.STRAPI_API_URL,
   };
 }
@@ -59,7 +68,7 @@ export const meta = () => [
 
 export default function PagePreview() {
   /** @type {LoaderReturnData} */
-  const {page, modules, strapiBaseUrl} = useLoaderData();
+  const {page, modules, products, strapiBaseUrl} = useLoaderData();
 
   return (
     <div className="cms-page">
@@ -71,7 +80,11 @@ export default function PagePreview() {
           }}
         />
       ) : null}
-      <BlockManager blocks={modules} baseUrl={strapiBaseUrl} />
+      <BlockManager
+        blocks={modules}
+        baseUrl={strapiBaseUrl}
+        products={products}
+      />
     </div>
   );
 }

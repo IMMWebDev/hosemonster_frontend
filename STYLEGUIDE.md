@@ -393,10 +393,13 @@ the rhythm is whatever an author sets. Either alternate by index in
 `BlockManager` (one edit, every page) or add the field to the nine remaining
 Strapi schemas (18 edits, and authors can still break it).
 
-### E. Controls that do not exist yet
+### E. Controls that do not exist yet — CLOSED
 
-§07 specs removable filter chips and numbered pagination with a navy-filled
-current page. Neither is built. The sort select and its label are now on spec.
+§07's removable filter chips and navy-current numbered pagination are both
+built, in `app/components/product-listing/ProductListing.jsx`, and shared by the
+Product Feed module and `/search`. The chips label each filter with its facet
+("Availability: In stock") rather than the value alone as the §07 swatch does,
+because a bare "In stock" or "$10 – $200" chip does not say what it filters.
 
 ### F. Eight literals below the smallest named step
 

@@ -1,10 +1,12 @@
+import CmsLink from '~/components/cms/CmsLink';
 import styles from './NumberedSteps.module.css';
 
 /**
  * Numbered Steps module — sprint-04 hifi_fireflow.html, "How it works".
  *
  * An intro lockup over a row of numbered steps divided by rules, with a big
- * ghosted numeral above each.
+ * orange numeral above each, and an optional closing CTA bar under them
+ * (sprint-04 hifi_dechlorinationcollection.html, "Still deciding?").
  *
  * The numerals are NOT a content field. They come from the row order, so
  * inserting or reordering a step renumbers the rest and an editor cannot ship
@@ -17,11 +19,23 @@ import styles from './NumberedSteps.module.css';
  *     body?: string,
  *     background?: 'white' | 'grey',
  *     steps?: Array<{id: number, title: string, description?: string}>,
+ *     ctaHeading?: string,
+ *     ctaBody?: string,
+ *     cta?: object,
  *   },
  * }} props
  */
 export default function NumberedSteps({data}) {
-  const {eyebrow, heading, body, background, steps = []} = data ?? {};
+  const {
+    eyebrow,
+    heading,
+    body,
+    background,
+    steps = [],
+    ctaHeading,
+    ctaBody,
+    cta,
+  } = data ?? {};
 
   if (!heading) return null;
 
@@ -36,6 +50,11 @@ export default function NumberedSteps({data}) {
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);
+
+  /* The closing bar is optional: a heading or a button brings it in. Body
+   * copy on its own isn't enough to hang a bar off. */
+  const hasButton = Boolean(cta?.linkText);
+  const hasCta = Boolean(ctaHeading || hasButton);
 
   return (
     <section className={`${styles.section} ${backgroundClass}`.trim()}>
@@ -83,6 +102,29 @@ export default function NumberedSteps({data}) {
               </li>
             ))}
           </ol>
+        ) : null}
+
+        {hasCta ? (
+          <div
+            className={styles.cta}
+            data-reveal
+            style={{'--reveal-i': steps.length + 3}}
+          >
+            {ctaHeading || ctaBody ? (
+              <div className={styles.ctaCopy}>
+                {/* An <h3>: it closes out this section rather than starting a
+                    new one, so it sits under the section's <h2>. */}
+                {ctaHeading ? (
+                  <h3 className={styles.ctaHeading}>{ctaHeading}</h3>
+                ) : null}
+                {ctaBody ? <p className={styles.ctaBody}>{ctaBody}</p> : null}
+              </div>
+            ) : null}
+
+            {hasButton ? (
+              <CmsLink link={cta} className="btn btn--inverse-navy" />
+            ) : null}
+          </div>
         ) : null}
       </div>
     </section>

@@ -1,0 +1,1177 @@
+/*
+ * Bundle Builder module — see BundleBuilder.jsx.
+ *
+ * No comp. Built from the styleguide: §07 controls (navy-filled current step,
+ * as the pager's current page; 44px chips; orange for a checked choice, as a
+ * checked facet), §05 card chrome (2px border, 8px radius), §03 type.
+ *
+ * Hierarchy, top to bottom: the module heading (display, H2), the step title
+ * (display, H2 size), then each question as a body-font subhead — two display
+ * headings stacked read as two equal titles.
+ */
+
+.section {
+  padding-block: var(--container-block);
+
+  /* The step's top is scrolled into view on each step change; clear the
+   * sticky header when it is. Same value as Product Feed. */
+  scroll-margin-top: 96px;
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* ---- intro ---- */
+
+.intro {
+  max-width: var(--measure);
+  margin-bottom: var(--space-8);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3);
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: var(--space-4) 0 0;
+}
+
+/* ---- progress: one row, a numbered marker over each label ---- */
+
+.progress {
+  margin-bottom: var(--space-10);
+}
+
+.progressList {
+  display: grid;
+  grid-template-columns: repeat(var(--steps), minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* reset.css gives every <li> a bottom margin meant for prose. */
+.progressList li {
+  position: relative;
+  margin: 0;
+}
+
+/* The line joining this marker to the previous one: navy once the step can be
+ * reached, so the filled stretch shows how far the visitor has got. It runs
+ * centre to centre under both markers, which cover its ends. */
+.progressList li + li::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  right: 50%;
+  left: -50%;
+  height: 2px;
+  background: var(--color-border);
+  transform: translateY(-50%);
+}
+
+.progressList li[data-reached] + li[data-reached]::before {
+  background: var(--brand-navy);
+}
+
+.progressStep {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+  text-align: center;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.progressStep:disabled {
+  cursor: default;
+}
+
+.progressStep:focus-visible {
+  outline: none;
+}
+
+.progressStep:focus-visible .progressNumber {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* The numbered box: the pager's geometry and its "current fills navy". */
+.progressNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+}
+
+/* Long CMS titles wrap to two lines at most rather than widening the row. */
+.progressLabel {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.progressStep:not(:disabled):hover .progressLabel {
+  color: var(--color-text);
+}
+
+.progressStep[data-state='current'] {
+  color: var(--color-text);
+}
+
+.progressStep[data-state='current'] .progressNumber {
+  border-color: var(--brand-navy);
+  background: var(--brand-navy);
+  color: var(--color-text-inverse);
+}
+
+.progressStep[data-state='done'] {
+  color: var(--color-text);
+}
+
+.progressStep[data-state='done'] .progressNumber {
+  border-color: var(--brand-navy);
+  color: var(--brand-navy);
+}
+
+/* Narrow screens only (the stepper doesn't fit): how far through the steps. */
+.meter {
+  display: none;
+}
+
+/* ---- layout ---- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--space-10);
+  align-items: start;
+}
+
+/* The review step shows the full summary as its content; no sidebar. */
+.layoutReview {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 880px;
+}
+
+.main {
+  min-width: 0;
+}
+
+/* Sticky so the total stays in view down a long step. Below the sticky
+ * header, whose main bar is ~81px. */
+.side {
+  position: sticky;
+  top: 104px;
+}
+
+.stepHead {
+  margin-bottom: var(--space-6);
+}
+
+.stepCount {
+  font-family: var(--font-body);
+  font-size: 0.78125rem; /* 12.5px, the §07 panel label */
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-2);
+}
+
+.stepTitle {
+  /* Scrolled to on each step change: clear the sticky header (~81px) and
+   * leave the "Step 2 of 7" line above it visible. */
+  scroll-margin-top: 140px;
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Focus lands here on each step change; the ring would read as a stray box
+ * around a heading nobody can interact with. */
+.stepTitle:focus {
+  outline: none;
+}
+
+.stepDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: var(--measure);
+  margin: var(--space-3) 0 0;
+}
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* ---- one question ---- */
+
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+
+  /* A bare <fieldset> gets a border, padding and margins from the UA and
+   * reset.css; this is a layout group, not a boxed form section. */
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.question:focus {
+  outline: none;
+}
+
+/* A rendered <legend> sits outside the fieldset's flex box, so the column gap
+ * never reaches it — the space under it has to be its own. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0 0 var(--space-3);
+}
+
+.questionTitle {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--color-text);
+}
+
+/*
+ * Badges: small tracked labels, navy on the light surface. Not orange — at
+ * 12px §09 bars orange text and white on orange fails contrast.
+ */
+.badge,
+.badgeQuiet {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.badge {
+  background: var(--color-surface-alt);
+  border: var(--border-width) solid var(--color-border);
+  color: var(--color-text);
+}
+
+.badgeQuiet {
+  color: var(--color-text-muted);
+  border: var(--border-width) solid var(--color-border);
+}
+
+/* ---- info bubble ---- */
+
+.info {
+  max-width: var(--measure);
+}
+
+.infoToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.infoToggle::-webkit-details-marker {
+  display: none;
+}
+
+.infoToggle:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.infoText {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+}
+
+/* ---- product choice cards ---- */
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  gap: var(--space-3);
+}
+
+/*
+ * The input is visually hidden but still in the tab order and announced; the
+ * whole card is its label, so a click anywhere selects it.
+ */
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+  padding: var(--space-4);
+  padding-right: calc(var(--space-4) + 24px);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: border-color var(--duration-control) var(--ease-default);
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* Checked = orange, as a checked facet (§07). A border, not text, so §09's
+ * size rule does not apply. */
+.card[data-selected] {
+  border-color: var(--color-action);
+}
+
+.card:has(.hiddenInput:focus-visible) {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.card[data-disabled] {
+  cursor: not-allowed;
+  background: var(--color-surface-alt);
+  border-color: var(--color-border);
+}
+
+.card[data-disabled] .cardMedia,
+.card[data-disabled] .cardTitle,
+.card[data-disabled] .cardDescription {
+  opacity: 0.55;
+}
+
+.cardMedia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.cardImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cardMediaEmpty {
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface-alt);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.cardTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cardTitle {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--color-text);
+}
+
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.cardPrice {
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.muted {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+.reason {
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+/* What picking this card would undo in a later step. */
+.cardChanges {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.chipReasons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.chipReasons li {
+  margin: 0;
+}
+
+/* The tick in the corner: an empty ring until checked, then filled orange. */
+.check {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: transparent;
+  background: var(--color-surface);
+}
+
+.card[data-selected] .check {
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-action-text);
+}
+
+/* ---- variant chips (thread, length) ---- */
+
+.chipGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* §07 chip gap */
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px; /* §07 chip */
+  padding: 6px var(--space-4);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    background-color var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default);
+}
+
+.chip:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* Selected fills navy, as the current page (§07). */
+.chip[data-selected] {
+  border-color: var(--brand-navy);
+  background: var(--brand-navy);
+  color: var(--color-text-inverse);
+}
+
+.chip:has(.hiddenInput:focus-visible) {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.chip[data-disabled] {
+  cursor: not-allowed;
+  color: var(--color-text-faint);
+  background: var(--color-surface-alt);
+  text-decoration: line-through;
+}
+
+.chip[data-disabled]:hover {
+  border-color: var(--color-border);
+}
+
+/* ---- pump rating ---- */
+
+.select {
+  width: 100%;
+  max-width: 420px;
+  height: 56px;
+  /* Right padding, arrow included, from reset.css. */
+  --select-pad: var(--space-4);
+  padding-block: 0;
+  padding-left: var(--space-4);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.select:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* Options of a picked product the visitor chooses (a gauge's PSI range). */
+.pickers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pickerLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-8);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+.readoutLines {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--color-text);
+}
+
+.readoutLines strong {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  line-height: 1;
+  margin-right: var(--space-1);
+}
+
+.readoutFlows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-body);
+}
+
+.readoutFlows li {
+  margin: 0;
+}
+
+.overMax {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  color: var(--color-text-body);
+}
+
+.overMax p {
+  margin: 0;
+}
+
+/* ---- small links and buttons ---- */
+
+.helpLink {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+}
+
+/* Navy and underlined: §09 bars orange text below 19px. `a.` so it beats
+ * reset.css's a:hover:not(.btn), which is (0,2,1). */
+a.link,
+a.link:hover {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.textButton {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.textButton:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* ---- step navigation ---- */
+
+.nav {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'back hint next';
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-10);
+  padding-top: var(--space-6);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.navBack {
+  grid-area: back;
+}
+
+.navNext {
+  grid-area: next;
+}
+
+.navHint {
+  grid-area: hint;
+  justify-self: end;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: 1.4;
+  text-align: right;
+  color: var(--color-text-muted);
+}
+
+/* ---- summary ---- */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.summaryFull {
+  padding: var(--space-8);
+}
+
+.summaryHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.summaryTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Reset sits with the bundle it clears. Quiet on purpose: it wipes every
+ * answer, so it mustn't compete with Next or Add to cart. */
+.restart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.restart:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.restart:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.summaryTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.summaryMetaLead {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.summaryMeta {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  color: var(--color-text-muted);
+}
+
+/* Items under the step that added them. */
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.groupTitle {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.editLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.editLink:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: start;
+  margin: 0;
+  padding: var(--space-2) 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  color: var(--color-text);
+}
+
+.itemQty {
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+.itemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+}
+
+.itemVariant {
+  color: var(--color-text-muted);
+}
+
+.itemOption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.itemOptionLabel {
+  color: var(--color-text-muted);
+}
+
+.itemSelect {
+  height: 36px;
+  --select-pad: var(--space-3);
+  padding-block: 0;
+  padding-left: var(--space-3);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  font-family: var(--font-body);
+  /* 16px or more, or iOS Safari zooms the page when the select is tapped. */
+  font-size: max(16px, var(--text-detail));
+  color: var(--color-text);
+}
+
+.itemSelect:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* Regular weight: it repeats on every line while the store sells nothing
+ * online, and bold turned the list into a wall of warnings. */
+.itemUnavailable {
+  color: var(--color-text-muted);
+}
+
+.itemPrice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
+}
+
+/* "$807 each" under a line of more than one. */
+.itemEach {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+.subtotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--color-text);
+}
+
+/* What's left: a plain line, not a box — the notice style is kept for things
+ * that stop the bundle reaching the cart. */
+.status {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: 1.45;
+  color: var(--color-text-body);
+}
+
+.subtotal strong {
+  font-size: var(--text-price);
+}
+
+.notice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: 1.45;
+  color: var(--color-text-body);
+}
+
+.addButton {
+  width: 100%;
+}
+
+/* reset.css caps every form at 400px from 768px up. */
+.summary form {
+  max-width: none;
+}
+
+/* ---- mobile total bar ---- */
+
+.mobileBar {
+  display: none;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ */
+
+/* tablet — one column: the summary follows the step, and a bar pinned to the
+ * bottom of the view keeps the total and the way to the review in reach. */
+@media (max-width: 1099px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .side {
+    position: static;
+  }
+
+  /* The single-row stepper needs the desktop width; below it a progress bar
+   * sits over "Step 2 of 7", and the summary's Edit links jump back. */
+  .progress {
+    display: none;
+  }
+
+  .meter {
+    display: block;
+    height: 4px;
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-pill);
+    background: var(--color-border);
+    overflow: hidden;
+  }
+
+  .meter span {
+    display: block;
+    width: calc(var(--progress) * 100%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--brand-navy);
+  }
+
+  /* Keep focused controls and scrolled-to headings clear of the sticky bar. */
+  :global(html):has(.mobileBar) {
+    scroll-padding-bottom: 96px;
+  }
+
+  .mobileBar {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+    margin-inline: calc(-1 * var(--container-gutter));
+    padding: var(--space-3) var(--container-gutter);
+    border-top: var(--border-width) solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: 0 -8px 24px rgb(11 23 33 / 8%);
+  }
+
+  .mobileTotal {
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body);
+    color: var(--color-text);
+  }
+
+  .mobileTotalLabel {
+    font-size: var(--text-detail);
+    color: var(--color-text-muted);
+  }
+}
+
+/* mobile — the hint goes above two equal buttons; Next drops the step name. */
+@media (max-width: 699px) {
+  .summaryFull {
+    padding: var(--space-5);
+  }
+
+  .nav {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'hint hint'
+      'back next';
+  }
+
+  .nav[data-first] {
+    grid-template-areas:
+      'hint hint'
+      'next next';
+  }
+
+  .navHint {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .nav :global(.btn) {
+    width: 100%;
+  }
+
+  .nextTitle {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chip {
+    transition: none;
+  }
+}

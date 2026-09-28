@@ -2,8 +2,8 @@
  * Numbered Steps module — sprint-04 hifi_fireflow.html, "How it works"
  *
  * Intro lockup, then a row of steps under a single top rule, each separated
- * from the last by a vertical one. The big ghosted numerals are the only
- * ornament.
+ * from the last by a vertical one. The big orange numerals are the only
+ * ornament. An optional navy CTA bar closes the section.
  */
 
 .section {
@@ -42,14 +42,13 @@
 }
 
 /*
- * The LARGER of the two H2s — §03 calls it "H2 large · Major section" and gives
- * it clamp(28px, 3.2vw, 42px), where a standard section heading is
- * clamp(24px, 2.6vw, 32px). This section opens a page-length explanation, so it
- * takes the bigger one.
+ * The standard section H2, clamp(24px, 2.6vw, 32px), the same as every other
+ * section heading (the dechlorination comp's size). It used to take §03's
+ * "H2 large", which made it the one oversized heading on the page.
  */
 .heading {
   font-family: var(--font-display);
-  font-size: var(--text-h2-lg);
+  font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
   text-transform: uppercase;
@@ -128,13 +127,9 @@
 }
 
 /*
- * The ghosted numeral, in the BORDER colour rather than an ink.
- *
- * That looks like a mistake and is not: at 56px this is a watermark behind the
- * content, not text to be read, and §01's faint ink (#a5b3c0) is a blue-grey
- * loud enough to compete with the step title under it. The comp uses #E8E8E8,
- * which is what --color-border resolves to. It is hidden from screen readers in
- * the markup — the <ol> already announces the position.
+ * The numeral, in the accent orange — the dechlorination comp's colour, which
+ * replaced the Fire Flow comp's ghosted #E8E8E8. It is hidden from screen
+ * readers in the markup — the <ol> already announces the position.
  */
 .number {
   display: block;
@@ -142,15 +137,19 @@
   font-size: 56px; /* from the design */
   font-weight: var(--weight-bold);
   line-height: 0.9;
-  color: var(--color-border);
+  color: var(--color-text-accent);
   margin-bottom: 14px; /* exact value from the design */
 }
 
+/* Sentence case, as both comps draw it. The global h3 rule (typography.css)
+ * styles every h3 as the uppercase, tracked eyebrow, so both are undone here. */
 .stepTitle {
   font-family: var(--font-body);
   font-size: var(--text-ui);
   font-weight: var(--weight-bold);
   line-height: var(--leading-body-sm);
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--color-text);
   margin: 0 0 10px; /* exact value from the design */
 }
@@ -162,6 +161,66 @@
   line-height: var(--leading-body);
   color: var(--color-text-body);
   margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CTA — optional closing bar, sprint-04 hifi_dechlorinationcollection.html
+ * -----------------------------------------------------------------------------
+ * A rounded navy bar inside the section: copy left, button pinned right. The
+ * same geometry as the CTA Bar module, sized down to sit under the steps.
+ */
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  /* 28px + the steps' 8px bottom padding = the comp's 36px. Nothing to sit
+   * under when there are no steps, so the margin goes with them. */
+  margin-top: var(--space-7);
+  padding: 30px var(--space-10); /* 30 / 40 in the design */
+  border-radius: var(--radius-md);
+  background-color: var(--brand-navy);
+}
+
+.heading + .cta,
+.body + .cta {
+  margin-top: 0;
+}
+
+.ctaCopy {
+  min-width: 0; /* lets the copy wrap instead of pushing the button off */
+}
+
+.ctaHeading {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  letter-spacing: normal; /* the global h3 rule tracks it like an eyebrow */
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+.ctaBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--ink-on-navy);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.ctaHeading + .ctaBody {
+  margin-top: var(--space-2);
+}
+
+/* The button keeps its own width; the copy takes the rest. */
+.cta > :global(.btn) {
+  flex: 0 0 auto;
 }
 
 /*
@@ -186,5 +245,14 @@
   .step + .step {
     border-left: 0;
     border-top: var(--border-width) solid var(--color-border);
+  }
+
+  /* Side by side leaves the copy too narrow, so the bar stacks and the button
+   * goes full width — the same call CTA Bar makes. */
+  .cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-5);
+    padding: var(--space-6);
   }
 }

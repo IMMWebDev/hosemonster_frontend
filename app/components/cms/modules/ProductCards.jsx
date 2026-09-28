@@ -1,7 +1,9 @@
 import {Image, Money} from '@shopify/hydrogen';
 import CmsLink from '~/components/cms/CmsLink';
-import {productRefFor} from '~/lib/module-products';
+import {collectionSourceFor, productRefFor} from '~/lib/module-products';
+import {sharpImageProps} from '~/lib/image';
 import {Link} from 'react-router';
+import {useProductPath} from '~/lib/product-urls';
 import styles from './ProductCards.module.css';
 
 /**
@@ -10,11 +12,17 @@ import styles from './ProductCards.module.css';
  * Intro copy and an optional "view all" link above a row of Shopify product
  * cards.
  *
- * The CMS stores ONLY a handle per card plus its label and spec line; title,
- * price, image and URL come live from the Storefront API. The lookup happens in
- * the route loader (see app/lib/module-products.js) because BlockManager
- * renders straight from the CMS payload and cannot fetch — `products` arrives
- * here already resolved, keyed by handle.
+ * Filled one of two ways:
+ *  - a Collection picked in Strapi: its first N products, in the chosen
+ *    order, live from Shopify; each card's label is the product's type. The
+ *    hand-picked items are ignored, and with no view-all link of its own the
+ *    module links to the collection's page.
+ *  - otherwise the hand-picked items: a handle per card plus its label and
+ *    spec line.
+ * Title, price, image and URL always come live from the Storefront API. The
+ * lookup happens in the route loader (see app/lib/module-products.js) because
+ * BlockManager renders straight from the CMS payload and cannot fetch —
+ * `products` arrives here already resolved.
  *
  * @param {{
  *   data: {
@@ -24,6 +32,9 @@ import styles from './ProductCards.module.css';
  *     viewAllLink?: object,
  *     cardCtaLabel?: string,
  *     items?: Array<{id: number, productRef: string, label?: string, spec?: string}>,
+ *     collection?: {name?: string, shopifyCollectionHandle?: string, path?: string},
+ *     productLimit?: number,
+ *     sort?: string,
  *   },
  *   products?: Record<string, object>,
  * }} props
@@ -34,16 +45,36 @@ export default function ProductCards({data, products = {}}) {
 
   if (!heading) return null;
 
+  const source = collectionSourceFor(data);
+
   /*
-   * Drop cards whose handle no longer resolves. A product renamed, unpublished
-   * or deleted in Shopify is absent from the lookup, and rendering its card
-   * would mean a tile with no title, no price and a link to a 404.
+   * From the collection, or the hand-picked items with any whose handle no
+   * longer resolves dropped — a product renamed, unpublished or deleted in
+   * Shopify is absent from the lookup, and its card would be a tile with no
+   * title, no price and a link to a 404.
    */
-  const cards = items
-    .map((item) => ({item, product: products[productRefFor(item) ?? '']}))
-    .filter(({product}) => Boolean(product));
+  const cards = source
+    ? (products[source.key] ?? []).map((product) => ({
+        key: product.id,
+        item: {label: product.productType},
+        product,
+      }))
+    : items
+        .map((item) => ({
+          key: item.id,
+          item,
+          product: products[productRefFor(item) ?? ''],
+        }))
+        .filter(({product}) => Boolean(product));
 
   if (cards.length === 0) return null;
+
+  // With a collection picked and no link of its own, view all of it.
+  const viewAll = viewAllLink?.linkText
+    ? viewAllLink
+    : source && data.collection?.path
+      ? {linkText: 'View all', collectionLink: data.collection}
+      : null;
 
   return (
     <section className={styles.section}>
@@ -65,15 +96,13 @@ export default function ProductCards({data, products = {}}) {
             ) : null}
           </div>
 
-          {viewAllLink?.linkText ? (
-            <CmsLink link={viewAllLink} className={styles.viewAll} />
-          ) : null}
+          {viewAll ? <CmsLink link={viewAll} className={styles.viewAll} /> : null}
         </div>
 
         <div className={styles.grid}>
-          {cards.map(({item, product}, i) => (
+          {cards.map(({key, item, product}, i) => (
             <ProductCard
-              key={item.id ?? product.id}
+              key={key ?? product.id}
               item={item}
               product={product}
               ctaLabel={cardCtaLabel}
@@ -90,6 +119,7 @@ export default function ProductCards({data, products = {}}) {
  * @param {{item: object, product: object, ctaLabel?: string, index?: number}} props
  */
 function ProductCard({item, product, ctaLabel, index = 0}) {
+  const pathFor = useProductPath();
   const {label, spec} = item;
   const {handle, title, featuredImage, priceRange} = product;
 
@@ -105,7 +135,7 @@ function ProductCard({item, product, ctaLabel, index = 0}) {
 
   return (
     <Link
-      to={`/products/${handle}`}
+      to={pathFor(handle)}
       prefetch="intent"
       className={styles.card}
       data-reveal
@@ -117,11 +147,14 @@ function ProductCard({item, product, ctaLabel, index = 0}) {
            arrives instead of shifting the grid as each one lands. */
         <Image
           data={featuredImage}
-          aspectRatio="4/3"
+          /* The 4:3 frame in `style`, not the aspectRatio prop — the prop
+             also crops the file at the CDN. See ProductListing's card. */
+          style={{aspectRatio: '4 / 3'}}
           sizes="(min-width: 1100px) 320px, (min-width: 700px) 45vw, 90vw"
           className={styles.cardImage}
           loading="lazy"
           alt={featuredImage.altText || ''}
+          {...sharpImageProps(featuredImage)}
         />
       ) : null}
 

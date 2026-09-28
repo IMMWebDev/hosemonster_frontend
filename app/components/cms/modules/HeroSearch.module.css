@@ -190,6 +190,12 @@
  * design's literal 26px keeps it a true pill if the control's height changes.
  */
 
+/* The reveal wrapper around the shared SearchBox; full width so the bar
+ * inside can reach its 560px. */
+.searchWrap {
+  width: 100%;
+}
+
 .search {
   display: flex;
   align-items: stretch;
@@ -210,7 +216,12 @@
   margin: 0;
   padding-block: 0;
   padding-inline: var(--space-6);
-  border: 0;
+
+  /* Transparent until focus — see below. The white background paints under
+   * it, so at rest the field looks borderless on the navy photo. No right
+   * border: that edge meets the button. */
+  border: var(--border-width-thick) solid transparent;
+  border-right: 0;
   border-radius: var(--radius-pill) 0 0 var(--radius-pill);
   background-color: var(--white);
   color: var(--color-text);
@@ -227,12 +238,15 @@
 }
 
 /*
- * The ring is drawn INSIDE the pill (negative offset). A positive offset would
- * run the ring through the adjoining button and get clipped by the panel.
+ * Focus is the field's own border turning orange, meeting the orange button so
+ * the pair reads as one control. It used to be an outline inset 4px, which
+ * stopped short of the button and sat inside the field's edge — the two looked
+ * detached and slightly different heights even though they measure the same.
+ * Orange on white is 3.6:1, clear of the 3:1 non-text contrast floor.
  */
 .searchInput:focus-visible {
-  outline: var(--border-width-thick) solid var(--color-action);
-  outline-offset: -4px;
+  outline: none;
+  border-color: var(--color-action);
 }
 
 .searchButton {
@@ -319,6 +333,12 @@
   .searchButton {
     flex: 1 1 100%;
     border-radius: var(--radius-pill);
+  }
+
+  /* Stacked, the field no longer meets the button: it needs its right edge
+   * back for the focus border to go all the way round. */
+  .searchInput {
+    border-right-width: var(--border-width-thick);
   }
 
   .searchButton {

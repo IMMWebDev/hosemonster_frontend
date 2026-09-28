@@ -1,0 +1,143 @@
+/*
+ * Reference Guide module — sprint-04 hifi_accessoriescollection.html,
+ * "Know your thread"
+ *
+ * Heading, a row of titled columns each under its own top rule, then an
+ * optional framed diagram and a full-width button.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed, the same rule Numbered Steps, Link Cards and FAQ use, so the
+   * grey band reaches the viewport edge. .inner adds the gutter back. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* The `background` field. Grey is the design's; white needs no rule. */
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-6); /* 24px in the design */
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: 80ch;
+  margin: calc(-1 * var(--space-2)) 0 var(--space-8);
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3);
+}
+
+/*
+ * Each column carries its own rule, with real gaps between — separate items,
+ * not one divided band — so a wrapped row keeps a rule over every column.
+ */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(20px, 3vw, 32px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.column {
+  border-top: var(--border-width-thick) solid var(--color-border);
+  padding-top: var(--space-4); /* 16px in the design */
+  margin: 0; /* reset.css spaces every <li> */
+}
+
+/* The display face in caps, as drawn. Undoes the global h3 rule, which styles
+ * every h3 as the orange, tracked eyebrow. */
+.columnTitle {
+  font-family: var(--font-display);
+  font-size: 1.0625rem; /* 17px in the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 10px; /* exact value from the design */
+}
+
+.columnBody {
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px in the design */
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* The diagram's frame: the placeholder's 2px border and 8px radius. */
+.figure {
+  margin: 28px 0 0; /* exact value from the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Full width, as the design draws it. */
+.cta {
+  display: flex;
+  width: 100%;
+  margin-top: var(--space-5); /* 20px in the design */
+}
+
+/* No diagram: the button sits under the columns with the diagram's gap. */
+.columns + .cta {
+  margin-top: 28px;
+}
+
+/* mdTablet — a long label can't stay on one line in a phone-width pill. */
+@media (max-width: 699px) {
+  .cta {
+    white-space: normal;
+    padding-block: var(--space-3);
+  }
+}

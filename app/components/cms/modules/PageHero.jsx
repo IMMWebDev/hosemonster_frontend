@@ -121,12 +121,31 @@ export default function PageHero({data, baseUrl}) {
         </div>
 
         {infoColumns.length > 0 ? (
-          <div className={styles.info} data-reveal style={{'--reveal-i': 2}}>
+          /*
+            The band is the bottom of the card, so it doesn't animate on its
+            own: it's there with the card, and only its copy reveals —
+            continuing the eyebrow → heading stagger, a column at a time left
+            to right. The text, not the column, carries data-reveal so the
+            divider rules stay put with the band.
+          */
+          <div className={styles.info}>
             {infoColumns.map((column, i) => (
               <div className={styles.infoColumn} key={column.id ?? i}>
-                <p className={styles.infoLabel}>{column.label}</p>
+                <p
+                  className={styles.infoLabel}
+                  data-reveal
+                  style={{'--reveal-i': i + 2}}
+                >
+                  {column.label}
+                </p>
                 {column.body ? (
-                  <p className={styles.infoBody}>{column.body}</p>
+                  <p
+                    className={styles.infoBody}
+                    data-reveal
+                    style={{'--reveal-i': i + 2}}
+                  >
+                    {column.body}
+                  </p>
                 ) : null}
               </div>
             ))}

@@ -1,0 +1,517 @@
+/*
+ * Search module — the /search page. See Search.jsx.
+ *
+ * No comp. The top is Hero Search's layout (HeroSearch.module.css): a
+ * full-bleed navy panel, an optional photo with a navy scrim fading left to
+ * right, and the copy and search box in a left-hand column aligned to the site
+ * container. Below it, on white, the matching categories and pages as §07
+ * chips, then the collection pages' listing.
+ */
+
+.page {
+  padding-bottom: var(--space-4);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * HERO PANEL — mirrors HeroSearch.module.css; the notes there explain the
+ * layering, the overscan and the eyebrow colour in full.
+ * -----------------------------------------------------------------------------
+ */
+
+.hero {
+  /* Full-bleed: cancel <main>'s gutter and grow by the same amount each side.
+   * The token rather than 100vw, which includes the scrollbar. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+
+  /* Stated, not omitted: reset.css pads every bare <section>. Fine as the
+   * first thing on the page or under another module — the panel carries its
+   * own padding and leans on nothing above it. */
+  padding-block: 0;
+}
+
+.panel {
+  position: relative;
+  isolation: isolate; /* keeps the scrim's z-index local to this section */
+  display: flex;
+  align-items: center;
+
+  /* Hero Search's height, before AND after a search, so the panel never
+   * jumps when results arrive. (It used to drop to its content height once
+   * there was a term.) */
+  min-height: 480px;
+  padding-block: var(--container-block);
+  background-color: var(--brand-navy); /* shows before, or without, a photo */
+
+  /* `clip`, not `hidden`: `hidden` makes a scroll container, which would
+   * become the scrollport for the parallax inside and kill it. */
+  overflow: clip;
+}
+
+/* Stack: 0 photo, 1 scrim, 2 copy — explicit and positive, as Hero Search. */
+
+/* Overscan (-8%), not inset: 0, so the parallax drift never uncovers the
+ * panel's own navy at an edge. Same figures as Hero Search. */
+.background {
+  position: absolute;
+  inset: -8% 0;
+  z-index: 0;
+}
+
+.backgroundImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+}
+
+/*
+ * Solid navy at the left edge, clear by 62% — Hero Search's gradient, from the
+ * current navy token rather than its literal. Without a photo this sits on
+ * the panel's own navy and is invisible, so it is not made conditional.
+ */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to right,
+    var(--brand-navy) 0%,
+    color-mix(in srgb, var(--brand-navy) 0%, transparent) 62%
+  );
+  pointer-events: none;
+}
+
+/* Bleed container, so the copy lines up with the header and every non-bleed
+ * section. */
+.panelInner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 720px; /* Hero Search's copy column */
+}
+
+/* Orange on navy, as every section eyebrow in the comps — see the note on
+ * Hero Search's .eyebrow before changing it. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+
+  /* A pasted part number or a long phrase wraps rather than pushing the page
+   * wide. */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The results line under the search box — "55 products and 1 page for
+ * “gauge”". §01 On Navy for the counts, the house ink for secondary copy on a
+ * dark fill; the term itself in white and bold so it is what the eye lands on.
+ * White rather than orange: §09 measures orange on navy at 2.95:1 and fails it
+ * at this size.
+ */
+.resultsFor {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+  margin: var(--space-4) 0 0; /* the box above has its own top margin only */
+
+  /* A pasted part number or a long phrase wraps rather than pushing the panel
+   * wide. */
+  overflow-wrap: anywhere;
+
+  /* One line held open, so the hint and the result count take the same room
+   * and the panel keeps its height through a search. */
+  min-height: calc(var(--leading-body) * 1em);
+}
+
+/* On a phone the hint runs to two lines, so two are held for both. */
+@media (max-width: 699px) {
+  .resultsFor {
+    min-height: calc(var(--leading-body) * 2em);
+  }
+}
+
+.term {
+  font-weight: var(--weight-bold);
+  color: var(--color-text-inverse);
+}
+
+/* The reveal wrapper; full width so the bar inside can reach its 560px. */
+.searchWrap {
+  width: 100%;
+}
+
+/* ---- the search box ---- */
+
+/*
+ * Hero Search's bar: a white pill input joined to an orange submit, 560px
+ * wide. The field needs no border on navy — the white defines it. The icon is
+ * the one addition, since this box is prefilled and needs to read as a search
+ * field at a glance.
+ */
+.search {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  /* reset.css caps every <form> at 400px above 768px. */
+  max-width: 560px;
+  margin-top: var(--space-4);
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--space-5);
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--button-height);
+
+  /* reset.css gives bare inputs margins, padding and a border; the margins in
+   * particular would make the row taller than the button. */
+  margin: 0;
+  padding: 0 var(--space-4) 0 calc(var(--space-5) + 18px + var(--space-3));
+
+  /* Transparent until focus — see below. The white background paints under
+   * it, so at rest the field looks borderless, as on the navy panel it should.
+   * No right border: that edge meets the button. */
+  border: var(--border-width-thick) solid transparent;
+  border-right: 0;
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+  /* Firefox dims placeholders by default. */
+  opacity: 1;
+}
+
+/* WebKit's own cancel "×" sits against the button seam — hidden. */
+.searchInput::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/*
+ * Focus is the field's own border turning orange, meeting the orange button so
+ * the pair reads as one control. It used to be an outline inset 4px, which
+ * stopped short of the button and sat inside the field's edge — the two looked
+ * detached and slightly different heights even though they measure the same.
+ * Orange on white is 3.6:1, clear of the 3:1 non-text contrast floor.
+ */
+.searchInput:focus-visible {
+  outline: none;
+  border-color: var(--color-action);
+}
+
+.searchButton {
+  flex: 0 0 auto;
+  padding-inline: var(--space-button-x);
+  border: 0;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  background-color: var(--color-action);
+  color: var(--color-action-text);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  cursor: pointer;
+  transition: background-color var(--duration-control) var(--ease-default);
+}
+
+.searchButton:hover {
+  background-color: var(--color-action-hover);
+}
+
+/* White on navy — an orange ring would vanish against the orange button. */
+.searchButton:focus-visible {
+  outline: var(--border-width-thick) solid var(--white);
+  outline-offset: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * MATCHING CATEGORIES / PAGES — on white, under the panel
+ * -----------------------------------------------------------------------------
+ */
+
+.relatedSection {
+  padding-block: var(--space-8) 0;
+}
+
+/* The results section's own padding would stack on this strip's and float
+ * the grid away from the chips that introduce it. min(), because the block
+ * token is already 32px on a phone — a flat 40px there WIDENED the gap. */
+.relatedSection + .section {
+  padding-top: min(var(--space-10), var(--container-block));
+}
+
+.related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5) var(--space-10);
+}
+
+.relatedGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The small tracked label the §07 panels use: it names a group, it does not
+ * compete with the heading. */
+.relatedLabel,
+.groupTitle {
+  font-family: var(--font-body);
+  font-size: 0.78125rem; /* 12.5px, as the §07 panel labels */
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESULTS
+ * -----------------------------------------------------------------------------
+ */
+
+.section {
+  padding-block: var(--container-block);
+
+  /* The pager links here by fragment and the header is sticky; without this
+   * the heading lands underneath it. Same value as Product Feed. */
+  scroll-margin-top: 96px;
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.sectionHeading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.note,
+.error {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+.error {
+  color: var(--color-text);
+  font-weight: var(--weight-bold);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * SUGGESTIONS — the empty page, and a search that found nothing
+ * -----------------------------------------------------------------------------
+ */
+
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.noResults {
+  max-width: var(--measure);
+}
+
+.noResultsBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: var(--space-3) 0 0;
+}
+
+.suggestionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-8) var(--space-10);
+}
+
+.suggestionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.help {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+  padding-top: var(--space-8);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+/* Navy and underlined, not orange: §09 bars orange text below 19px. */
+.helpLink {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* `a.`: reset.css's `a:hover:not(.btn)` is (0,2,1) and beat a bare
+ * `.helpLink:hover`, turning the link orange and dropping its underline. */
+a.helpLink:hover {
+  color: var(--color-text);
+  /* Restated: the reset rule still matches and sets `none`. */
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * tablet — Hero Search's heights, and the scrim turns vertical HERE rather
+ * than at 699px as on Hero Search.
+ *
+ * The copy column goes full width at this breakpoint. Hero Search's heading is
+ * editor copy with deliberate line breaks, so it never reaches the clear right
+ * side of a horizontal scrim; this one is "Results for “whatever was typed”",
+ * which at 700–1099px could run white text onto the unscrimmed photo. A
+ * vertical scrim covers the whole width.
+ */
+@media (max-width: 1099px) {
+  .panel {
+    min-height: 420px;
+  }
+
+  .copy {
+    max-width: 100%;
+  }
+
+  .scrim {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--brand-navy) 88%, transparent) 0%,
+      color-mix(in srgb, var(--brand-navy) 65%, transparent) 100%
+    );
+  }
+
+  .backgroundImage {
+    object-position: center;
+  }
+}
+
+/* mdTablet */
+@media (max-width: 699px) {
+  .panel {
+    min-height: 380px;
+  }
+}
+
+/* mobile — the pill would squeeze the placeholder to nothing beside the
+ * button, so the two halves stack, as the shop hero's bar does. */
+@media (max-width: 499px) {
+  .search {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .searchInput {
+    flex: 1 1 100%;
+    /* Stacked, the field no longer meets the button: it needs its right edge
+     * back for the focus border to go all the way round. */
+    border-right-width: var(--border-width-thick);
+    border-radius: var(--radius-pill);
+  }
+
+  .searchButton {
+    flex: 1 1 100%;
+    min-height: 52px;
+    border-radius: var(--radius-pill);
+  }
+
+  .searchIcon {
+    top: calc(var(--button-height) / 2);
+  }
+
+  .head {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searchButton {
+    transition: none;
+  }
+}

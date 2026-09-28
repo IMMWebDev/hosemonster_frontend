@@ -1,16 +1,21 @@
 import Hero from '~/components/cms/modules/Hero';
 import HeroSearch from '~/components/cms/modules/HeroSearch';
+import Search from '~/components/cms/modules/Search';
+import BundleBuilder from '~/components/cms/modules/BundleBuilder';
 import PageHero from '~/components/cms/modules/PageHero';
 import FeatureHero from '~/components/cms/modules/FeatureHero';
 import CardGrid from '~/components/cms/modules/CardGrid';
 import CtaBar from '~/components/cms/modules/CtaBar';
+import FeaturedProduct from '~/components/cms/modules/FeaturedProduct';
 import ProductCards from '~/components/cms/modules/ProductCards';
 import ProductFeed from '~/components/cms/modules/ProductFeed';
 import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
 import TextHighlights from '~/components/cms/modules/TextHighlights';
+import TextChecklist from '~/components/cms/modules/TextChecklist';
 import NumberedSteps from '~/components/cms/modules/NumberedSteps';
+import ReferenceGuide from '~/components/cms/modules/ReferenceGuide';
 import DocumentCards from '~/components/cms/modules/DocumentCards';
 import Pricing from '~/components/cms/modules/Pricing';
 import Faq from '~/components/cms/modules/Faq';
@@ -69,6 +74,7 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
+        badge: true,
         trustItems: true,
         infoColumns: true,
         primaryCTA: {populate: {pageLink: true, collectionLink: true}},
@@ -109,8 +115,19 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
+        bullets: true,
         cta: {populate: {pageLink: true, collectionLink: true}},
         secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+      },
+    },
+  },
+  'module.featured-product': {
+    Component: FeaturedProduct,
+    // The product is resolved from Shopify in the route loader; only the
+    // button's link relations need naming here.
+    options: {
+      populate: {
+        cta: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },
@@ -122,6 +139,9 @@ export const MODULE_REGISTRY = {
       populate: {
         items: true,
         viewAllLink: {populate: {pageLink: true, collectionLink: true}},
+        // Pick a collection and the cards come from it; its path is the
+        // default view-all link.
+        collection: {fields: ['name', 'shopifyCollectionHandle', 'path']},
       },
     },
   },
@@ -134,6 +154,48 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             link: {populate: {pageLink: true, collectionLink: true}},
+          },
+        },
+      },
+    },
+  },
+  'module.search': {
+    Component: Search,
+    // Only the media needs naming; eyebrow and heading are scalars. The
+    // results come from the /search route, not from Strapi.
+    options: {
+      populate: {
+        backgroundImage: true,
+      },
+    },
+  },
+  'module.bundle-builder': {
+    Component: BundleBuilder,
+    /*
+     * The builder is a separate collection entry, reached through the
+     * `builder` relation, and everything in it is nested components — four
+     * levels down to the product rows. Each level has to be named or Strapi
+     * returns it empty.
+     *
+     * The builder must be PUBLISHED for a published page to see it: a
+     * relation to a draft-only entry comes back as null.
+     */
+    options: {
+      populate: {
+        builder: {
+          populate: {
+            lineRows: true,
+            overMaxLink: {populate: {pageLink: true, collectionLink: true}},
+            steps: {
+              populate: {
+                questions: {
+                  populate: {
+                    helpLink: {populate: {pageLink: true, collectionLink: true}},
+                    choices: {populate: {products: true}},
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -199,13 +261,34 @@ export const MODULE_REGISTRY = {
       },
     },
   },
+  'module.text-checklist': {
+    Component: TextChecklist,
+    options: {
+      populate: {
+        checklist: true,
+        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+      },
+    },
+  },
   'module.numbered-steps': {
     Component: NumberedSteps,
-    // The steps hold nothing but scalars, so `true` is enough — no media or
-    // link relations to name.
+    // The steps hold nothing but scalars, so `true` is enough. The closing
+    // CTA's button is a link, so its relations are named.
     options: {
       populate: {
         steps: true,
+        cta: {populate: {pageLink: true, collectionLink: true}},
+      },
+    },
+  },
+  'module.reference-guide': {
+    Component: ReferenceGuide,
+    options: {
+      populate: {
+        columns: true,
+        image: true,
+        cta: {populate: {pageLink: true, collectionLink: true}},
       },
     },
   },

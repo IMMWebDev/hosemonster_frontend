@@ -80,7 +80,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* --cols: Columns Per Row from Strapi, set in LinkCards.jsx. */
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
   gap: var(--space-5); /* 20px in the design */
   margin-top: var(--space-8);
 }

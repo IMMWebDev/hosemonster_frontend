@@ -1,0 +1,52 @@
+/*
+ * The type-ahead dropdown under a page search box — see SearchBox.jsx. The bar
+ * itself is styled by the module that uses it; this is only the dropdown.
+ *
+ * Portalled to <body> and positioned in document coordinates by the component,
+ * so it scrolls with the page and escapes the hero panels' `overflow: clip`.
+ */
+
+.dropdown {
+  position: absolute;
+
+  /*
+   * Above the page, BELOW the sticky header (z-index 10 in Header.module.css):
+   * scrolled with the dropdown open, it should slide under the header rather
+   * than over it.
+   */
+  z-index: 9;
+
+  /*
+   * max-height is set inline from the room left below the box (SearchBox's
+   * place()). No `overscroll-behavior: contain`: when the list reaches its
+   * end, a wheel or trackpad scroll should carry on to the page rather than
+   * getting stuck over the dropdown.
+   */
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-6);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md); /* §06: panels 8px */
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card-hover);
+  color: var(--color-text);
+}
+
+/*
+ * Stale results dim while the next ones load — the CONTENTS only, as the
+ * header panel dims its .bodyInner. Dimming the dropdown itself made its white
+ * background, border and shadow see-through too, flickering the hero photo
+ * through the panel on every keystroke.
+ */
+.inner {
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.inner[data-loading] {
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner {
+    transition: none;
+  }
+}

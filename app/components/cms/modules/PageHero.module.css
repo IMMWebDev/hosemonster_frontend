@@ -126,7 +126,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-2);
+  gap: 14px; /* eyebrow to heading, exact value from the design */
   max-width: 820px; /* copy column cap in the design */
   padding: 56px 48px; /* exact values from the design */
 }
@@ -155,7 +155,8 @@
   font-size: var(--text-h1);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h1);
-  letter-spacing: var(--tracking-h1);
+  /* Untracked in the Sprint 4 hifi, not the -0.05em other H1s use. */
+  letter-spacing: normal;
   text-transform: uppercase;
   color: var(--color-text-inverse);
   white-space: pre-line;
@@ -166,18 +167,39 @@
  * -----------------------------------------------------------------------------
  * INTRO PANEL
  * -----------------------------------------------------------------------------
+ * Sprint 4 hifi: the panel is the bottom half of the hero card — joined to the
+ * photo with no gap, one 8px-radius card overall, on a deep navy band with
+ * light copy (it was a separate light-grey panel below a gap).
+ *
  * Columns separated by hairlines drawn BETWEEN items, not a fixed pair of
  * boxes — so one column or three needs no change here.
  */
+
+/* With a panel under it, the photo keeps its radius on top only. */
+.card:has(+ .info) {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
 
 .info {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--space-10); /* 40px in the design */
-  margin-top: var(--space-5);
-  padding: var(--space-8) var(--space-10); /* 32px / 40px in the design */
-  border-radius: var(--radius-md);
-  background: var(--color-surface-alt);
+  margin-top: 0;
+  padding: 38px 48px; /* exact values from the design; 48px lines up with the copy above */
+  border-end-start-radius: var(--radius-md);
+  border-end-end-radius: var(--radius-md);
+  /* The design's deep navy, with its lighter-in-the-middle sweep laid over
+   * it (the mock draws the gradient as an overlay layer on the solid navy;
+   * two background layers paint the same thing). */
+  background:
+    linear-gradient(
+      90deg,
+      rgb(15 31 44 / 95%) 0%,
+      rgb(29 58 84 / 62%) 50%,
+      rgb(15 31 44 / 95%) 100%
+    ),
+    #0f1f2c;
 }
 
 /*
@@ -186,7 +208,7 @@
  */
 .infoColumn + .infoColumn {
   padding-left: var(--space-10);
-  border-left: var(--border-width) solid var(--color-border);
+  border-left: var(--border-width) solid rgb(255 255 255 / 18%);
 }
 
 .infoLabel {
@@ -196,7 +218,8 @@
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-bold);
   line-height: var(--leading-eyebrow);
-  letter-spacing: var(--tracking-eyebrow);
+  /* Wider than the 0.08em eyebrow tracking, as the design sets these labels. */
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-text-accent);
   margin: 0;
@@ -204,11 +227,11 @@
 
 .infoBody {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-size: var(--text-body);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-soft);
-  margin: var(--space-2) 0 0;
+  color: var(--ink-on-navy);
+  margin: 10px 0 0; /* exact value from the design */
 }
 
 /*
@@ -265,6 +288,6 @@
     padding-left: 0;
     padding-top: var(--space-6);
     border-left: 0;
-    border-top: var(--border-width) solid var(--color-border);
+    border-top: var(--border-width) solid rgb(255 255 255 / 18%);
   }
 }

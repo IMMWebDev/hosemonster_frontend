@@ -1,5 +1,7 @@
 /**
- * Sort and filter state for a collection page, carried in the URL.
+ * Sort and filter state for a collection page or /search, carried in the URL.
+ * Both speak the same Storefront `ProductFilter` input, so one set of helpers
+ * serves both; only the sort list differs.
  *
  * The URL is the source of truth, not component state: changing a filter has to
  * re-run the loader so Shopify recomputes both the products AND the facet
@@ -40,6 +42,34 @@ export const SORT_OPTIONS = [
 
 export const DEFAULT_SORT = SORT_OPTIONS[0];
 
+/**
+ * The sorts a SEARCH can offer. Shorter than a collection's because the
+ * Storefront `search` query only accepts RELEVANCE and PRICE — there is no
+ * title sort, and "Featured" means nothing without a collection to feature it.
+ * Relevance comes first because it is the default: a search sorted by anything
+ * else buries the best match.
+ */
+export const SEARCH_SORT_OPTIONS = [
+  {
+    value: 'relevance',
+    label: 'Relevance',
+    sortKey: 'RELEVANCE',
+    reverse: false,
+  },
+  {
+    value: 'price-asc',
+    label: 'Price: low to high',
+    sortKey: 'PRICE',
+    reverse: false,
+  },
+  {
+    value: 'price-desc',
+    label: 'Price: high to low',
+    sortKey: 'PRICE',
+    reverse: true,
+  },
+];
+
 /** URL param holding one active filter, repeated per active value. */
 export const FILTER_PARAM = 'filter';
 
@@ -48,11 +78,12 @@ export const SORT_PARAM = 'sort';
 
 /**
  * @param {URLSearchParams} searchParams
+ * @param {typeof SORT_OPTIONS} [options] - SEARCH_SORT_OPTIONS on /search
  * @returns {{value: string, label: string, sortKey: string, reverse: boolean}}
  */
-export function sortFromSearchParams(searchParams) {
+export function sortFromSearchParams(searchParams, options = SORT_OPTIONS) {
   const value = searchParams.get(SORT_PARAM);
-  return SORT_OPTIONS.find((o) => o.value === value) ?? DEFAULT_SORT;
+  return options.find((o) => o.value === value) ?? options[0];
 }
 
 /**
@@ -64,7 +95,9 @@ export function sortFromSearchParams(searchParams) {
  * metafield facets appear, they work here with no code change.
  *
  * Anything unparseable is dropped rather than thrown — a hand-edited URL should
- * not 500 the page.
+ * not 500 the page. So is the /search page's own category (collection) filter
+ * (`{"category": handle}`, see `collectionFilterHandles`): Shopify has no such
+ * ProductFilter, and sending one fails the whole query.
  *
  * @param {URLSearchParams} searchParams
  * @returns {object[]}
@@ -75,7 +108,12 @@ export function filtersFromSearchParams(searchParams) {
   for (const raw of searchParams.getAll(FILTER_PARAM)) {
     try {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        !Array.isArray(parsed) &&
+        !Object.prototype.hasOwnProperty.call(parsed, COLLECTION_KEY)
+      ) {
         filters.push(parsed);
       }
     } catch {
@@ -84,6 +122,43 @@ export function filtersFromSearchParams(searchParams) {
   }
 
   return filters;
+}
+
+/*
+ * The /search page's collection filter, shown to visitors as "Category" —
+ * "collection" is Shopify's word. Storefront search can't filter by
+ * collection, so the route applies it itself (see routes/search.jsx). It rides
+ * in the same `filter` param as Shopify's filters, as {"category": handle},
+ * so the rail's checkboxes, the chips and Clear all handle it with no special
+ * case.
+ */
+const COLLECTION_KEY = 'category';
+
+/**
+ * @param {string} handle
+ * @returns {string} the filter value's `input`, as the rail and chips use it
+ */
+export function collectionFilterInput(handle) {
+  return JSON.stringify({[COLLECTION_KEY]: handle});
+}
+
+/**
+ * Collection handles chosen in the /search collection filter.
+ *
+ * @param {URLSearchParams} searchParams
+ * @returns {Set<string>}
+ */
+export function collectionFilterHandles(searchParams) {
+  const handles = new Set();
+  for (const raw of searchParams.getAll(FILTER_PARAM)) {
+    try {
+      const handle = JSON.parse(raw)?.[COLLECTION_KEY];
+      if (typeof handle === 'string' && handle) handles.add(handle);
+    } catch {
+      // Ignore malformed input.
+    }
+  }
+  return handles;
 }
 
 /**
@@ -137,16 +212,85 @@ export function toggleFilter(searchParams, input) {
 }
 
 /**
+ * The default sort is left OUT of the URL rather than written in, so the plain
+ * address and the default view are one URL, not two.
+ *
  * @param {URLSearchParams} searchParams
- * @param {string} value - a SORT_OPTIONS value
+ * @param {string} value - a value from `options`
+ * @param {typeof SORT_OPTIONS} [options] - the list `value` came from
  * @returns {URLSearchParams}
  */
-export function withSort(searchParams, value) {
+export function withSort(searchParams, value, options = SORT_OPTIONS) {
   const next = new URLSearchParams(searchParams);
-  if (value && value !== DEFAULT_SORT.value) next.set(SORT_PARAM, value);
+  if (value && value !== options[0].value) next.set(SORT_PARAM, value);
   else next.delete(SORT_PARAM);
   clearPaging(next);
   return next;
+}
+
+/**
+ * Search params with ONE raw filter string removed — what a filter chip's ×
+ * does. Takes the raw URL value rather than Shopify's `input`, because a chip
+ * is built from what is in the URL and has to remove exactly that.
+ *
+ * @param {URLSearchParams} searchParams
+ * @param {string} raw
+ * @returns {URLSearchParams}
+ */
+export function removeFilter(searchParams, raw) {
+  const next = new URLSearchParams(searchParams);
+  const kept = next.getAll(FILTER_PARAM).filter((r) => r !== raw);
+  next.delete(FILTER_PARAM);
+  for (const r of kept) next.append(FILTER_PARAM, r);
+  clearPaging(next);
+  return next;
+}
+
+/**
+ * Human labels for the filters currently in the URL — the removable chips §07
+ * draws above a filtered grid.
+ *
+ * Labels come from Shopify's own facet values, matched on the same
+ * re-serialised JSON `isFilterActive` uses. A price range has no value to
+ * match (Shopify returns one bounds value, not the chosen range), so it is
+ * labelled from the URL. Anything that matches neither is still returned, as
+ * "Filter", so a stale value in a pasted URL can be removed rather than
+ * silently narrowing the results with no visible cause.
+ *
+ * @param {Array<{label: string, type: string, values: Array<{label: string, input: string}>}>} facets
+ * @param {URLSearchParams} searchParams
+ * @returns {Array<{raw: string, label: string}>}
+ */
+export function activeFilterLabels(facets, searchParams) {
+  return searchParams.getAll(FILTER_PARAM).map((raw) => {
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return {raw, label: 'Filter'};
+    }
+
+    if (parsed?.price) {
+      const {min, max} = parsed.price;
+      const fmt = (n) => `$${Number(n).toLocaleString('en-US')}`;
+      const label =
+        min != null && max != null
+          ? `${fmt(min)} – ${fmt(max)}`
+          : min != null
+            ? `${fmt(min)} and up`
+            : `Up to ${fmt(max)}`;
+      return {raw, label};
+    }
+
+    const target = stableStringify(raw);
+    for (const facet of facets ?? []) {
+      const match = (facet.values ?? []).find(
+        (v) => stableStringify(v.input) === target,
+      );
+      if (match) return {raw, label: `${facet.label}: ${match.label}`};
+    }
+    return {raw, label: 'Filter'};
+  });
 }
 
 /**

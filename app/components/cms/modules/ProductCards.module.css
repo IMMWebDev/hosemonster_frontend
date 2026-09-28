@@ -120,12 +120,14 @@
 }
 
 /* 316x237 in the design — 4:3. Hydrogen's <Image> also emits width/height. */
+/* `contain`, not `cover`: these are product shots cut out on white, and
+ * cover cropped the product itself to fill the frame. */
 .cardImage {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .cardText {
