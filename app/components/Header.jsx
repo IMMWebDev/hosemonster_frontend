@@ -2,9 +2,11 @@ import {Suspense, useCallback, useEffect, useId, useRef, useState} from 'react';
 import {Await, NavLink, useAsyncValue, useLocation} from 'react-router';
 import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
 import {useHeaderScroll} from '~/lib/use-header-scroll';
+import {useNavHeight} from '~/lib/use-nav-height';
 import {useUtilityBarHeight} from '~/lib/use-utility-bar-height';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
+import {QUICK_SEARCH_ID} from '~/components/search/QuickSearch';
 import CmsLink from '~/components/cms/CmsLink';
 import {strapiMedia} from '~/lib/strapi-media';
 import styles from './Header.module.css';
@@ -48,6 +50,8 @@ export function Header({header, isLoggedIn, cart, cmsHeader, strapiBaseUrl}) {
    */
   const {hidden} = useHeaderScroll();
   const [headerRef, utilityBarRef] = useUtilityBarHeight();
+  // The pinned nav's height, for sticky elements that sit below it.
+  const navBarRef = useNavHeight();
 
   return (
     /*
@@ -58,6 +62,7 @@ export function Header({header, isLoggedIn, cart, cmsHeader, strapiBaseUrl}) {
     <header
       className={styles.header}
       ref={headerRef}
+      data-site-header=""
       data-hidden={hidden ? '' : undefined}
     >
       <div className={styles.utilityBar} ref={utilityBarRef}>
@@ -91,7 +96,7 @@ export function Header({header, isLoggedIn, cart, cmsHeader, strapiBaseUrl}) {
         </div>
       </div>
 
-      <div className={styles.mainBar}>
+      <div className={styles.mainBar} ref={navBarRef}>
         <div className={styles.mainBarInner}>
           <NavLink prefetch="intent" to="/" className={styles.logo} end>
             {logoUrl ? (
@@ -487,12 +492,16 @@ function HeaderMenuMobileToggle() {
 }
 
 function SearchToggle() {
-  const {open} = useAside();
+  const {type, open} = useAside();
   return (
     <button
+      type="button"
       className={`${styles.utilityButton} ${styles.searchButton}`}
       onClick={() => open('search')}
       aria-label="Search"
+      aria-haspopup="dialog"
+      aria-expanded={type === 'search'}
+      aria-controls={QUICK_SEARCH_ID}
     >
       {/* Inline rather than an asset: the Figma node is a text layer containing
           an emoji, not an exported icon, so there is no vector to pull. */}

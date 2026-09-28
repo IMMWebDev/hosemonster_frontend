@@ -15,6 +15,7 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
  *   collection?: object,
  *   activeSort?: string,
  *   pagination?: object,
+ *   search?: object,
  * }} props
  */
 export default function BlockManager({
@@ -25,6 +26,7 @@ export default function BlockManager({
   collection,
   activeSort,
   pagination,
+  search,
 }) {
   if (!blocks || blocks.length === 0) return null;
 
@@ -55,6 +57,8 @@ export default function BlockManager({
             collection={collection}
             activeSort={activeSort}
             pagination={pagination}
+            /* The /search route's results, for module.search. */
+            search={search}
           />
         );
       })}

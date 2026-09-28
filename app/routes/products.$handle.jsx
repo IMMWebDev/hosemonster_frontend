@@ -1,26 +1,31 @@
-import {useLoaderData} from 'react-router';
+import {redirect, useLoaderData} from 'react-router';
 import {
   getSelectedProductOptions,
   Analytics,
   useOptimisticVariant,
   getProductOptions,
   getAdjacentAndFirstAvailableVariants,
-  useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ProductPrice';
-import {ProductImage} from '~/components/ProductImage';
-import {ProductForm} from '~/components/ProductForm';
+import {ProductPage} from '~/components/product/ProductPage';
+import {PRODUCT_CARD_FRAGMENT} from '~/lib/module-products';
+import {plainText} from '~/lib/product-description';
+import {loadProductUrls, productPath} from '~/lib/product-urls';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
+  const product = data?.product;
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: `${product?.seo?.title || product?.title || 'Product'} | Hose Monster`},
+    {
+      name: 'description',
+      content: product?.seo?.description || plainText(product?.description),
+    },
     {
       rel: 'canonical',
-      href: `/products/${data?.product.handle}`,
+      href: data?.canonical ?? `/products/${product?.handle}`,
     },
   ];
 };
@@ -29,11 +34,10 @@ export const meta = ({data}) => {
  * @param {Route.LoaderArgs} args
  */
 export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
+  // Started once the product's collection is known, and streamed in below the
+  // fold rather than awaited.
+  const deferredData = loadDeferredData(args, criticalData);
 
   return {...deferredData, ...criticalData};
 }
@@ -44,18 +48,19 @@ export async function loader(args) {
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context, params, request, url}) {
-  const {handle} = params;
+  // /products/{handle}, or /collections/{collection}/{product} (routes.js).
+  const handle = params.product ?? params.handle;
   const {storefront} = context;
 
   if (!handle) {
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}] = await Promise.all([
+  const [{product}, productUrls] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
+    loadProductUrls(context),
   ]);
 
   if (!product?.id) {
@@ -65,27 +70,68 @@ async function loadCriticalData({context, params, request, url}) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(url, {handle, data: product});
 
+  /*
+   * One URL per product. /products/x once x's collection has a page, a
+   * collection it isn't filed under, or a collection with no page yet all
+   * redirect (permanently, query kept — a picked option survives) to where
+   * it lives. A trailing slash alone isn't worth a redirect.
+   */
+  const canonical = productPath(product.handle, productUrls.paths);
+  if (url.pathname.replace(/\/+$/, '') !== canonical) {
+    throw redirect(`${canonical}${url.search}`, 301);
+  }
+
+  // Its home collection: the breadcrumb, and where "More in …" comes from.
+  const home = productUrls.homes[product.handle] ?? null;
+
   return {
     product,
+    canonical,
+    category: home
+      ? {
+          handle: home.handle,
+          title: home.title,
+          linkable: Boolean(productUrls.paths[product.handle]),
+        }
+      : null,
   };
 }
 
 /**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
+ * "More in {collection}": the other products in the product's collection,
+ * streamed in below the fold. A failure just means no row.
+ *
+ * Not Shopify's productRecommendations: they're built from sales and browsing,
+ * and with next to nothing sold online they recommended the one buyable item
+ * (a 2″ nozzle) on almost every page.
+ *
+ * @param {Route.LoaderArgs} args
+ * @param {{product: object, category: {handle: string, title: string} | null}} critical
  */
-function loadDeferredData({context, params}) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
+function loadDeferredData({context}, {product, category}) {
+  if (!category) return {recommended: Promise.resolve(null)};
 
-  return {};
+  const recommended = context.storefront
+    .query(COLLECTION_PRODUCTS_QUERY, {variables: {handle: category.handle}})
+    .then((data) => {
+      const products = (data?.collection?.products?.nodes ?? []).filter(
+        (p) => p.handle !== product.handle,
+      );
+      return products.length
+        ? {title: `More in ${data.collection.title}`, products}
+        : null;
+    })
+    .catch((error) => {
+      console.error('[product] related products failed:', error);
+      return null;
+    });
+
+  return {recommended};
 }
 
 export default function Product() {
   /** @type {LoaderReturnData} */
-  const {product} = useLoaderData();
+  const {product, category, recommended} = useLoaderData();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -93,9 +139,13 @@ export default function Product() {
     getAdjacentAndFirstAvailableVariants(product),
   );
 
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
-  useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
+  /*
+   * No useSelectedOptionInUrlParam (the Hydrogen starter's): it wrote the
+   * default variant into the URL on every load — `?Title=Default+Title` on a
+   * product with no options at all. The URL only carries an option once the
+   * visitor picks one (the chips navigate to it), which is all a shared link
+   * needs.
+   */
 
   // Get the product options array
   const productOptions = getProductOptions({
@@ -103,31 +153,21 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
-
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
-      </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productJsonLd(product, selectedVariant)),
+        }}
+      />
+      <ProductPage
+        product={product}
+        selectedVariant={selectedVariant}
+        productOptions={productOptions}
+        category={category}
+        recommended={recommended}
+      />
       <Analytics.ProductView
         data={{
           products: [
@@ -143,8 +183,40 @@ export default function Product() {
           ],
         }}
       />
-    </div>
+    </>
   );
+}
+
+/**
+ * Product structured data, so search results can show the price and whether
+ * it's in stock. Built from the same Shopify data the page shows.
+ *
+ * @param {object} product
+ * @param {object} variant
+ */
+function productJsonLd(product, variant) {
+  const image = variant?.image?.url ?? product.images?.nodes?.[0]?.url;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: plainText(product.description, 500),
+    ...(image ? {image} : {}),
+    ...(variant?.sku ? {sku: variant.sku} : {}),
+    brand: {'@type': 'Brand', name: product.vendor || 'Hose Monster'},
+    ...(variant?.price
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: variant.price.amount,
+            priceCurrency: variant.price.currencyCode,
+            availability: variant.availableForSale
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+          },
+        }
+      : {}),
+  };
 }
 
 const PRODUCT_VARIANT_FRAGMENT = `#graphql
@@ -190,8 +262,29 @@ const PRODUCT_FRAGMENT = `#graphql
     title
     vendor
     handle
+    productType
+    availableForSale
     descriptionHtml
     description
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+      maxVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    images(first: 20) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
     encodedVariantExistence
     encodedVariantAvailability
     options {
@@ -237,6 +330,25 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
+`;
+
+const COLLECTION_PRODUCTS_QUERY = `#graphql
+  query ProductCollectionProducts(
+    $country: CountryCode
+    $language: LanguageCode
+    $handle: String!
+  ) @inContext(country: $country, language: $language) {
+    collection(handle: $handle) {
+      title
+      # One more than the row shows, since the product itself is dropped.
+      products(first: 5) {
+        nodes {
+          ...ModuleProductCard
+        }
+      }
+    }
+  }
+  ${PRODUCT_CARD_FRAGMENT}
 `;
 
 /** @typedef {import('./+types/products.$handle').Route} Route */

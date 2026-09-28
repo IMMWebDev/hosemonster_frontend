@@ -51,6 +51,7 @@ export default function FeatureHero({data, baseUrl}) {
   } = data;
 
   const bgUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
+  const badgeUrl = strapiMedia(data.badge?.url, baseUrl);
 
   /*
    * Only "tall" gets a class. Strapi applies an enum default on CREATE only, so
@@ -153,13 +154,39 @@ export default function FeatureHero({data, baseUrl}) {
               </div>
             ) : null}
           </div>
+
+          {badgeUrl ? (
+            /*
+             * The seal: settles in (the wrapper), then turns slowly for good
+             * (the image). Two elements because both animate `transform`, and
+             * one animation on an element replaces another rather than adding
+             * to it. Plain CSS animations, not data-reveal — the hero is above
+             * the fold, so it plays on load.
+             */
+            <div className={styles.badge}>
+              <div className={styles.badgeIn}>
+                <img
+                  src={badgeUrl}
+                  /* The seal's words are content ("Works with or without
+                     Smart Monster"), so its alt text comes from the Media
+                     Library rather than being blanked as decoration. */
+                  alt={data.badge?.alternativeText ?? ''}
+                  width={data.badge?.width ?? undefined}
+                  height={data.badge?.height ?? undefined}
+                  className={styles.badgeImage}
+                  decoding="async"
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
 
       {/*
-        Part of the hero in the CMS, a separate <section> in the markup. The
-        panel sits on the page background underneath the scrim rather than
-        inside the photo, so it cannot be nested in the bleed section above.
+        Part of the hero in the CMS, a separate <section> in the markup: a
+        navy band under the photo, not inside it, so it can't be nested in
+        the section above. Its copy reveals, continuing the hero's stagger;
+        the band itself doesn't animate, so it never gaps from the photo.
       */}
       {infoColumns.length > 0 ? (
         <section className={styles.callout}>
@@ -167,9 +194,21 @@ export default function FeatureHero({data, baseUrl}) {
             <div className={styles.calloutPanel}>
               {infoColumns.map((column, i) => (
                 <div className={styles.calloutColumn} key={column.id ?? i}>
-                  <p className={styles.calloutLabel}>{column.label}</p>
+                  <p
+                    className={styles.calloutLabel}
+                    data-reveal
+                    style={{'--reveal-i': i + 5}}
+                  >
+                    {column.label}
+                  </p>
                   {column.body ? (
-                    <p className={styles.calloutBody}>{column.body}</p>
+                    <p
+                      className={styles.calloutBody}
+                      data-reveal
+                      style={{'--reveal-i': i + 5}}
+                    >
+                      {column.body}
+                    </p>
                   ) : null}
                 </div>
               ))}

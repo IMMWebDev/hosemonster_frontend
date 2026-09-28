@@ -289,5 +289,103 @@ export function createStrapiClient({env, withCache}) {
     }
   }
 
-  return {fetch: strapiFetch, getPage, getCollectionPage, getSingle, getPreview};
+  /**
+   * CMS pages matching a search term, for the quick-search panel and /search.
+   *
+   * Shopify's search only knows Shopify content, and on this site the pages
+   * people look for by name — Fire Flow, About — live in Strapi. Leaving them
+   * out would make "fire flow software" return a list of hoses.
+   *
+   * Every word has to match SOMEWHERE (name, path or SEO keywords), so
+   * "fire software" finds /fire-flow-testing-software but "fire hose" does not
+   * find every page with "fire" in it. Words under three characters are dropped
+   * — "a", "of", "2" match nearly everything.
+   *
+   * Not searched: the description, which is prose where one common word
+   * surfaces unrelated pages; and the SEO title, which on this site ends in
+   * "| Hose Monster" on every page — searching it made "hose" or "monster"
+   * return the whole site's pages.
+   *
+   * Left out: the home page, the search page itself (every search would
+   * otherwise "find" it), and anything marked preventIndexing. Never throws;
+   * search still works if Strapi is down, just without pages.
+   *
+   * @param {string} term
+   * @returns {Promise<Array<{name: string, path: string}>>}
+   */
+  async function searchPages(term) {
+    const words = String(term ?? '')
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length >= 3)
+      .slice(0, 5);
+
+    if (words.length === 0) return [];
+
+    try {
+      const payload = await strapiFetch('pages', {
+        fields: ['name', 'path'],
+        populate: {seo: {fields: ['preventIndexing']}},
+        filters: {
+          $and: words.map((w) => ({
+            $or: [
+              {name: {$containsi: w}},
+              {path: {$containsi: w}},
+              {seo: {keywords: {$containsi: w}}},
+            ],
+          })),
+        },
+        pagination: {pageSize: 10},
+      });
+
+      return (payload?.data ?? [])
+        .filter(
+          (p) =>
+            p.path &&
+            p.path !== '/' &&
+            p.path !== '/search' &&
+            !p.seo?.preventIndexing,
+        )
+        .map(({name, path}) => ({name, path}));
+    } catch (error) {
+      console.error('Strapi searchPages failed:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Shopify collection handles that have a Strapi entry.
+   *
+   * A collection page is built entirely from CMS modules — the product grid is
+   * one of them — so a Shopify collection with no Strapi entry renders an empty
+   * page. Search uses this list to link only to collections that work.
+   *
+   * @returns {Promise<Set<string>>}
+   */
+  async function getCollectionHandles() {
+    try {
+      const payload = await strapiFetch('collections', {
+        fields: ['shopifyCollectionHandle'],
+        pagination: {pageSize: 100},
+      });
+      return new Set(
+        (payload?.data ?? [])
+          .map((c) => c.shopifyCollectionHandle)
+          .filter(Boolean),
+      );
+    } catch (error) {
+      console.error('Strapi getCollectionHandles failed:', error);
+      return new Set();
+    }
+  }
+
+  return {
+    fetch: strapiFetch,
+    getPage,
+    getCollectionPage,
+    getSingle,
+    getPreview,
+    searchPages,
+    getCollectionHandles,
+  };
 }

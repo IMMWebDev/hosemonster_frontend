@@ -1,0 +1,391 @@
+/*
+ * Quick search — the modal the header's search button opens. See
+ * QuickSearch.jsx for the reasoning; no comp exists, so this is assembled from
+ * the styleguide: §06's 8px panel radius, §07 chips, the search bar shape from
+ * the shop hero, and the §01 Light Surface as the hover fill.
+ *
+ * Desktop and tablet: a centred modal near the top of the screen. Phone: full
+ * screen, where a floating box would leave the keyboard and the results
+ * fighting over what is left.
+ *
+ * This file is the modal's chrome only. The results inside it are
+ * PredictiveResults.module.css, shared with the page search boxes.
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * DIALOG + BACKDROP
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * A modal <dialog> renders in the top layer, above the sticky header, so no
+ * z-index is involved. The UA's border and padding go; its centring stays for
+ * the horizontal axis, while the top margin pins the box a fixed distance from
+ * the top rather than dead centre. A centred search box jumps up and down as
+ * results arrive and the box grows; pinned, only the bottom edge moves.
+ */
+.dialog {
+  /* Distance from the top of the screen, and the minimum gap at the bottom. */
+  --modal-offset: clamp(24px, 10vh, 96px);
+
+  position: fixed;
+  inset: 0;
+  width: min(960px, calc(100% - 2 * var(--container-gutter)));
+  max-width: none;
+  height: fit-content;
+  max-height: calc(100dvh - 2 * var(--modal-offset));
+  margin: var(--modal-offset) auto auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  overflow: visible;
+
+  /*
+   * Settles 8px down from a hair under full size, and fades. `display` and
+   * `overlay` are transitioned discretely so CLOSING animates too; without
+   * them the dialog leaves the top layer instantly and the fade-out never
+   * shows. Browsers without discrete transitions simply skip the close
+   * animation.
+   */
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  transition:
+    opacity var(--duration-slide) var(--ease-default),
+    transform var(--duration-slide) var(--ease-default),
+    overlay var(--duration-slide) allow-discrete,
+    display var(--duration-slide) allow-discrete;
+}
+
+.dialog[open] {
+  opacity: 1;
+  transform: none;
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+/*
+ * Darkens the page behind, which Baymard found keeps attention on the
+ * suggestions. Deep Navy Ink (#0b1721) as a literal: ::backdrop did not
+ * inherit custom properties from :root until recently, so a var() here would
+ * silently fall back to transparent on older browsers.
+ */
+.dialog::backdrop {
+  background-color: rgb(11 23 33 / 0%);
+  transition:
+    background-color var(--duration-slide) var(--ease-default),
+    overlay var(--duration-slide) allow-discrete,
+    display var(--duration-slide) allow-discrete;
+}
+
+.dialog[open]::backdrop {
+  background-color: rgb(11 23 33 / 55%);
+}
+
+@starting-style {
+  .dialog[open]::backdrop {
+    background-color: rgb(11 23 33 / 0%);
+  }
+}
+
+/*
+ * No page scroll behind an open modal. `scrollbar-gutter: stable` keeps the
+ * space the scrollbar occupied, so on systems that draw one the page does not
+ * shift sideways by its width the moment the modal opens.
+ */
+:global(html):has(.dialog[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+/*
+ * The visible box. `clip` so the scrolling body keeps the rounded corners; the
+ * height cap matches the dialog's so the body, not the page, is what scrolls.
+ */
+.panel {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 2 * var(--modal-offset));
+  border-radius: var(--radius-md); /* §06: panels 8px */
+  background: var(--color-surface);
+  box-shadow: var(--shadow-aside); /* the overlay shadow the drawers use */
+  overflow: clip;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * SEARCH BAR
+ * -----------------------------------------------------------------------------
+ */
+
+.bar {
+  flex: 0 0 auto;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.barInner,
+.bodyInner {
+  padding-inline: var(--space-6);
+}
+
+.barInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+}
+
+/* Same pill-plus-orange-button shape as the shop hero and the /search page. */
+.form {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  /* reset.css caps every <form> at 400px above 768px. */
+  max-width: none;
+  margin: 0;
+
+  /* The submit is a fixed width so the clear button can be placed against it
+   * from the form's right edge — see .clear. */
+  --submit-w: 112px;
+}
+
+.formIcon {
+  position: absolute;
+  left: var(--space-5);
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--button-height);
+  margin: 0;
+  padding: 0 calc(var(--space-4) + 32px) 0
+    calc(var(--space-5) + 18px + var(--space-3));
+  border: var(--border-width-thick) solid var(--color-border);
+  border-right: 0;
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  /* 18px, above the 16px that stops iOS zooming the page on focus. */
+  font-size: 1.125rem;
+  line-height: var(--leading-body);
+  transition: border-color var(--duration-control) var(--ease-default);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+/* WebKit's own clear button — replaced by .clear, which is larger and styled. */
+.input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/*
+ * Focus is the field's own border turning orange, meeting the orange button so
+ * the pair reads as one control. It used to be an outline inset 4px, which
+ * stopped short of the button and sat inside the field's edge — the two looked
+ * detached and slightly different heights even though they measure the same.
+ * Orange on white is 3.6:1, clear of the 3:1 non-text contrast floor.
+ */
+.input:focus-visible {
+  outline: none;
+  border-color: var(--color-action);
+}
+
+.clear {
+  position: absolute;
+  top: 50%;
+  /* Inside the input, just left of the submit. The input reserves 32px of
+   * right padding for it, so typed text never runs underneath. */
+  right: calc(var(--submit-w) + var(--space-2));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.clear:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.clear:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 0;
+}
+
+.submit {
+  flex: 0 0 var(--submit-w);
+  padding: 0;
+  border: 0;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  background: var(--color-action);
+  color: var(--color-action-text);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  cursor: pointer;
+  transition: background-color var(--duration-control) var(--ease-default);
+}
+
+.submit:hover {
+  background: var(--color-action-hover);
+}
+
+.submit:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* A text-and-icon button, so its purpose does not rest on a lone ×. */
+.close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-surface-alt);
+}
+
+.close:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.closeIcon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * BODY
+ * -----------------------------------------------------------------------------
+ */
+
+/* The only part that scrolls, so the search box never leaves the screen.
+ * `contain` stops a flick at the end of the list scrolling the page behind. */
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.bodyInner {
+  padding-block: var(--space-5) var(--space-6);
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+/* Stale results dim while the next ones load, instead of vanishing and
+ * reflowing on every keystroke. */
+.body[data-loading] .bodyInner {
+  opacity: 0.55;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * mdTablet — full screen, in one column. The submit button goes: the
+ * keyboard's own Search key submits, and the input needs the width.
+ */
+@media (max-width: 699px) {
+  .dialog {
+    --modal-offset: 0px;
+
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+  }
+
+  .panel {
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .barInner,
+  .bodyInner {
+    padding-inline: var(--container-gutter);
+  }
+
+  .barInner {
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+  }
+
+  .submit {
+    display: none;
+  }
+
+  .input {
+    height: 48px;
+    padding-right: calc(var(--space-2) + 32px);
+    border-right: var(--border-width-thick) solid var(--color-border);
+    border-radius: var(--radius-pill);
+    /* Stays at 16px or above so iOS does not zoom on focus. */
+    font-size: var(--text-body);
+  }
+
+  .clear {
+    right: var(--space-2);
+  }
+
+  .closeLabel {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .dialog::backdrop,
+  .bodyInner,
+  .input,
+  .submit {
+    transition: none;
+  }
+}

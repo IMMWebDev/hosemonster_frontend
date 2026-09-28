@@ -18,6 +18,7 @@ import styles from './CtaBar.module.css';
  *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
+ *     bullets?: Array<{id: number, label: string}>,
  *     cta?: object,
  *     secondaryCTA?: object,
  *     background?: 'navy' | 'red',
@@ -27,7 +28,16 @@ import styles from './CtaBar.module.css';
  * }} props
  */
 export default function CtaBar({data, baseUrl}) {
-  const {eyebrow, heading, body, cta, secondaryCTA, background} = data ?? {};
+  const {
+    eyebrow,
+    heading,
+    body,
+    bullets = [],
+    cta,
+    secondaryCTA,
+    background,
+  } = data ?? {};
+  const items = bullets.filter((b) => b?.label);
 
   if (!heading) return null;
 
@@ -95,6 +105,15 @@ export default function CtaBar({data, baseUrl}) {
               {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
               <h2 className={styles.heading}>{heading}</h2>
               {body ? <p className={styles.body}>{body}</p> : null}
+              {items.length > 0 ? (
+                <ul className={styles.bullets}>
+                  {items.map((item, i) => (
+                    <li className={styles.bullet} key={item.id ?? i}>
+                      {item.label}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
 
             {cta?.linkText || secondaryCTA?.linkText ? (

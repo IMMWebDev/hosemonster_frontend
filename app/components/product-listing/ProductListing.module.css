@@ -1,0 +1,680 @@
+/*
+ * Product listing — the grid, filter rail, sort, chips and pager shared by the
+ * Product Feed module and the /search page. See ProductListing.jsx.
+ *
+ * Moved here verbatim from ProductFeed.module.css; the measurements in the
+ * comments are from the Smart Monster Collection hifi, where this was first
+ * drawn.
+ */
+
+/* ---- sort ---- */
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* exact value from the design */
+}
+
+.sortLabel {
+  font-family: var(--font-body);
+  /* §07: 14px bold NAVY. Was 16px in the muted ink. */
+  font-size: 0.875rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/*
+ * reset.css styles bare `input` but not `select`, so this sets its own box.
+ * Kept as a native control — see the note in the component.
+ */
+.sortSelect {
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  color: var(--color-text);
+  /* -color, not the shorthand: the arrow is a background image (reset.css). */
+  background-color: var(--color-surface);
+  border: var(--border-width-thick) solid var(--color-border);
+  /*
+   * §07: 42px tall, 8px radius. The pill was wrong twice over — §06 reserves
+   * 999px for buttons and chips, and controls take 4-8px. The height governs,
+   * so the vertical padding goes. The right padding, arrow included, comes
+   * from reset.css.
+   */
+  height: 42px;
+  border-radius: var(--radius-md);
+  --select-pad: var(--space-4);
+  padding-block: 0;
+  padding-left: var(--space-4);
+  cursor: pointer;
+}
+
+.sortSelect:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* ---- rail + results ---- */
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr); /* rail width from the design */
+  gap: var(--space-10); /* 40px in the design */
+  margin-top: var(--space-6);
+}
+
+/* No facets returned — the grid takes the full width rather than leaving a
+ * 240px hole where the rail would be. */
+.layoutNoRail {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.results {
+  min-width: 0;
+}
+
+/* Sticky so the filters stay reachable down a long grid. `clip` is not needed
+ * here — nothing inside scrolls — but a sticky child requires no scrollport
+ * ancestor, which is why no wrapper on this page uses `overflow: hidden`.
+ *
+ * It sits BELOW the site nav while the nav is on screen, and moves up into
+ * the space when the nav slides away, in step with it. A fixed offset pinned
+ * it to the top of the viewport, and the nav slid back in over it on every
+ * upward scroll. --header-nav-h is the nav's measured height (Header.jsx);
+ * the fallback is its desktop height for the first frame. */
+.rail {
+  position: sticky;
+  top: calc(var(--header-nav-h, 81px) + var(--space-6));
+  align-self: start;
+  transition: top var(--duration-slide) var(--ease-default);
+  /* A grid item's default min-width is auto, so a wide child can push it past
+   * its track. Belt and braces with the fieldset rule below. */
+  min-width: 0;
+}
+
+/* The nav has slid away (and isn't holding focus, which keeps it on screen —
+ * see Header.module.css): the rail takes the top of the viewport back. */
+:global(html:has([data-site-header][data-hidden]:not(:focus-within))) .rail {
+  top: var(--space-6);
+}
+
+/*
+ * Measured against the comp's rail: 240px wide, no rule under the head, each
+ * group separated by a hairline with 16px of padding.
+ */
+.railHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4); /* 16px in the design */
+}
+
+.railTitle {
+  font-family: var(--font-body);
+  font-size: 0.78125rem; /* 12.5px — below the scale, per the design */
+  font-weight: var(--weight-bold);
+  letter-spacing: 1.5px; /* exact value from the design */
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.clear {
+  font-family: var(--font-body);
+  font-size: 0.75rem; /* 12px */
+  font-weight: var(--weight-bold);
+  color: var(--color-text-soft);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.clear:hover:not(:disabled) {
+  color: var(--color-action);
+}
+
+/* Dimmed rather than removed, so the rail keeps its shape before any filter is
+ * applied. */
+.clear:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---- one filter group ---- */
+
+.facet {
+  border-top: var(--border-width) solid var(--color-border);
+  padding-block: var(--space-4); /* 16px in the design */
+}
+
+/* The collapse control. Full width so the whole row is the hit target, not
+ * just the words. */
+.facetToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  margin-bottom: var(--space-3); /* 12px in the design */
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.8125rem; /* 13px */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.caret {
+  font-size: 0.75rem;
+  color: var(--color-text-soft);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+/* Points up when the group is open, so the control states which way it goes. */
+.facetToggle[aria-expanded='true'] .caret {
+  transform: rotate(180deg);
+}
+
+.facetValues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* exact value from the design */
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* exact value from the design */
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: 1.2;
+  color: var(--color-text-soft);
+  cursor: pointer;
+}
+
+/*
+ * A 20px square drawn from scratch. `appearance: none` is what allows the box
+ * to be sized and bordered at all — a native checkbox ignores width, height and
+ * border on most platforms. reset.css also gives bare `input` vertical margins
+ * and a radius, both of which have to go or the box sits off the text baseline.
+ */
+.checkbox {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.checkbox:checked {
+  border-color: var(--color-action);
+  background-color: var(--color-action);
+  /* Tick as a background image rather than a pseudo-element: ::after on an
+     input is not reliable across browsers. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.5 6.5 12 13 4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px;
+}
+
+.checkbox:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.optionLabel {
+  flex: 1 1 auto;
+}
+
+/* Paler than the label — the count is supporting information, not a choice.
+ * §01 Faint is the named ink for precisely this: "counts, chevrons". */
+.count {
+  color: var(--color-text-faint);
+}
+
+/* ---- price range ---- */
+
+.priceRange {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.priceInputs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.priceInput {
+  /* reset.css gives bare `input` margins and its own border; a compact pair of
+   * number fields needs neither. */
+  margin: 0;
+  width: 4.75rem;
+  padding: 7px 9px;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  color: var(--color-text);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.priceInput:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 1px;
+}
+
+.priceDash {
+  color: var(--color-text-soft);
+}
+
+.priceApply {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /* Navy, not orange: this control is 12px and §09 bans orange below 19px. */
+  color: var(--color-text);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* ---- results ---- */
+
+.showing {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-soft);
+  margin: 0 0 var(--space-4);
+}
+
+/* Three up. The comp draws two, but at this rail width two cards makes each
+ * image ~520px, which dominates the page. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5); /* 20px in the design */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-dropdown);
+}
+
+/*
+ * The tile behind the image is the CARD, not a dark well.
+ *
+ * §01 names a Photo Well (#0e1a25) "behind product images in cards" and the
+ * comp uses it, because every image in the comp is cut-out product photography
+ * shot on that ground. The real Shopify library is not that: the sources are
+ * SQUARE (800x800, 2560x2560) and the card asks for 4:3, so the CDN pads them
+ * — with white for the JPEGs and with TRANSPARENCY for the PNGs. A dark well
+ * therefore showed as black bars down the sides of some cards and not others,
+ * which read as a background colour nobody chose.
+ *
+ * Matching the card surface makes the padding invisible whichever way an asset
+ * was saved. --photo-well stays in the palette for when the photography is
+ * genuinely cut out on dark.
+ */
+.cardMedia {
+  display: block;
+  background: var(--color-surface);
+}
+
+/*
+ * 4:3 rather than the comp's square, so the photo takes less of the card's
+ * height. `contain` not `cover`: this is cut-out product photography on a dark
+ * tile, so cropping it would clip the product rather than fill the frame.
+ */
+.cardImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 18px 20px 22px; /* exact values from the design */
+  flex: 1 1 auto;
+}
+
+.cardTitle {
+  /* §03 card title: Nimbus Extd 700, 15px, 1.3, uppercase. */
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* The whole card is not one link — the image and title are separate targets, so
+ * the title keeps its own colour rather than inheriting the site-wide a:hover. */
+.cardTitleLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardTitleLink:hover {
+  color: var(--color-action);
+}
+
+.cardPrice {
+  font-family: var(--font-body);
+  font-size: var(--text-price); /* §03 price, 18px */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.from {
+  font-weight: var(--weight-regular);
+}
+
+.cardCta {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  font-family: var(--font-body);
+  /* 19px, not 16: §09 only clears orange text at 19px / 700. */
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-action);
+  text-decoration: none;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ */
+
+/* tablet — the rail stops being sticky and sits above the grid, because a
+ * 240px column beside a two-up grid leaves the cards too narrow. */
+@media (max-width: 1099px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+
+  .rail {
+    position: static;
+  }
+
+  .facetValues {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+  }
+}
+
+/* mdTablet — two up once the rail has moved above the grid. */
+@media (max-width: 1099px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* mobile */
+@media (max-width: 699px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * PAGINATION — styleguide §07
+ * -----------------------------------------------------------------------------
+ * "The current page fills navy." Everything else is a 2px bordered control on
+ * the house radius, the same chrome as the sort select beside it.
+ */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-10);
+}
+
+.pagerPages {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * reset.css:143 gives EVERY <li> a `margin-bottom: 0.5rem`, meant for prose
+ * lists. Here it made the <ol> 50px tall around 42px buttons, and because the
+ * nav centres its children that pushed the numbers 4px above Prev and Next —
+ * the row looked misaligned for no visible reason. Note reset.css resets `ul`
+ * but not `ol`, which is why this list sets its own margin and padding above.
+ */
+.pagerPages li {
+  margin: 0;
+  display: flex;
+}
+
+/*
+ * One box for a number and one for Prev/Next, sharing a min-width so the row
+ * does not jog as the page count changes. Prev/Next take their width from their
+ * label; the numbers stay square.
+ */
+.pagerPage,
+.pagerStep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px; /* matches the sort select's height */
+  height: 42px;
+  padding-inline: var(--space-3);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px, as on the sort label */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    background-color var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default);
+}
+
+.pagerStep {
+  gap: var(--space-1);
+}
+
+/*
+ * The site-wide link hover turns links orange and underlines them. Both are
+ * wrong here — these are controls, not prose — so the colour is restated and
+ * the underline cancelled.
+ *
+ * `a.` is what makes that work. The reset rule is `a:hover:not(.btn)`, and
+ * :not() counts its class, so it is (0,2,1); a bare `.pagerPage:hover` is
+ * (0,2,0) and lost — the page numbers went orange on hover. At equal
+ * specificity this file loads later and wins.
+ */
+a.pagerPage:hover,
+a.pagerStep:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.pagerPage:focus-visible,
+.pagerStep:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* §07: the current page fills navy. Not a link — see the component. */
+.pagerPageCurrent,
+.pagerPageCurrent:hover {
+  background-color: var(--brand-navy);
+  border-color: var(--brand-navy);
+  color: var(--color-text-inverse);
+}
+
+/*
+ * Prev on page one, Next on the last. Rendered as a <span> rather than a
+ * disabled link so there is nothing to focus or click, and dimmed rather than
+ * hidden so the row does not change width at either end.
+ */
+.pagerStepDisabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* mobile — the numbers wrap onto their own line under Prev/Next. */
+@media (max-width: 499px) {
+  .pager {
+    gap: var(--space-1);
+  }
+
+  .pagerPage,
+  .pagerStep {
+    min-width: 38px;
+    height: 38px;
+    padding-inline: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagerPage,
+  .pagerStep {
+    transition: none;
+  }
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * APPLIED FILTER CHIPS — styleguide §07
+ * -----------------------------------------------------------------------------
+ * "Applied filters echo as removable chips." Measured from the §07 swatch:
+ * 44px min height, 999px radius (§06 reserves the pill for buttons and chips),
+ * 2px border, 15px/700 in body ink, the × in Faint.
+ */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* §07 */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* reset.css gives every <li> a bottom margin meant for prose. */
+.chipList li {
+  margin: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 6px 14px; /* §07 */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: 0.9375rem; /* 15px, §07 */
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  color: var(--color-text-body);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default);
+}
+
+/* The whole chip is the remove control, so the hover darkens all of it — the
+ * × alone would be a 12px target. */
+.chip:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.chip:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.chipIcon {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  color: var(--color-text-faint);
+  transition: color var(--duration-control) var(--ease-default);
+}
+
+.chip:hover .chipIcon {
+  color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .chipIcon {
+    transition: none;
+  }
+}

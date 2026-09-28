@@ -1,5 +1,5 @@
-import {useId} from 'react';
-import {Form} from 'react-router';
+import SearchBox from '~/components/search/SearchBox';
+import {SEARCH_PLACEHOLDER} from '~/lib/search';
 import {strapiMedia} from '~/lib/strapi-media';
 import styles from './HeroSearch.module.css';
 
@@ -31,13 +31,6 @@ import styles from './HeroSearch.module.css';
  * }} props
  */
 export default function HeroSearch({data, baseUrl}) {
-  /*
-   * Hooks run before the early return — calling useId() after `if (!heading)`
-   * would change the hook order between a populated and an empty module and
-   * blow up the render.
-   */
-  const inputId = useId();
-
   if (!data?.heading) return null;
 
   const {eyebrow, heading, body, searchPlaceholder, searchButtonLabel} = data;
@@ -49,7 +42,7 @@ export default function HeroSearch({data, baseUrl}) {
    * Search authored before these fields existed comes back with both as null.
    * Fall back rather than rendering an unlabelled input and a blank button.
    */
-  const placeholder = searchPlaceholder || 'Search equipment, parts, or part #';
+  const placeholder = searchPlaceholder || SEARCH_PLACEHOLDER;
   const buttonLabel = searchButtonLabel || 'Go';
 
   return (
@@ -111,35 +104,28 @@ export default function HeroSearch({data, baseUrl}) {
             ) : null}
 
             {/*
-              A plain <Form> rather than ~/components/SearchForm. That component
-              exists only to add its cmd+K focus shortcut, and the header's
-              SearchFormPredictive already claims cmd+K site-wide — a second
-              binding on the shop page would make the shortcut ambiguous. The
-              GET-to-/search contract is identical either way.
+              The shared page search box: the same type-ahead as the header's
+              quick search — a dropdown under the box on desktop and tablet,
+              the full-screen sheet on a phone — and a plain GET form to
+              /search before hydration. The wrapper carries the reveal so the
+              box keeps its place in the entrance sequence.
             */}
-            <Form
-              method="get"
-              action="/search"
-              role="search"
-              className={styles.search}
+            <div
+              className={styles.searchWrap}
               data-reveal
               style={{'--reveal-i': 3}}
             >
-              <label htmlFor={inputId} className="sr-only">
-                {placeholder}
-              </label>
-              <input
-                id={inputId}
-                type="search"
-                name="q"
+              <SearchBox
                 placeholder={placeholder}
-                className={styles.searchInput}
-                autoComplete="off"
+                buttonLabel={buttonLabel}
+                label={placeholder}
+                classNames={{
+                  form: styles.search,
+                  input: styles.searchInput,
+                  button: styles.searchButton,
+                }}
               />
-              <button type="submit" className={styles.searchButton}>
-                {buttonLabel}
-              </button>
-            </Form>
+            </div>
           </div>
         </div>
       </div>

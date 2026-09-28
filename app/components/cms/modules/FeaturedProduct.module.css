@@ -1,0 +1,139 @@
+/*
+ * Featured Product module — sprint-04 hifi_dechlorinationcollection.html v2,
+ * "Featured kit"
+ *
+ * A bordered white card inset in the content column, split into image and
+ * copy by a rule. The columns wrap to a stack when the card gets narrow.
+ */
+
+.section {
+  /* Shared section rhythm. The comp gives this one 64px top and 0 bottom,
+   * leaning on the listing below; symmetric here, since a module owns its own
+   * spacing and the CMS can put anything next to it. */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/*
+ * The divider is the grid GAP showing the border colour through, not a
+ * border on either column. Side by side it's the vertical rule; once the
+ * columns wrap it's a horizontal one, with no media query to keep in step
+ * with the wrap point.
+ */
+.card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: var(--border-width-thick);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-border);
+}
+
+.media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: clamp(24px, 3vw, 40px);
+  background-color: var(--color-surface);
+}
+
+/* Contained, never cropped: the whole product shows at any ratio. */
+.image {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(28px, 3.4vw, 44px) clamp(24px, 3.4vw, 48px);
+  background-color: var(--color-surface);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 14px; /* exact value from the design */
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: 56ch; /* the comp's measure */
+  margin: 0 0 18px; /* exact value from the design */
+}
+
+.price {
+  font-family: var(--font-body);
+  font-size: 1.25rem; /* 20px in the design */
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  margin: 0 0 var(--space-5); /* 20px in the design */
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3); /* 12px in the design */
+}
+
+/* Add to cart sits in a CartForm; reset.css caps a bare <form> at 400px. */
+.actions > form {
+  max-width: none;
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the comp is desktop-only. The columns wrap on their own.
+ */
+
+/* mdTablet — the buttons share the row full width rather than hugging the
+ * left edge of a narrow card. */
+@media (max-width: 699px) {
+  .media {
+    min-height: 0;
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+  }
+
+  .actions > form > :global(.btn) {
+    width: 100%;
+  }
+}

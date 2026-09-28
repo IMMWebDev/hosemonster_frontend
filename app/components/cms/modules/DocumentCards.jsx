@@ -91,7 +91,8 @@ export default function DocumentCards({data, baseUrl}) {
 function Card({item, baseUrl, index = 0}) {
   const {image, title, description, link} = item;
 
-  const thumbUrl = documentThumbnail(image, baseUrl);
+  // 116px wide in the CSS, at 2x.
+  const thumbUrl = documentThumbnail(image, baseUrl, {width: 232});
   const fileUrl = strapiMedia(image?.url, baseUrl);
 
   /*
@@ -124,8 +125,8 @@ function Card({item, baseUrl, index = 0}) {
              would just be read as noise before the real label. */
           alt=""
           className={styles.thumb}
-          width="92"
-          height="119"
+          width="116"
+          height="150"
           loading="lazy"
           decoding="async"
         />

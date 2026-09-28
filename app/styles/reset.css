@@ -120,6 +120,26 @@ textarea {
   font-family: inherit;
 }
 
+/*
+ * Every <select> stays native (keyboard, pre-hydration, the phone's own
+ * picker) but draws its own arrow: the browser's ignores padding and sits
+ * against the border. The chevron sits inside the control's side padding —
+ * `--select-pad`, which a component sets to match its left padding — with
+ * room kept for it so long option text never runs underneath.
+ *
+ * Components set `background-color`, not the `background` shorthand, or the
+ * arrow is wiped out.
+ */
+select {
+  --select-pad: var(--space-4);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%231d3a54' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--select-pad) center;
+  background-size: 12px 12px;
+  padding-right: calc(var(--select-pad) + 12px + var(--space-2));
+}
+
 input {
   border-radius: var(--radius-sm);
   border: var(--border-width) solid var(--color-border-strong);

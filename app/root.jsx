@@ -11,6 +11,7 @@ import {
 } from 'react-router';
 import favicon from '~/assets/favicon.svg';
 import {HEADER_QUERY} from '~/lib/fragments';
+import {loadProductUrls} from '~/lib/product-urls';
 import resetStyles from '~/styles/reset.css?url';
 import tokenStyles from '~/styles/tokens.css?url';
 import typographyStyles from '~/styles/typography.css?url';
@@ -134,7 +135,8 @@ async function loadCriticalData({context}) {
   // ⚠ This destructuring is positional — each name must line up with the same
   // index in the array below. Adding a fetch in the middle without moving its
   // name to the matching position silently hands one type's data to another.
-  const [header, notFound, cmsHeader, cmsOptions, cmsFooter] = await Promise.all([
+  const [header, notFound, cmsHeader, cmsOptions, cmsFooter, productUrls] =
+    await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
@@ -182,6 +184,9 @@ async function loadCriticalData({context}) {
         linkColumns: {populate: {links: {populate: {pageLink: true, collectionLink: true}}}},
       },
     }),
+    // Where each product lives (/collections/{c}/{p} or /products/{p}), for
+    // every product link on the site — see lib/product-urls.js.
+    loadProductUrls(context),
   ]);
 
   return {
@@ -190,6 +195,8 @@ async function loadCriticalData({context}) {
     cmsHeader,
     cmsFooter,
     cmsOptions,
+    // Only products whose collection has a page; the rest are /products/{p}.
+    productPaths: productUrls.paths,
     // Public, account-level config the newsletter embed needs at render time.
     // These ship in the page source — never put a secret here.
     siteEnv: {

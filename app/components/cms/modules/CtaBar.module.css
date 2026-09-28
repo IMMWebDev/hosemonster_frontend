@@ -194,6 +194,55 @@
   margin: 0;
 }
 
+/*
+ * Optional bullets under the copy — the dechlorination "Learn when it's
+ * required" bar: 6px dots, the body's size and colour, 8px apart and 14px
+ * under the body (6px on top of .copy's 8px gap).
+ */
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* No measure cap, unlike the body: each bullet is one short line, so it
+   * gets the copy column's full width and wraps only when it has to. */
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bullet {
+  position: relative;
+  padding-left: 16px; /* 6px dot + 10px gap, as drawn */
+  margin: 0; /* reset.css spaces every <li> */
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
+}
+
+/* Centred on the first line: half the line box, less half the dot. */
+.bullet::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: calc(0.8em - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-action);
+}
+
+/* On red, orange dots vanish and the muted ink turns dirty: both go white,
+ * as the comp draws them. */
+.red .bullet {
+  color: var(--color-text-inverse);
+}
+
+.red .bullet::before {
+  background-color: var(--color-text-inverse);
+}
+
 /* A row, because there can be two. `flex: 0 0 auto` keeps the buttons at their
  * own width and lets the copy column absorb the rest. */
 .action {

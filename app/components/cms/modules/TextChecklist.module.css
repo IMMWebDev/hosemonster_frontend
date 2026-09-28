@@ -1,0 +1,133 @@
+/*
+ * Text & Checklist module — sprint-04 hifi_accessoriescollection.html,
+ * "Gauge calibration you can put in the file"
+ *
+ * Copy on the left; a ticked checklist and buttons on the right. The columns
+ * wrap to a stack when they stop fitting.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed, the same rule Numbered Steps, Link Cards and FAQ use, so the
+   * grey variant reaches the viewport edge. .inner adds the gutter back. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* The `background` field. White needs no rule. */
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+/*
+ * Wrap rather than a breakpoint, as Text & Highlights does: the columns have
+ * real flex bases (420 / 340 in the design) and stack the moment they stop
+ * fitting.
+ */
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(var(--space-7), 4vw, var(--space-14)); /* 28px → 56px */
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+.copy {
+  flex: 1 1 420px;
+  min-width: 280px;
+}
+
+.aside {
+  flex: 1 1 340px;
+  min-width: 280px;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-6); /* 24px in the design */
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: 54ch; /* from the design */
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-4); /* 16px in the design */
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* exact value from the design */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3); /* 12px in the design */
+  margin: 0; /* reset.css spaces every <li> */
+  font-family: var(--font-body);
+  font-size: 0.90625rem; /* 14.5px in the design */
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+/* Centred on the first line of the label: (line box − icon) / 2. */
+.check {
+  flex: 0 0 auto;
+  margin-top: calc((1.5em - 16px) / 2);
+  color: var(--color-action);
+}
+
+/* 26px under the list, as drawn; flush to the top when there's no list. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3); /* 12px in the design */
+}
+
+.checklist + .actions {
+  margin-top: 26px;
+}
+
+/* mdTablet — the buttons share the row full width rather than hugging the
+ * left edge. */
+@media (max-width: 699px) {
+  .actions > * {
+    flex: 1 1 auto;
+  }
+}

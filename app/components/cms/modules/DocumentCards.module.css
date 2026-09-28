@@ -102,14 +102,16 @@
 }
 
 /*
- * A fixed 92x119 — roughly A4 proportions, which is what these documents are.
- * `flex: 0 0 auto` so a long title cannot squeeze the page out of shape, and
- * `object-position: top` because the first thing on a report is its header.
+ * A fixed 116x150 — roughly A4 proportions, which is what these documents are.
+ * A step up from the comp's 92x119 so the page reads as a preview, not an
+ * icon; DocumentCards.jsx requests it at 2x to match. `flex: 0 0 auto` so a
+ * long title cannot squeeze the page out of shape, and `object-position: top`
+ * because the first thing on a report is its header.
  */
 .thumb {
   flex: 0 0 auto;
-  width: 92px;
-  height: 119px;
+  width: 116px;
+  height: 150px;
   object-fit: cover;
   object-position: center top;
   border: var(--border-width) solid var(--color-border);

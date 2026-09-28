@@ -45,7 +45,9 @@ export default function CmsLink({
   const {linkUrl, openNewTab, pageLink, collectionLink, linkText} = link;
   const to = linkUrl || pageLink?.path || collectionLink?.path || '#';
   const label = children ?? linkText;
-  const isExternal = /^https?:\/\//i.test(to) || to.startsWith('//');
+  // Any scheme — https:, tel:, mailto: — leaves the app, so it gets a plain
+  // <a>. A router link would try to resolve "tel:888…" as a path.
+  const isExternal = /^[a-z][a-z\d+.-]*:/i.test(to) || to.startsWith('//');
 
   if (isExternal || openNewTab) {
     return (
