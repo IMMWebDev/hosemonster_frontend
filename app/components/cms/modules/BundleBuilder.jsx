@@ -1,4 +1,5 @@
 import {Fragment, useEffect, useId, useMemo, useReducer, useRef, useState} from 'react';
+import {BUNDLE_ATTRIBUTE, toCartLine} from '~/lib/cart-lines';
 import {useSearchParams} from 'react-router';
 import {CartForm, Image, Money} from '@shopify/hydrogen';
 import CmsLink from '~/components/cms/CmsLink';
@@ -849,19 +850,20 @@ function Summary({
   groups.sort((x, y) => x.step - y.step);
 
   /*
-   * selectedVariant, with its product, is what Hydrogen's optimistic cart
-   * draws the line from while the request is in flight (see ProductForm) —
-   * without it every line logs an error and the drawer opens empty.
+   * Each line tagged with the bundle it came from, so the cart can show them
+   * as a set. toCartLine carries the product into selectedVariant, which is
+   * what Hydrogen's optimistic cart draws the line from while the request is
+   * in flight — without it every line logs an error and the drawer opens
+   * empty.
    */
-  const lines = addable.map((i) => ({
-    merchandiseId: i.variant.id,
-    quantity: i.quantity,
-    attributes: [{key: 'Bundle', value: bundleLabel}],
-    selectedVariant: {
-      ...i.variant,
-      product: {id: i.product.id, handle: i.product.handle, title: i.product.title},
-    },
-  }));
+  const lines = addable.map((i) =>
+    toCartLine({
+      product: i.product,
+      variant: i.variant,
+      quantity: i.quantity,
+      attributes: [{key: BUNDLE_ATTRIBUTE, value: bundleLabel}],
+    }),
+  );
 
   return (
     <div

@@ -257,6 +257,9 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     id
     handle
     title
+    seo {
+      description
+    }
     featuredImage {
       id
       altText

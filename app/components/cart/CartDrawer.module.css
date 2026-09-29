@@ -1,0 +1,30 @@
+/* Cart drawer — the parts not covered by Drawer or the shared cart pieces. */
+
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The lines list draws its own top padding per line; pull the first up to
+ * the head's rule. */
+.body > :first-child {
+  margin-top: calc(-1 * var(--space-2));
+}
+
+/* The note draws its own top rule. */
+.note {
+  margin-top: var(--space-4);
+}
+
+/* Styleguide Body. */
+.error {
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}

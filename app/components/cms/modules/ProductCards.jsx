@@ -122,6 +122,8 @@ function ProductCard({item, product, ctaLabel, index = 0}) {
   const pathFor = useProductPath();
   const {label, spec} = item;
   const {handle, title, featuredImage, priceRange} = product;
+  // The admin's meta description, as on every product card.
+  const blurb = product.seo?.description?.trim() || '';
 
   const min = priceRange?.minVariantPrice;
   const max = priceRange?.maxVariantPrice;
@@ -162,18 +164,25 @@ function ProductCard({item, product, ctaLabel, index = 0}) {
         {label ? <p className={styles.cardLabel}>{label}</p> : null}
         <h3 className={styles.cardTitle}>{title}</h3>
         {spec ? <p className={styles.cardSpec}>{spec}</p> : null}
+        {blurb ? <p className={styles.cardBlurb}>{blurb}</p> : null}
 
-        {min ? (
-          <p className={styles.cardPrice}>
-            {hasRange ? <span className={styles.from}>From </span> : null}
-            {/* as="span": Hydrogen's <Money> renders a <div> by default, which
-                is block-level and drops the amount onto its own line under
-                "From". The comp has them on one line. */}
-            <Money data={min} withoutTrailingZeros as="span" />
-          </p>
-        ) : null}
+        {/* Pinned to the foot, so price and button line up across the row. */}
+        <div className={styles.cardFoot}>
+          {min ? (
+            <p className={styles.cardPrice}>
+              {hasRange ? <span className={styles.from}>From </span> : null}
+              {/* as="span": Hydrogen's <Money> renders a <div> by default, which
+                  is block-level and drops the amount onto its own line under
+                  "From". The comp has them on one line. */}
+              <Money data={min} withoutTrailingZeros as="span" />
+            </p>
+          ) : null}
 
-        {ctaLabel ? <span className={styles.cardCta}>{ctaLabel}</span> : null}
+          {/* A span, not a nested link: the whole card is the link. */}
+          {ctaLabel ? (
+            <span className={`btn btn--secondary ${styles.cardCta}`}>{ctaLabel}</span>
+          ) : null}
+        </div>
       </div>
     </Link>
   );

@@ -461,9 +461,8 @@
    * margin drops to 0, the breakout math resolves to 0 and keeps working. */
   --main-gutter: 1rem;
 
-  --aside-width: 400px;
-  --cart-aside-summary-height-with-discount: 300px;
-  --cart-aside-summary-height: 250px;
+  /* Side drawers (cart, mobile menu): components/Drawer.jsx. */
+  --drawer-width: 480px;
   --grid-item-width: 355px;
   --header-height: 64px;
 
@@ -474,6 +473,9 @@
    */
   --shadow-aside: 0 0 50px rgba(0, 0, 0, 0.3);
   --shadow-overlay: rgba(0, 0, 0, 0.2);
+  /* A bar pinned to the bottom of a view (drawer footer, mobile checkout bar):
+   * a soft lift so the content scrolling under it reads as behind it. */
+  --shadow-sheet-top: 0 -8px 24px rgba(11, 23, 33, 0.08);
   /* Header dropdown panel. Not specced in Figma — no dropdown frame exists. */
   --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.12);
 

@@ -181,6 +181,9 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
     handle
     title
     trackingParameters
+    seo {
+      description
+    }
     featuredImage {
       id
       altText

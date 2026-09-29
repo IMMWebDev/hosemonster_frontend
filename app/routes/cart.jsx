@@ -1,12 +1,12 @@
 import {useLoaderData, data} from 'react-router';
-import {CartForm} from '@shopify/hydrogen';
-import {CartMain} from '~/components/CartMain';
+import {Analytics, CartForm} from '@shopify/hydrogen';
+import CartPage from '~/components/cart/CartPage';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: `Hydrogen | Cart`}];
+  return [{title: 'Your cart | Hose Monster'}];
 };
 
 /**
@@ -42,15 +42,20 @@ export async function action({request, context}) {
       result = await cart.removeLines(inputs.lineIds);
       break;
     case CartForm.ACTIONS.DiscountCodesUpdate: {
-      const formDiscountCode = inputs.discountCode;
+      /*
+       * The typed code goes first, then the codes already on the cart. The
+       * existing list arrives as a string for one code and an array for
+       * several (getFormInput), and a chip's remove sends the list without
+       * the removed code and no typed one.
+       */
+      const typed =
+        typeof inputs.discountCode === 'string' ? inputs.discountCode.trim() : '';
+      const existing = [].concat(inputs.discountCodes ?? []).filter(Boolean);
+      const codes = typed
+        ? [typed, ...existing.filter((c) => c.toUpperCase() !== typed.toUpperCase())]
+        : existing;
 
-      // User inputted discount code
-      const discountCodes = formDiscountCode ? [formDiscountCode] : [];
-
-      // Combine discount codes already applied on cart
-      discountCodes.push(...inputs.discountCodes);
-
-      result = await cart.updateDiscountCodes(discountCodes);
+      result = await cart.updateDiscountCodes(codes);
       break;
     }
     case CartForm.ACTIONS.GiftCardCodesAdd: {
@@ -70,6 +75,12 @@ export async function action({request, context}) {
       result = await cart.updateBuyerIdentity({
         ...inputs.buyerIdentity,
       });
+      break;
+    }
+    case CartForm.ACTIONS.NoteUpdate: {
+      // The order note (PO number, delivery instructions): a textarea named
+      // `note` lands on inputs.note.
+      result = await cart.updateNote(String(inputs.note ?? ''));
       break;
     }
     default:
@@ -112,10 +123,10 @@ export default function Cart() {
   const cart = useLoaderData();
 
   return (
-    <div className="cart">
-      <h1>Cart</h1>
-      <CartMain layout="page" cart={cart} />
-    </div>
+    <>
+      <CartPage cart={cart} />
+      <Analytics.CartView />
+    </>
   );
 }
 

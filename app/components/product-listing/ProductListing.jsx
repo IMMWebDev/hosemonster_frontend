@@ -402,6 +402,8 @@ export function ProductCard({product, href: hrefOverride, loading}) {
   // Where the product lives: /collections/{c}/{p} or /products/{p}.
   const pathFor = useProductPath();
   const href = hrefOverride ?? pathFor(product.handle);
+  // The meta description, written short and per product in the admin.
+  const blurb = product.seo?.description?.trim() || '';
 
   return (
     <div className={styles.card}>
@@ -432,23 +434,29 @@ export function ProductCard({product, href: hrefOverride, loading}) {
           </Link>
         </h3>
 
-        {price ? (
-          <p className={styles.cardPrice}>
-            {hasRange ? <span className={styles.from}>From </span> : null}
-            <Money data={price} withoutTrailingZeros as="span" />
-          </p>
-        ) : null}
+        {blurb ? <p className={styles.cardBlurb}>{blurb}</p> : null}
 
-        {/*
-          Straight to the product page rather than an add-to-cart button.
-          A listing cannot add a multi-variant product to a cart without asking
-          which variant, and this catalogue has products with dozens — one has
-          sixty. A button that works on some cards and not others is worse than
-          a consistent link.
-        */}
-        <Link to={href} prefetch="intent" className={styles.cardCta}>
-          View product
-        </Link>
+        {/* Pinned to the card's foot, so the price and button sit at the
+            same height across a row whatever the titles and blurbs do. */}
+        <div className={styles.cardFoot}>
+          {price ? (
+            <p className={styles.cardPrice}>
+              {hasRange ? <span className={styles.from}>From </span> : null}
+              <Money data={price} withoutTrailingZeros as="span" />
+            </p>
+          ) : null}
+
+          {/*
+            Straight to the product page rather than an add-to-cart button.
+            A listing cannot add a multi-variant product to a cart without
+            asking which variant, and this catalogue has products with dozens
+            — one has sixty. A button that works on some cards and not others
+            is worse than a consistent link.
+          */}
+          <Link to={href} prefetch="intent" className={`btn btn--secondary ${styles.cardCta}`}>
+            View product
+          </Link>
+        </div>
       </div>
     </div>
   );

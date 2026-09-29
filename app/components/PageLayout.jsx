@@ -1,13 +1,13 @@
-import {Await, useMatches} from 'react-router';
-import {Suspense} from 'react';
+import {useMatches} from 'react-router';
 import {Aside} from '~/components/Aside';
+import Drawer, {MOBILE_MENU_ID} from '~/components/Drawer';
+import CartDrawer from '~/components/cart/CartDrawer';
 import {useReveal} from '~/lib/use-reveal';
 import PageWatermark from '~/components/cms/PageWatermark';
 import {strapiMedia} from '~/lib/strapi-media';
 import {Footer} from '~/components/Footer';
 import Newsletter from '~/components/Newsletter';
 import {Header, HeaderMenu} from '~/components/Header';
-import {CartMain} from '~/components/CartMain';
 import QuickSearch from '~/components/search/QuickSearch';
 
 /**
@@ -30,7 +30,7 @@ export function PageLayout({
   useReveal();
   return (
     <Aside.Provider>
-      <CartAside cart={cart} />
+      <CartDrawer />
       <QuickSearch />
       <MobileMenuAside cmsHeader={cmsHeader} />
       {header && (
@@ -97,29 +97,6 @@ function useIncludeNewsletter() {
 }
 
 /**
- * @param {{cart: PageLayoutProps['cart']}}
- */
-function CartAside({cart}) {
-  return (
-    <Aside type="cart" heading="CART">
-      <Suspense fallback={<p>Loading cart ...</p>}>
-        <Await resolve={cart}>
-          {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
-          }}
-        </Await>
-      </Suspense>
-    </Aside>
-  );
-}
-
-/**
- * @param {{
- *   header: PageLayoutProps['header'];
- *   publicStoreDomain: PageLayoutProps['publicStoreDomain'];
- * }}
- */
-/**
  * Mobile nav drawer. Driven by the same CMS nav as the desktop header, so the
  * two cannot drift apart.
  *
@@ -130,9 +107,12 @@ function MobileMenuAside({cmsHeader}) {
   if (mainNav.length === 0) return null;
 
   return (
-    <Aside type="mobile" heading="MENU">
-      <HeaderMenu mainNav={mainNav} />
-    </Aside>
+    <Drawer type="mobile" id={MOBILE_MENU_ID} label="Menu">
+      <Drawer.Head title="Menu" />
+      <Drawer.Body>
+        <HeaderMenu mainNav={mainNav} />
+      </Drawer.Body>
+    </Drawer>
   );
 }
 

@@ -172,6 +172,13 @@ async function loadCriticalData({context}) {
       populate: {
         newsletter: {populate: {backgroundImage: true}},
         watermark: true,
+        // The empty cart's copy and buttons (drawer and /cart page).
+        emptyCart: {
+          populate: {
+            primaryCTA: {populate: {pageLink: true, collectionLink: true}},
+            secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+          },
+        },
       },
     }),
     // Three levels deep: footer → linkColumns → links → pageLink. `populate: '*'`

@@ -1,73 +1,14 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import {useId} from 'react';
+import {createContext, useCallback, useContext, useMemo, useState} from 'react';
 
 /**
- * A side bar component with Overlay
- * @example
- * ```jsx
- * <Aside type="search" heading="SEARCH">
- *  <input type="search" />
- *  ...
- * </Aside>
- * ```
- * @param {{
- *   children?: React.ReactNode;
- *   type: AsideType;
- *   heading: React.ReactNode;
- * }}
+ * Which panel is open — the cart drawer, the mobile menu, the search sheet —
+ * and the `open`/`close` every toggle and Add to cart button calls. The
+ * panels themselves are components/Drawer.jsx and search/QuickSearch.jsx;
+ * only one is open at a time because they all read this one value.
  */
-export function Aside({children, heading, type}) {
-  const {type: activeType, close} = useAside();
-  const expanded = type === activeType;
-  const id = useId();
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    if (expanded) {
-      document.addEventListener(
-        'keydown',
-        function handler(event) {
-          if (event.key === 'Escape') {
-            close();
-          }
-        },
-        {signal: abortController.signal},
-      );
-    }
-    return () => abortController.abort();
-  }, [close, expanded]);
-
-  return (
-    <div
-      aria-modal
-      className={`overlay ${expanded ? 'expanded' : ''}`}
-      role="dialog"
-      aria-labelledby={id}
-    >
-      <button className="close-outside" onClick={close} />
-      <aside>
-        <header>
-          <h3 id={id}>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
-            &times;
-          </button>
-        </header>
-        <main>{children}</main>
-      </aside>
-    </div>
-  );
-}
-
 const AsideContext = createContext(null);
 
-Aside.Provider = function AsideProvider({children}) {
+export function AsideProvider({children}) {
   /*
    * `payload` travels with an open request — e.g. {term} when a page search
    * box hands its text to the quick-search sheet on a phone. Cleared on every
@@ -94,7 +35,10 @@ Aside.Provider = function AsideProvider({children}) {
   return (
     <AsideContext.Provider value={value}>{children}</AsideContext.Provider>
   );
-};
+}
+
+/** Kept as `Aside.Provider` for the layout's existing usage. */
+export const Aside = {Provider: AsideProvider};
 
 export function useAside() {
   const aside = useContext(AsideContext);

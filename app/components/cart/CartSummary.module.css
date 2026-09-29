@@ -1,0 +1,301 @@
+/*
+ * Cart summary — totals, codes, note. Drawer foot and /cart page panel.
+ */
+
+/* ---- totals ---- */
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0; /* reset.css spaces every <dl> */
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.rows[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+/* Styleguide UI label / Price. */
+.row dt {
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+.row dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-price);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/* Shipping and taxes, still to come: Body-weight label, Detail value, so the
+ * money rows stand out from them. */
+.rowNote dt {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-body);
+}
+
+.rowNote dd {
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.rowTotal {
+  margin-top: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.rowTotal dd {
+  font-size: var(--text-h3);
+}
+
+/* Styleguide Detail. Only the phone drawer shows it, in place of the two
+ * rows above (see the responsive block). */
+.fine {
+  display: none;
+  margin: calc(-1 * var(--space-2)) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.alert {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.alert svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--color-action);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.checkout {
+  width: 100%;
+  gap: var(--space-2);
+}
+
+/* Tapped while a cart update was in flight: on its way as soon as that lands. */
+.checkout[data-waiting] {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* "View cart" in the drawer: a text link, 44px tall. */
+.textActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+a.textLink,
+a.textLink:hover {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+a.textLink:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Styleguide Body, with the in-copy link. */
+.help {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  text-align: center;
+}
+
+a.link,
+a.link:hover {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a.textLink:hover {
+  color: var(--color-action);
+}
+
+/* ---- order note ---- */
+
+.disclosureIcon {
+  flex: 0 0 auto;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.note[open] .disclosureIcon {
+  transform: rotate(180deg);
+}
+
+.note {
+  border-top: var(--border-width) solid var(--color-border);
+  padding-top: var(--space-2);
+}
+
+.note :global(form) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: none;
+  margin: 0;
+}
+
+.noteSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 44px;
+  list-style: none;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.noteSummary::-webkit-details-marker {
+  display: none;
+}
+
+.noteSummary:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* reset.css gives textareas its own border and margins. */
+.noteField {
+  width: 100%;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: max(16px, var(--text-body-sm));
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  resize: vertical;
+}
+
+/* Safari's default placeholder grey is under AA. */
+.noteField::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.noteField:focus-visible {
+  outline: none;
+  border-color: var(--color-border-strong);
+}
+
+.noteActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.noteSave {
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-ui);
+}
+
+/* phone drawer — the foot is pinned over a 812px screen, so it keeps only
+ * what checkout needs: the rows, Check out and View cart. The help line
+ * stays on /cart and in the wider drawer. */
+@media (max-width: 699px) {
+  .totals[data-layout='drawer'] {
+    gap: var(--space-3);
+  }
+
+  .totals[data-layout='drawer'] .rows {
+    gap: var(--space-1);
+  }
+
+  .totals[data-layout='drawer'] .rowTotal {
+    padding-top: var(--space-2);
+  }
+
+  /* Two rows back into one line: the foot is pinned over a small screen. */
+  .totals[data-layout='drawer'] .rowNote {
+    display: none;
+  }
+
+  .totals[data-layout='drawer'] .fine {
+    display: block;
+    margin-top: calc(-1 * var(--space-1));
+  }
+
+  .totals[data-layout='drawer'] .help {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disclosureIcon,
+  .rows {
+    transition: none;
+  }
+}

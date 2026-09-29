@@ -240,8 +240,10 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
       currencyCode
     }
     product {
+      id
       title
       handle
+      vendor
     }
     selectedOptions {
       name

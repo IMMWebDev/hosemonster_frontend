@@ -2,6 +2,7 @@ import {CartForm, Image, Money} from '@shopify/hydrogen';
 import {Link} from 'react-router';
 import {useAside} from '~/components/Aside';
 import CmsLink from '~/components/cms/CmsLink';
+import {toCartLine} from '~/lib/cart-lines';
 import {productRefFor} from '~/lib/module-products';
 import {sharpImageProps} from '~/lib/image';
 import {useProductPath} from '~/lib/product-urls';
@@ -57,6 +58,8 @@ export default function FeaturedProduct({data, products = {}}) {
   const hasRange = min && max && Number(min.amount) !== Number(max.amount);
 
   const title = heading || product.title;
+  // The module's own copy, else the product's meta description from the admin.
+  const copy = body || product.seo?.description?.trim() || '';
   const productPath = pathFor(product.handle);
 
   const buyTo = buyDestination(product, variants, productPath);
@@ -94,7 +97,7 @@ export default function FeaturedProduct({data, products = {}}) {
           <div className={styles.copy}>
             {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
             <h2 className={styles.heading}>{title}</h2>
-            {body ? <p className={styles.body}>{body}</p> : null}
+            {copy ? <p className={styles.body}>{copy}</p> : null}
 
             {min ? (
               <p className={styles.price}>
@@ -173,9 +176,9 @@ function BuyButton({product, variants, productPath}) {
   return (
     <CartForm
       route="/cart"
-      inputs={{
-        lines: [{merchandiseId: variant.id, quantity: 1, selectedVariant: variant}],
-      }}
+      // Keyed so the cart can find this add's errors (CartNotices).
+      fetcherKey={`cart-add-${variant.id}`}
+      inputs={{lines: [toCartLine({product, variant})]}}
       action={CartForm.ACTIONS.LinesAdd}
     >
       {(fetcher) => (

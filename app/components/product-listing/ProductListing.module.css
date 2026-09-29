@@ -397,10 +397,36 @@
   color: var(--color-action);
 }
 
+/* Styleguide Body: the meta description, between the name and the price as
+ * the comp draws it. Clamped so one long-winded entry can't stretch a row. */
+.cardBlurb {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+}
+
+/* Price and button together at the foot: `margin-top: auto` takes up
+ * whatever height the title and blurb leave, so every card in a row lands
+ * them at the same height. */
+.cardFoot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+
 .cardPrice {
   font-family: var(--font-body);
   font-size: var(--text-price); /* §03 price, 18px */
   font-weight: var(--weight-bold);
+  line-height: 1.2;
   color: var(--color-text);
   margin: 0;
 }
@@ -409,17 +435,9 @@
   font-weight: var(--weight-regular);
 }
 
+/* The global secondary button, full width of the card. */
 .cardCta {
-  margin-top: auto;
-  padding-top: var(--space-3);
-  font-family: var(--font-body);
-  /* 19px, not 16: §09 only clears orange text at 19px / 700. */
-  font-size: var(--text-button);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-action);
-  text-decoration: none;
+  width: 100%;
 }
 
 /*
