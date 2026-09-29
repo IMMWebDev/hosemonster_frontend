@@ -332,7 +332,7 @@ function NavDropdown({item}) {
 }
 
 /**
- * Wraps a utility-bar item, optionally preceded by the "·" divider from the
+ * Wraps a utility-bar item, optionally preceded by the "|" divider from the
  * design. The divider is decorative, so it is hidden from assistive tech.
  *
  * @param {{showSeparator?: boolean, children: import('react').ReactNode}}
@@ -342,7 +342,7 @@ function UtilityItem({showSeparator, children}) {
     <>
       {showSeparator && (
         <span className={styles.separator} aria-hidden="true">
-          ·
+          |
         </span>
       )}
       {children}

@@ -105,14 +105,19 @@
   padding: var(--space-2) var(--container-gutter);
 }
 
-/* Figma "B2" / Small Body Copy, reversed out on navy */
+/*
+ * Styleguide "Detail" on navy — the sprint-04 comp's small, light-blue
+ * utility links. The comp draws 12.5px #dbe4ec with 0.02em tracking; the
+ * guide's nearest are Detail (13.5px, its smallest size, untracked) and the
+ * on-navy ink. At 1.6 line-height the bar comes out at the comp's 38px.
+ */
 .utilityLink,
 .utilityButton {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-size: var(--text-detail);
   font-weight: var(--weight-regular);
-  line-height: var(--leading-body-sm);
-  color: var(--color-text-inverse);
+  line-height: var(--leading-body);
+  color: var(--color-text-on-navy);
   text-decoration: none;
   white-space: nowrap;
   background: none;
@@ -122,8 +127,8 @@
 }
 
 /*
- * White on navy, where the site-wide red hover would be near-unreadable — so
- * these keep their colour and underline instead.
+ * Hover brightens to white, as the comp draws it — the site-wide orange hover
+ * would be near-unreadable on navy.
  *
  * ⚠ Descendant selector for specificity, not for scoping. `a:hover:not(.btn)`
  * in reset.css is (0,2,1) and would outrank a plain `.utilityLink:hover` at
@@ -132,19 +137,19 @@
 .utilityBar .utilityLink:hover,
 .utilityBar .utilityButton:hover {
   color: var(--color-text-inverse);
-  text-decoration: underline;
-  text-decoration-thickness: var(--underline-thickness);
-  text-underline-offset: var(--underline-offset);
+  text-decoration: none;
 }
 
 /*
- * The design draws a "·" between utility items. It is decoration, not content,
- * so it is generated here and hidden from screen readers rather than being
- * typed into the CMS as a separate link.
+ * The design draws a "|" between utility items, dimmer than the links. It is
+ * decoration, not content, so it is generated here and hidden from screen
+ * readers rather than being typed into the CMS as a separate link. Faint ink
+ * is the palette's colour for non-text marks (the comp's #8fa6bd is a shade
+ * off it).
  */
 .separator {
-  color: var(--color-text-inverse);
-  font-size: var(--text-body-sm);
+  color: var(--color-text-faint);
+  font-size: var(--text-detail); /* the links' size */
   line-height: 1;
   user-select: none;
 }
