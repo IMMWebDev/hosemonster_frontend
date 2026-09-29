@@ -113,6 +113,11 @@ export const PRODUCT_CARD_FRAGMENT = `#graphql
     handle
     title
     productType
+    # The admin's meta description: a sentence or two, written per product,
+    # which the card shows under the name.
+    seo {
+      description
+    }
     featuredImage {
       id
       url
@@ -152,6 +157,7 @@ const BUNDLE_PRODUCT_FRAGMENT = `
       nodes {
         id
         title
+        sku
         availableForSale
         selectedOptions {
           name
@@ -161,7 +167,12 @@ const BUNDLE_PRODUCT_FRAGMENT = `
           amount
           currencyCode
         }
+        compareAtPrice {
+          amount
+          currencyCode
+        }
         image {
+          id
           url
           altText
           width

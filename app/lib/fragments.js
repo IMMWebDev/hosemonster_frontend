@@ -4,6 +4,20 @@ export const CART_QUERY_FRAGMENT = `#graphql
     currencyCode
     amount
   }
+  fragment CartDiscountAllocation on CartDiscountAllocation {
+    discountedAmount {
+      ...Money
+    }
+    ... on CartCodeDiscountAllocation {
+      code
+    }
+    ... on CartAutomaticDiscountAllocation {
+      title
+    }
+    ... on CartCustomDiscountAllocation {
+      title
+    }
+  }
   fragment CartLine on CartLine {
     id
     quantity
@@ -12,6 +26,9 @@ export const CART_QUERY_FRAGMENT = `#graphql
       value
     }
     cost {
+      subtotalAmount {
+        ...Money
+      }
       totalAmount {
         ...Money
       }
@@ -22,9 +39,13 @@ export const CART_QUERY_FRAGMENT = `#graphql
         ...Money
       }
     }
+    discountAllocations {
+      ...CartDiscountAllocation
+    }
     merchandise {
       ... on ProductVariant {
         id
+        sku
         availableForSale
         compareAtPrice {
           ...Money
@@ -40,7 +61,6 @@ export const CART_QUERY_FRAGMENT = `#graphql
           altText
           width
           height
-
         }
         product {
           handle
@@ -68,6 +88,9 @@ export const CART_QUERY_FRAGMENT = `#graphql
       value
     }
     cost {
+      subtotalAmount {
+        ...Money
+      }
       totalAmount {
         ...Money
       }
@@ -78,9 +101,13 @@ export const CART_QUERY_FRAGMENT = `#graphql
         ...Money
       }
     }
+    discountAllocations {
+      ...CartDiscountAllocation
+    }
     merchandise {
       ... on ProductVariant {
         id
+        sku
         availableForSale
         compareAtPrice {
           ...Money
@@ -152,12 +179,6 @@ export const CART_QUERY_FRAGMENT = `#graphql
       totalAmount {
         ...Money
       }
-      totalDutyAmount {
-        ...Money
-      }
-      totalTaxAmount {
-        ...Money
-      }
     }
     note
     attributes {
@@ -167,6 +188,35 @@ export const CART_QUERY_FRAGMENT = `#graphql
     discountCodes {
       code
       applicable
+    }
+    discountAllocations {
+      ...CartDiscountAllocation
+    }
+  }
+`;
+
+/**
+ * What every cart MUTATION returns. Hydrogen's default is only id, quantity
+ * and checkoutUrl; the discount form reads the codes back from the mutation
+ * result to tell "applied" from "not recognised", so they're added. Kept
+ * small on purpose — the full cart comes from the root loader, which
+ * revalidates after every mutation anyway. The name is Hydrogen's contract:
+ * it spreads `...CartApiMutation`.
+ */
+export const CART_MUTATE_FRAGMENT = `#graphql
+  fragment CartApiMutation on Cart {
+    id
+    updatedAt
+    totalQuantity
+    checkoutUrl
+    note
+    discountCodes {
+      code
+      applicable
+    }
+    appliedGiftCards {
+      id
+      lastCharacters
     }
   }
 `;

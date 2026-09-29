@@ -1,0 +1,479 @@
+/*
+ * Cart line items — drawer and /cart page.
+ *
+ * The drawer stacks each line's parts: image beside the title and total,
+ * then the options, then the controls. The page (≥700px) spreads them into
+ * columns: image, copy, controls, total.
+ */
+
+.list,
+.bundleList,
+.childList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- line ---- */
+
+.line {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'media copy price'
+    'media controls controls'
+    'alert alert alert'
+    'children children children';
+  column-gap: var(--space-4);
+  row-gap: var(--space-3);
+  align-items: start;
+  padding-block: var(--space-5);
+  margin: 0; /* reset.css spaces every <li> */
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.line + .line {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+/* A request in flight: dimmed, nothing moves. 0.7 keeps the body text
+ * readable (AA) while it's out. */
+.line[data-pending] {
+  opacity: 0.7;
+}
+
+.line[data-unavailable] .media {
+  opacity: 0.6;
+}
+
+/* Just added (drawer): a wash that fades out. */
+@keyframes cart-added {
+  from {
+    background-color: var(--color-surface-alt);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+.line[data-added] {
+  animation: cart-added 1.2s var(--ease-default) forwards;
+}
+
+.media {
+  grid-area: media;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+/* Contained, never cropped. */
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.copy {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Styleguide Card title. `a.` so reset.css's a:hover keeps its hands off. */
+a.title,
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+a.title:hover {
+  color: var(--color-action);
+  text-decoration: none;
+}
+
+/* Styleguide Detail. */
+.meta {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere; /* a long SKU on a 247px column */
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.tag {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+/* Shopify won't sell it online right now. */
+.notice {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.notice svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--color-action);
+}
+
+/* Navy and underlined: §09 bars orange text below 19px. */
+a.noticeLink,
+a.noticeLink:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- price ---- */
+
+.price {
+  grid-area: price;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+/* Styleguide Price. */
+.total {
+  font-family: var(--font-body);
+  font-size: var(--text-price);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.each {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Muted, not faint: it's text, so it has to clear AA. */
+.compareAt {
+  margin-right: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+/* ---- controls ---- */
+
+.controls {
+  grid-area: controls;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* Remove, Remove bundle: an icon and a word, underlined, 44px tall. */
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap; /* "Remove bundle" beside a long bundle name: the name wraps, not the button */
+  cursor: pointer;
+}
+
+.textButton:hover {
+  color: var(--color-action);
+}
+
+.textButton:disabled {
+  color: var(--color-text-faint);
+  cursor: default;
+}
+
+.textButton:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.lineAlert {
+  grid-area: alert;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+/* ---- nested (component) lines ---- */
+
+.children {
+  grid-area: children;
+  margin-left: calc(88px + var(--space-4));
+  padding-left: var(--space-4);
+  border-left: var(--border-width) solid var(--color-border);
+}
+
+.line[data-nested] {
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  padding-block: var(--space-3);
+}
+
+/* ---- bundle group ---- */
+
+.bundle {
+  margin: 0;
+  padding-block: var(--space-5);
+}
+
+.bundle + .bundle,
+.line + .bundle,
+.bundle + .line {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.bundleHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+/* Styleguide UI label, with a Detail eyebrow above it. */
+.bundleTitle {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+.bundleEyebrow {
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.bundleList .line:first-child {
+  padding-top: var(--space-4);
+}
+
+.bundleList .line:last-child {
+  padding-bottom: 0;
+}
+
+/* ---- page layout (≥700px): image · copy · controls · total ---- */
+
+@media (min-width: 700px) {
+  .lines[data-layout='page'] .line {
+    grid-template-columns: 96px minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'media copy controls price'
+      'alert alert alert alert'
+      'children children children children';
+    column-gap: var(--space-6);
+    align-items: center;
+  }
+
+  .lines[data-layout='page'] .controls {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+  }
+
+  .lines[data-layout='page'] .price {
+    min-width: 96px;
+  }
+
+  .lines[data-layout='page'] .children {
+    margin-left: calc(96px + var(--space-6));
+  }
+}
+
+/* ---- phone drawer (≤699px): image · copy, price under the options, the
+ * controls on their own row. Beside an 88px image the title had a 137px
+ * column at 375px — three lines of caps with the total crammed next to it. */
+
+@media (max-width: 699px) {
+  .lines[data-layout='drawer'] .line {
+    grid-template-columns: 80px minmax(0, 1fr);
+    grid-template-areas:
+      'media copy'
+      'media price'
+      'controls controls'
+      'alert alert'
+      'children children';
+    row-gap: var(--space-2);
+  }
+
+  .lines[data-layout='drawer'] .line[data-nested] {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .lines[data-layout='drawer'] .price {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .lines[data-layout='drawer'] .controls {
+    margin-top: var(--space-1);
+  }
+
+  .lines[data-layout='drawer'] .children {
+    margin-left: 0;
+  }
+
+  .skeletonLine {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+}
+
+/* ---- skeleton ---- */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeletonLine {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+}
+
+.skeletonLine + .skeletonLine {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.skeletonMedia {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+.skeletonText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-1);
+}
+
+.skeletonBar {
+  height: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+}
+
+/* ---- notices ---- */
+
+.notices {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.notices > svg {
+  flex: 0 0 auto;
+  margin-top: 4px;
+  color: var(--color-action);
+}
+
+.noticesText {
+  flex: 1 1 auto;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+}
+
+/* 44px target; the negative margins keep the notice's padding as drawn. */
+.noticesClose {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -12px -12px -12px 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.noticesClose:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line[data-added] {
+    animation: none;
+  }
+}

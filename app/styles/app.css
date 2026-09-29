@@ -69,76 +69,6 @@ img {
   }
 }
 
-/*
-* --------------------------------------------------
-* components/Aside
-* --------------------------------------------------
-*/
-@media (max-width: 45em) {
-  html:has(.overlay.expanded) {
-    overflow: hidden;
-  }
-}
-
-aside {
-  background: var(--color-surface);
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-  height: 100vh;
-  width: min(var(--aside-width), 100vw);
-  position: fixed;
-  right: calc(-1 * var(--aside-width));
-  top: 0;
-  /* Same duration and easing in both directions, so closing is the exact
-   * reverse of opening. */
-  transition: transform var(--duration-slide) var(--ease-default);
-}
-
-aside header {
-  align-items: center;
-  border-bottom: var(--border-width) solid var(--color-border-strong);
-  display: flex;
-  height: var(--header-height);
-  justify-content: space-between;
-  padding: 0 20px;
-}
-
-aside header h3 {
-  margin: 0;
-}
-
-aside header .close {
-  font-weight: bold;
-  opacity: 0.8;
-  text-decoration: none;
-  transition: all 200ms;
-  width: 20px;
-}
-
-aside header .close:hover {
-  opacity: 1;
-}
-
-aside header h2 {
-  margin-bottom: 0.6rem;
-  margin-top: 0;
-}
-
-aside main {
-  margin: 1rem;
-}
-
-aside p {
-  margin: 0 0 0.25rem;
-}
-
-aside p:last-child {
-  margin: 0;
-}
-
-aside li {
-  margin-bottom: 0.125rem;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -149,82 +79,6 @@ aside li {
   clip-path: inset(50%);
   white-space: nowrap;
   border-width: 0;
-}
-
-.overlay {
-  background: rgba(0, 0, 0, 0.2);
-  bottom: 0;
-  left: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: fixed;
-  right: 0;
-  top: 0;
-  visibility: hidden;
-  z-index: 10;
-
-  /*
-   * ⚠ `visibility` is part of the transition, and that is what makes CLOSING
-   * animate at all.
-   *
-   * Without it the overlay flipped straight to `visibility: hidden` the moment
-   * the class came off, which hid the panel instantly — so the drawer appeared
-   * to slide in on open and simply vanish on close. Delaying visibility by the
-   * slide duration keeps the panel on screen long enough to slide back out.
-   *
-   * There were also two competing `transition` declarations here (400ms with
-   * easing, then 400ms without); the second silently won, and neither matched
-   * the 200ms on the panel itself. One declaration now, one duration token.
-   */
-  transition:
-    opacity var(--duration-slide) var(--ease-default),
-    visibility 0s linear var(--duration-slide);
-}
-
-.overlay .close-outside {
-  background: transparent;
-  border: none;
-  color: transparent;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: calc(100% - var(--aside-width));
-}
-
-.overlay .light {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.overlay .cancel {
-  cursor: default;
-  height: 100%;
-  position: absolute;
-  width: 100%;
-}
-
-.overlay.expanded {
-  opacity: 1;
-  pointer-events: auto;
-  visibility: visible;
-  /* Opening: visibility flips immediately so the slide-in is visible from the
-   * first frame. Only the closing direction needs the delay. */
-  transition:
-    opacity var(--duration-slide) var(--ease-default),
-    visibility 0s;
-}
-/* reveal aside */
-.overlay.expanded aside {
-  transform: translateX(calc(var(--aside-width) * -1));
-}
-
-/* The drawer still opens and closes, just without the slide or fade. */
-@media (prefers-reduced-motion: reduce) {
-  aside,
-  .overlay,
-  .overlay.expanded {
-    transition: none;
-  }
 }
 
 button.reset {
@@ -310,68 +164,6 @@ button.reset:hover:not(:has(> *)) {
 * rather than left to fight the module.
 */
 
-/*
-* --------------------------------------------------
-* components/Cart
-* --------------------------------------------------
-*/
-.cart-main {
-  height: 100%;
-  max-height: calc(100vh - var(--cart-aside-summary-height));
-  overflow-y: auto;
-  width: auto;
-}
-
-.cart-main.with-discount {
-  max-height: calc(100vh - var(--cart-aside-summary-height-with-discount));
-}
-
-.cart-line {
-  padding: 0.75rem 0;
-}
-
-.cart-line-inner {
-  display: flex;
-}
-
-.cart-line img {
-  height: 100%;
-  display: block;
-  margin-right: 0.75rem;
-}
-
-.cart-summary-page {
-  position: relative;
-}
-
-.cart-summary-aside {
-  background: var(--color-surface);
-  border-top: var(--border-width) solid var(--color-border-strong);
-  bottom: 0;
-  padding-top: 0.75rem;
-  position: absolute;
-  width: calc(var(--aside-width) - 40px);
-}
-
-.cart-line-quantity {
-  display: flex;
-}
-
-/* Child line components (warranties, gift wrapping, etc.) */
-.cart-line-children {
-  padding-left: 2rem;
-}
-
-.cart-discount {
-  align-items: center;
-  display: flex;
-  margin-top: 0.25rem;
-}
-
-.cart-subtotal {
-  align-items: center;
-  display: flex;
-}
 /*
 * --------------------------------------------------
 * routes/__index
@@ -476,15 +268,6 @@ button.reset:hover:not(:has(> *)) {
   align-self: start;
   position: sticky;
   top: 6rem;
-}
-
-.product-price-on-sale {
-  display: flex;
-  grid-gap: 0.5rem;
-}
-
-.product-price-on-sale s {
-  opacity: 0.5;
 }
 
 .product-options-grid {

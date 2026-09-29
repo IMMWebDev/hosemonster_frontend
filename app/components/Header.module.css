@@ -161,6 +161,29 @@
   line-height: 0;
 }
 
+.cartLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The count: a white pill with navy digits — orange, or white on orange,
+ * fails contrast at this size, and the bar is navy. Detail size. */
+.cartCount {
+  display: inline-block;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: 20px;
+  text-align: center;
+  color: var(--brand-navy);
+}
+
 .searchIcon {
   width: 16px;
   height: 16px;

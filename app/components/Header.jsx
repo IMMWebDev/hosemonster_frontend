@@ -4,8 +4,10 @@ import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
 import {useHeaderScroll} from '~/lib/use-header-scroll';
 import {useNavHeight} from '~/lib/use-nav-height';
 import {useUtilityBarHeight} from '~/lib/use-utility-bar-height';
-import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
+import {useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
+import {MOBILE_MENU_ID} from '~/components/Drawer';
+import {CART_DRAWER_ID} from '~/components/cart/CartDrawer';
 import {QUICK_SEARCH_ID} from '~/components/search/QuickSearch';
 import CmsLink from '~/components/cms/CmsLink';
 import {strapiMedia} from '~/lib/strapi-media';
@@ -483,7 +485,7 @@ function HeaderMenuMobileToggle() {
        */
       onClick={() => (isOpen ? close() : open('mobile'))}
       aria-expanded={isOpen}
-      aria-controls="mobile-menu-aside"
+      aria-controls={MOBILE_MENU_ID}
       aria-label={isOpen ? 'Close menu' : 'Open menu'}
     >
       {isOpen ? '\u2715' : '\u2630'}
@@ -521,28 +523,41 @@ function SearchToggle() {
 }
 
 /**
- * @param {{count: number, label: string}}
+ * The cart link: the label, a count pill, and a live region that announces
+ * the count as it changes. Opens the drawer — except on /cart, where the
+ * page is the cart and the link is just a link. `cart_viewed` is published
+ * by the drawer itself, whoever opened it.
+ *
+ * @param {{count: number | null, label: string}}
  */
 function CartBadge({count, label}) {
-  const {open} = useAside();
-  const {publish, shop, cart, prevCart} = useAnalytics();
+  const {type, open} = useAside();
+  const onCartPage = useLocation().pathname === '/cart';
+  const n = count ?? 0;
 
   return (
     <a
       href="/cart"
-      className={styles.utilityLink}
+      className={`${styles.utilityLink} ${styles.cartLink}`}
+      aria-haspopup={onCartPage ? undefined : 'dialog'}
+      aria-expanded={onCartPage ? undefined : type === 'cart'}
+      aria-controls={onCartPage ? undefined : CART_DRAWER_ID}
       onClick={(e) => {
+        if (onCartPage) return;
         e.preventDefault();
         open('cart');
-        publish('cart_viewed', {
-          cart,
-          prevCart,
-          shop,
-          url: window.location.href || '',
-        });
       }}
     >
-      {label} <span aria-label={`(items: ${count})`}>({count})</span>
+      {label}
+      {n > 0 ? (
+        <span className={styles.cartCount} aria-hidden="true">
+          {n}
+        </span>
+      ) : null}
+      {/* Always mounted, so a change is announced. */}
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        {count === null ? '' : `, ${n} ${n === 1 ? 'item' : 'items'}`}
+      </span>
     </a>
   );
 }
@@ -552,7 +567,8 @@ function CartBadge({count, label}) {
  */
 function CartToggle({cart, label}) {
   return (
-    <Suspense fallback={<CartBadge count={0} label={label} />}>
+    // No count until the cart resolves — better than a "0" that then changes.
+    <Suspense fallback={<CartBadge count={null} label={label} />}>
       <Await resolve={cart}>
         <CartBanner label={label} />
       </Await>

@@ -1,0 +1,110 @@
+/* Empty cart — a block in the drawer, or the whole /cart page. */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+}
+
+/* The page: one centred column, the heading at page-headline size. */
+.empty[data-variant='page'] {
+  align-items: center;
+  max-width: 640px;
+  margin-inline: auto;
+  padding-block: var(--space-12) var(--space-16);
+  text-align: center;
+}
+
+.icon {
+  color: var(--color-text-faint);
+}
+
+/* Styleguide H3 in the drawer, H1 on the page. */
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  outline: none;
+}
+
+.empty[data-variant='page'] .heading {
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+}
+
+/* Styleguide Body. */
+.body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: var(--measure);
+}
+
+.empty[data-variant='page'] .body {
+  font-size: var(--text-body);
+  max-width: 48ch;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.empty[data-variant='page'] .actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.empty[data-variant='drawer'] .actions > :global(.btn) {
+  width: 100%;
+}
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.categories :global(ul) {
+  justify-content: center;
+}
+
+/* Styleguide UI label. */
+.categoriesTitle {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+/* mobile — the two buttons stack, full width. */
+@media (max-width: 499px) {
+  .empty[data-variant='page'] .actions {
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .empty[data-variant='page'] .actions > :global(.btn) {
+    width: 100%;
+  }
+}

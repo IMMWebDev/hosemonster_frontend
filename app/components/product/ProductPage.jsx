@@ -1,8 +1,11 @@
-import {Suspense, useEffect, useId, useMemo, useState} from 'react';
+import {Suspense, useEffect, useMemo, useState} from 'react';
 import {Await, Link, useNavigate, useRouteLoaderData} from 'react-router';
 import {CartForm, Image, Money} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
+import PhoneLink from '~/components/PhoneLink';
+import QuantityStepper from '~/components/QuantityStepper';
 import {ProductCard} from '~/components/product-listing/ProductListing';
+import {toCartLine} from '~/lib/cart-lines';
 import {sharpImageProps} from '~/lib/image';
 import {useProductPath} from '~/lib/product-urls';
 import {CONTACT_PATH} from '~/lib/search';
@@ -47,6 +50,7 @@ export function ProductPage({product, selectedVariant, productOptions, category,
             product={product}
             selectedVariant={selectedVariant}
             productOptions={productOptions}
+            intro={sections.intro}
           />
         </div>
       </div>
@@ -212,8 +216,10 @@ function optionLabel(name) {
 }
 
 /**
- * The buy box, in four groups: what it is (type, name, SKU), what it costs,
- * its options, and how to get it.
+ * The buy box, in four groups: what it is (type, name, SKU), what it costs
+ * — with the description's opening paragraph or bullets under the price,
+ * where the client's current site puts them — its options, and how to get
+ * it. The description's <h3> sections stay in Details below.
  *
  * "How to get it" is never a dead button. When Shopify sells the selection
  * online: quantity and Add to cart. When it doesn't: one panel that says so
@@ -221,9 +227,9 @@ function optionLabel(name) {
  * number from the footer — instead of a faded button, a note and a notice all
  * repeating "unavailable".
  *
- * @param {{product: object, selectedVariant: object, productOptions: Array<object>}} props
+ * @param {{product: object, selectedVariant: object, productOptions: Array<object>, intro?: string}} props
  */
-function BuyBox({product, selectedVariant, productOptions}) {
+function BuyBox({product, selectedVariant, productOptions, intro = ''}) {
   const navigate = useNavigate();
   const {open} = useAside();
   const phone = useRouteLoaderData('root')?.cmsFooter?.phone ?? null;
@@ -288,6 +294,8 @@ function BuyBox({product, selectedVariant, productOptions}) {
         </div>
       ) : null}
 
+      {intro ? <Prose html={intro} className={styles.intro} /> : null}
+
       {options.length ? (
         <div className={styles.options}>
           {options.map((option) => (
@@ -313,13 +321,15 @@ function BuyBox({product, selectedVariant, productOptions}) {
               <QuantityStepper value={quantity} onChange={setQuantity} />
               <CartForm
                 route="/cart"
+                // Keyed so the cart can find this add's errors (CartNotices).
+                fetcherKey={`cart-add-${selectedVariant.id}`}
                 inputs={{
                   lines: [
-                    {
-                      merchandiseId: selectedVariant.id,
+                    toCartLine({
+                      product,
+                      variant: selectedVariant,
                       quantity: Number(quantity) || 1,
-                      selectedVariant,
-                    },
+                    }),
                   ],
                 }}
                 action={CartForm.ACTIONS.LinesAdd}
@@ -343,7 +353,7 @@ function BuyBox({product, selectedVariant, productOptions}) {
               </Link>
               {phone ? (
                 <>
-                  {' '}or call <PhoneLink phone={phone} />
+                  {' '}or call <PhoneLink phone={phone} className={styles.link} />
                 </>
               ) : null}
             </p>
@@ -365,22 +375,13 @@ function BuyBox({product, selectedVariant, productOptions}) {
             </Link>
             {phone ? (
               <p className={styles.orderPhone}>
-                Or call <PhoneLink phone={phone} />
+                Or call <PhoneLink phone={phone} className={styles.link} />
               </p>
             ) : null}
           </div>
         )}
       </div>
     </div>
-  );
-}
-
-/** @param {{phone: string}} props */
-function PhoneLink({phone}) {
-  return (
-    <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} className={styles.link}>
-      {phone}
-    </a>
   );
 }
 
@@ -447,59 +448,6 @@ function OptionChips({option, markUnavailable, onSelect}) {
   );
 }
 
-/**
- * @param {{value: number | '', onChange: (v: number | '') => void, disabled?: boolean}} props
- */
-function QuantityStepper({value, onChange, disabled}) {
-  const id = useId();
-  const n = Number(value) || 1;
-  return (
-    <div className={styles.qty}>
-      <label htmlFor={id} className="sr-only">
-        Quantity
-      </label>
-      <button
-        type="button"
-        className={styles.qtyButton}
-        aria-label="Decrease quantity"
-        disabled={disabled || n <= 1}
-        onClick={() => onChange(Math.max(1, n - 1))}
-      >
-        −
-      </button>
-      <input
-        id={id}
-        type="number"
-        inputMode="numeric"
-        min={1}
-        max={999}
-        className={styles.qtyInput}
-        value={value}
-        disabled={disabled}
-        // Empty while typing is allowed; it settles back to 1 on blur.
-        onChange={(e) => {
-          const raw = e.target.value;
-          if (raw === '') return onChange('');
-          const parsed = Number.parseInt(raw, 10);
-          onChange(Number.isFinite(parsed) ? Math.min(999, Math.max(1, parsed)) : 1);
-        }}
-        onBlur={() => {
-          if (value === '') onChange(1);
-        }}
-      />
-      <button
-        type="button"
-        className={styles.qtyButton}
-        aria-label="Increase quantity"
-        disabled={disabled || n >= 999}
-        onClick={() => onChange(Math.min(999, n + 1))}
-      >
-        +
-      </button>
-    </div>
-  );
-}
-
 /* -------------------------------------------------------------------------- */
 /* Details                                                                      */
 /* -------------------------------------------------------------------------- */
@@ -522,9 +470,31 @@ function useNarrow() {
 }
 
 /**
+ * A jump link's click. Left to the browser, a `#hash` link pushes a history
+ * entry the router didn't make; React Router's ScrollRestoration then reads
+ * every one as a "back" to the same saved position, and from the second
+ * click on the page snaps back instead of moving. So: scroll here, and only
+ * rewrite the URL — replaceState with the router's own state fires nothing
+ * the router listens to. Focus follows, for keyboard and screen-reader
+ * visitors.
+ *
+ * @param {import('react').MouseEvent<HTMLAnchorElement>} event
+ */
+function jumpTo(event) {
+  const hash = event.currentTarget.hash;
+  const target = hash && document.getElementById(hash.slice(1));
+  if (!target) return; // no such section: the browser's own hash jump
+  event.preventDefault();
+  target.scrollIntoView({block: 'start'});
+  target.focus({preventScroll: true});
+  window.history.replaceState(window.history.state, '', hash);
+}
+
+/**
  * Overview, Specifications, Downloads — each a titled block, with jump links
- * when there's more than one. The description's own section titles ("Key
- * Features", "What's Included") stay as subheads inside the overview.
+ * when there's more than one. The description's opening copy is in the buy
+ * box; Overview here holds its other <h3> sections ("Key Features", "What's
+ * Included") as subheads.
  *
  * On a phone the blocks are an accordion, Overview open: stacked in full they
  * made a very long page to scroll past for the related products. Visibility
@@ -534,9 +504,12 @@ function useNarrow() {
  * @param {{sections: ReturnType<typeof splitDescription>}} props
  */
 function Details({sections}) {
-  const {intro, overview, specifications, downloads} = sections;
+  const {overview, specifications, downloads} = sections;
   const collapsible = useNarrow();
-  const [open, setOpen] = useState(() => new Set(['overview']));
+  // The first block starts open on a phone; the rest are folded.
+  const [open, setOpen] = useState(
+    () => new Set([overview.length ? 'overview' : specifications.length ? 'specifications' : 'downloads']),
+  );
   const toggle = (id) =>
     setOpen((current) => {
       const next = new Set(current);
@@ -546,21 +519,16 @@ function Details({sections}) {
     });
   const blocks = [];
 
-  if (intro || overview.length) {
+  if (overview.length) {
     blocks.push({
       id: 'overview',
       title: 'Overview',
-      body: (
-        <>
-          {intro ? <Prose html={intro} /> : null}
-          {overview.map((s) => (
-            <div key={s.title} className={styles.subsection}>
-              <h3 className={styles.subTitle}>{s.title}</h3>
-              <Prose html={s.html} />
-            </div>
-          ))}
-        </>
-      ),
+      body: overview.map((s) => (
+        <div key={s.title} className={styles.subsection}>
+          <h3 className={styles.subTitle}>{s.title}</h3>
+          <Prose html={s.html} />
+        </div>
+      )),
     });
   }
   if (specifications.length) {
@@ -595,7 +563,7 @@ function Details({sections}) {
             <ul className={styles.jumpList} role="list">
               {blocks.map((b) => (
                 <li key={b.id}>
-                  <a href={`#${b.id}`} className={styles.jumpLink}>
+                  <a href={`#${b.id}`} className={styles.jumpLink} onClick={jumpTo}>
                     {b.title}
                   </a>
                 </li>
@@ -613,6 +581,7 @@ function Details({sections}) {
               className={styles.block}
               data-open={isOpen ? '' : undefined}
               aria-labelledby={`${b.id}-title`}
+              tabIndex={-1}
             >
               <h2 id={`${b.id}-title`} className={styles.blockTitle}>
                 {collapsible ? (

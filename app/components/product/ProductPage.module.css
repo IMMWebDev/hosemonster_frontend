@@ -184,6 +184,12 @@ a.crumbLink:hover {
   border-top: var(--border-width) solid var(--color-border);
 }
 
+/* The description's opening copy, under the price — styleguide Body large,
+ * which .prose already is; only the measure is set here. */
+.intro {
+  max-width: var(--measure);
+}
+
 .options {
   display: flex;
   flex-direction: column;
@@ -389,74 +395,6 @@ a.chip[aria-current='true'] {
   width: 100%;
 }
 
-/* A control, so §07's 8px radius rather than the button pill. */
-.qty {
-  display: inline-flex;
-  flex: none;
-  align-items: stretch;
-  height: var(--button-height);
-  border: var(--border-width-thick) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  overflow: hidden;
-}
-
-.qty:focus-within {
-  border-color: var(--color-border-strong);
-}
-
-.qtyButton {
-  width: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font-family: var(--font-body);
-  font-size: 1.25rem;
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.qtyButton:disabled {
-  color: var(--color-text-faint);
-  cursor: default;
-}
-
-.qtyButton:focus-visible {
-  outline: var(--border-width-thick) solid var(--color-action);
-  outline-offset: -4px;
-}
-
-/* reset.css gives bare inputs a border, margins and a radius. */
-.qtyInput {
-  width: 48px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  font-family: var(--font-body);
-  font-size: var(--text-ui);
-  font-weight: var(--weight-bold);
-  text-align: center;
-  color: var(--color-text);
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.qtyInput::-webkit-outer-spin-button,
-.qtyInput::-webkit-inner-spin-button {
-  margin: 0;
-  -webkit-appearance: none;
-}
-
-.qtyInput:focus {
-  outline: none;
-}
-
-.qtyInput:disabled {
-  color: var(--color-text-faint);
-}
-
 .help {
   margin: 0;
   font-family: var(--font-body);
@@ -566,6 +504,12 @@ a.jumpLink:hover {
 
   /* Jump links land here: clear the sticky header. */
   scroll-margin-top: 96px;
+}
+
+/* A jump link moves focus here; the scroll is the cue, not a ring round
+ * the whole section. */
+.block:focus {
+  outline: none;
 }
 
 .blockTitle {
@@ -816,8 +760,10 @@ a.jumpLink:hover {
 /*
  * mdTablet / phone — one column, ordered for a small screen:
  *   name first (the buy box's head moves above the photo), then a shorter
- *   photo, then price, options and how to order. `display: contents` lets the
- *   buy box's groups sit in the column's own order.
+ *   photo, then price, options and how to order, and only then the
+ *   description's opening copy — so Add to cart is one scroll away rather
+ *   than under several paragraphs. `display: contents` lets the buy box's
+ *   groups sit in the column's own order.
  */
 @media (max-width: 699px) {
   /* Just the parent, as a back link. */
@@ -861,8 +807,12 @@ a.jumpLink:hover {
     order: -1;
   }
 
-  .eyebrow {
-    font-size: var(--text-body-sm);
+  /* After the order group; ruled off like the price, so it reads as the
+   * start of the description rather than a footnote to the button. */
+  .intro {
+    order: 1;
+    padding-top: var(--space-5);
+    border-top: var(--border-width) solid var(--color-border);
   }
 
   /* 4:3 rather than square: the photo no longer fills the first screen. */

@@ -1,4 +1,5 @@
 import {NavLink} from 'react-router';
+import PhoneLink from '~/components/PhoneLink';
 import CmsLink from '~/components/cms/CmsLink';
 import {SocialIcon} from '~/components/icons/SocialIcon';
 import {strapiMedia} from '~/lib/strapi-media';
@@ -58,9 +59,7 @@ export function Footer({header, cmsFooter, strapiBaseUrl}) {
           <div className={styles.contact}>
             {address ? <p className={styles.contactLine}>{address}</p> : null}
             {phone ? (
-              <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} className={styles.contactLine}>
-                {phone}
-              </a>
+              <PhoneLink phone={phone} className={styles.contactLine} />
             ) : null}
             {email ? (
               <a href={`mailto:${email}`} className={styles.contactLine}>

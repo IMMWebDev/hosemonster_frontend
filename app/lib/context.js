@@ -1,6 +1,6 @@
 import {createHydrogenContext, createWithCache} from '@shopify/hydrogen';
 import {AppSession} from '~/lib/session';
-import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
+import {CART_MUTATE_FRAGMENT, CART_QUERY_FRAGMENT} from '~/lib/fragments';
 import {createStrapiClient} from '~/lib/strapi';
 
 /**
@@ -47,6 +47,7 @@ export async function createHydrogenRouterContext(
       i18n: {language: 'EN', country: 'US'},
       cart: {
         queryFragment: CART_QUERY_FRAGMENT,
+        mutateFragment: CART_MUTATE_FRAGMENT,
       },
     },
     additionalContext,
