@@ -39,9 +39,12 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  /* Detail — small secondary text. The current page overrides the ink below. */
   font-family: var(--font-body);
-  font-size: 0.8125rem; /* 13px — below the scale's smallest, per the design */
-  line-height: 1.25;
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
 }
 
 /* The slash is decoration generated between items, so it is never announced
@@ -155,8 +158,8 @@
   font-size: var(--text-h1);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h1);
-  /* Untracked in the Sprint 4 hifi, not the -0.05em other H1s use. */
-  letter-spacing: normal;
+  /* The guide's H1 tracking, though the Sprint 4 hifi drew this one untracked. */
+  letter-spacing: var(--tracking-h1);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   white-space: pre-line;
@@ -218,8 +221,8 @@
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-bold);
   line-height: var(--leading-eyebrow);
-  /* Wider than the 0.08em eyebrow tracking, as the design sets these labels. */
-  letter-spacing: 0.12em;
+  /* The Eyebrow's tracking — the design drew these labels wider, at 0.12em. */
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
   margin: 0;

@@ -270,7 +270,6 @@ Two commercial families:
 | Style | Token | Size | Font |
 |---|---|---|---|
 | H1 · Page headline | `--text-h1` | `clamp(26px, 3.1vw, 40px)` / 1.1 | Nimbus Bold |
-| H2 large · Major section | `--text-h2-lg` | `clamp(28px, 3.2vw, 42px)` / 1.1 | Nimbus Bold |
 | H2 · Standard section | `--text-h2` | `clamp(24px, 2.6vw, 32px)` / 1.1 | Nimbus Bold |
 | H3 · Sub-section | `--text-h3` | 20px / 1.2 | Nimbus Bold |
 | Section eyebrow | `--text-eyebrow` | 19px / 1.1, 0.08em, uppercase, orange | **Gopher Bold** |

@@ -79,6 +79,7 @@
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0 0 14px; /* exact value from the design */
@@ -96,9 +97,9 @@
 
 .price {
   font-family: var(--font-body);
-  font-size: 1.25rem; /* 20px in the design */
+  font-size: var(--text-price); /* Price */
   font-weight: var(--weight-bold);
-  line-height: var(--leading-body-sm);
+  line-height: 1.2;
   color: var(--color-text);
   margin: 0 0 var(--space-5); /* 20px in the design */
 }

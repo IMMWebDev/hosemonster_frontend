@@ -5,7 +5,7 @@ import styles from './NumberedSteps.module.css';
  * Numbered Steps module — sprint-04 hifi_fireflow.html, "How it works".
  *
  * An intro lockup over a row of numbered steps divided by rules, with a big
- * orange numeral above each, and an optional closing CTA bar under them
+ * ghosted numeral above each, and an optional closing CTA bar under them
  * (sprint-04 hifi_dechlorinationcollection.html, "Still deciding?").
  *
  * The numerals are NOT a content field. They come from the row order, so

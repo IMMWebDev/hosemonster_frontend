@@ -45,6 +45,7 @@
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0 0 var(--space-6); /* 24px in the design */
@@ -53,6 +54,7 @@
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text-body);
   max-width: 80ch;
@@ -86,14 +88,14 @@
   margin: 0; /* reset.css spaces every <li> */
 }
 
-/* The display face in caps, as drawn. Undoes the global h3 rule, which styles
- * every h3 as the orange, tracked eyebrow. */
+/* H3 · Sub-section. Undoes the global h3 rule, which styles every h3 as the
+ * orange, tracked eyebrow. */
 .columnTitle {
   font-family: var(--font-display);
-  font-size: 1.0625rem; /* 17px in the design */
+  font-size: var(--text-h3);
   font-weight: var(--weight-bold);
-  line-height: 1.2;
-  letter-spacing: normal;
+  line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0 0 10px; /* exact value from the design */
@@ -101,9 +103,10 @@
 
 .columnBody {
   font-family: var(--font-body);
-  font-size: 0.875rem; /* 14px in the design */
+  font-size: var(--text-body-sm); /* Body — standard section copy */
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-muted);
+  color: var(--color-text-body);
   margin: 0;
 }
 

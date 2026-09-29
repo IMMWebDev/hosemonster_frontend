@@ -1,28 +1,39 @@
 /*
- * Newsletter module — Figma "Homepage" → Footer with newsletter → Newsletter
+ * Newsletter card — sprint-04 hifis, above the footer
  *
- * Full-bleed signup band. The form itself is an embedded HubSpot form, so most
- * of the styling below reaches into HubSpot's own markup via :global().
+ * An inset rounded signup card: navy fading into a full-strength photo, copy
+ * left, form right. The form itself is an embedded HubSpot form, so most of
+ * the styling below reaches into HubSpot's own markup via :global().
  */
 
 .section {
+  /*
+   * Site chrome, rendered by PageLayout as a sibling of <main>, so it already
+   * spans the page — no full-bleed arithmetic. The card sits in the content
+   * column like the footer below it: the comp's clamp(28px, 4vw, 48px) above,
+   * nothing below (the footer brings its own top padding).
+   */
+  padding-top: clamp(28px, 4vw, 48px);
+}
+
+/* The footer's column, so the card lines up with the page content. */
+.container {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+.card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background-color: var(--brand-navy);
-
-  /*
-   * No full-bleed hack here, unlike the Hero and CTA Banner. Those are page
-   * modules rendered inside <main>, which carries a horizontal margin they have
-   * to cancel. This band is site chrome rendered by PageLayout as a sibling of
-   * <main>, so it is already the full width of the page — subtracting the
-   * gutter as well pushes it past both viewport edges and creates a horizontal
-   * scrollbar.
-   */
-  width: 100%;
+  border-radius: var(--radius-md); /* 8px in the design */
+  background-color: #12232f; /* the comp's deep navy; shows before the photo */
 }
 
-/* Positive stack: image 0, wash 1, content 2. */
+/* Positive stack: image 0, wash 1, content 2. The photo is at full strength
+ * now — the wash does the darkening, and only on the copy side. */
 .backgroundImage {
   position: absolute;
   inset: 0;
@@ -30,7 +41,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.2; /* from the design */
 }
 
 .wash {
@@ -41,69 +51,73 @@
   pointer-events: none;
 }
 
+/*
+ * Wrap rather than a breakpoint: the columns have real flex bases (440 / 380
+ * in the design) and stack when they stop fitting. The min-widths are capped
+ * at 100% so a phone-width card can't be pushed wider than itself.
+ */
 .inner {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: 1fr 1.1fr; /* from the design */
-  gap: var(--space-8);
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  width: 100%;
-  max-width: var(--container-outer);
-  margin-inline: auto;
-  padding: var(--space-14) var(--container-gutter);
+  justify-content: space-between;
+  gap: 40px; /* from the design */
+  padding: clamp(28px, 4vw, 52px) clamp(24px, 4vw, 60px); /* from the design */
 }
 
 .copy {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-width: 0;
+  flex: 1 1 440px;
+  min-width: min(320px, 100%);
 }
 
-/* Figma "H3" / Eyebrow */
+/*
+ * Orange on navy, as the comp now draws it. §09 measures it at 2.95:1; the
+ * design has accepted that for every section eyebrow on a dark ground (Hero,
+ * Hero Search, CTA Banner, CTA Bar), and this band was the last one kept
+ * white. At 19px / 700 it's large text.
+ */
 .eyebrow {
-  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
-   * 700 is what §09 requires before orange is legal as text. */
   font-family: var(--font-body);
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-bold);
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  /* §09: orange on navy is 2.95:1 and fails at every size. */
-  color: var(--color-text-inverse);
-  margin: 0;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
 }
 
-/*
- * Was Figma "H2.5" (40px), a size that has been retired from the scale. H2 is
- * the nearest surviving step, so this band's heading is now the same size as a
- * section heading rather than one notch below it.
- */
+/* The section H2 — --text-h2, the same as every module. Breaks typed in
+ * the CMS are kept ("Flow testing tips,⏎no fluff."). */
 .heading {
   font-family: var(--font-display);
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   white-space: pre-line;
-  margin: 4px 0 0;
+  margin: 0 0 14px; /* exact value from the design */
 }
 
-/* Figma "B1" */
+/* Styleguide "Body" — standard section copy, in the on-navy ink. */
 .body {
   font-family: var(--font-body);
-  font-size: var(--text-body);
+  font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--hero-meta-ink);
+  color: var(--ink-on-navy);
+  max-width: var(--measure); /* the standard 64ch measure; the comp's 34ch was too narrow */
+  text-wrap: pretty;
   margin: 0;
 }
 
 .formColumn {
-  min-width: 0;
+  flex: 1 1 380px;
+  min-width: min(280px, 100%);
 }
 
 /*
@@ -120,12 +134,13 @@
  * styled in HubSpot's own form editor instead.
  */
 
+/* Styleguide "UI label". */
 .formColumn :global(.hs-form-field > label) {
   display: block;
   font-family: var(--font-body);
-  font-size: var(--text-body);
-  font-weight: var(--weight-medium);
-  line-height: var(--leading-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
   color: var(--newsletter-label-ink);
   margin-bottom: 7px;
 }
@@ -139,7 +154,8 @@
 .formColumn :global(.hs-error-msgs label) {
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
-  line-height: var(--leading-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
   /* §09: orange on navy is 2.95:1 and fails at every size. */
   color: var(--color-text-inverse);
   margin-top: var(--space-2);
@@ -179,7 +195,8 @@
   font-size: var(--text-button);
   font-weight: var(--weight-bold);
   line-height: var(--leading-button);
-  text-transform: capitalize;
+  /* Sentence case, as the styleguide button (and .btn) sets it. */
+  text-transform: none;
   color: var(--color-text-inverse);
   background: var(--color-action);
   border: 0;
@@ -234,30 +251,15 @@
 .formPending {
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
-  line-height: var(--leading-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
   color: var(--hero-meta-ink);
   margin: 0;
 }
 
 /*
  * -----------------------------------------------------------------------------
- * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * RESPONSIVE
  * -----------------------------------------------------------------------------
- * ⚠ Not specced in Figma — desktop-only 1280px frame.
+ * None needed: the columns wrap on their own and the padding is a clamp.
  */
-
-/* tablet — copy above the form rather than a cramped two-column split */
-@media (max-width: 1099px) {
-  .inner {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-6);
-    padding-block: var(--space-12);
-  }
-}
-
-/* mobile */
-@media (max-width: 499px) {
-  .inner {
-    padding-block: var(--space-8);
-  }
-}

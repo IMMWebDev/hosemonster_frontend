@@ -49,6 +49,7 @@
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   white-space: pre-line;
@@ -105,12 +106,13 @@
   gap: 6px;
 }
 
-/* Figma "H3", reversed out */
+/* Styleguide H3, reversed out */
 .bannerHeading {
   font-family: var(--font-display);
   font-size: var(--text-h3);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-normal); /* the global h3 rule tracks it like an eyebrow */
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;
@@ -202,7 +204,7 @@
   opacity: 1;
 }
 
-/* Figma "H3", reversed out */
+/* Styleguide card title, reversed out */
 .cardTitle {
   position: relative;
   z-index: 2;
@@ -210,6 +212,7 @@
   font-size: var(--text-card-title); /* §03 card title, 15px */
   font-weight: var(--weight-bold);
   line-height: var(--leading-card-title);
+  letter-spacing: var(--tracking-normal); /* the global h3 rule tracks it like an eyebrow */
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;
@@ -274,7 +277,7 @@
   }
 }
 
-/* mdTablet — one card per row; two columns of 18px-uppercase titles wrap badly. */
+/* mdTablet — one card per row; two columns of uppercase card titles wrap badly. */
 @media (max-width: 699px) {
   .grid {
     grid-template-columns: minmax(0, 1fr);

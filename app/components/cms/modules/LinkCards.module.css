@@ -68,12 +68,13 @@
   margin: var(--space-2) 0 0;
 }
 
+/* Styleguide "Body large" — intro copy */
 .body {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-size: var(--text-body);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-soft);
+  color: var(--color-text-body);
   max-width: var(--measure);
   margin: var(--space-3) 0 0;
 }
@@ -166,24 +167,24 @@
   min-width: 0; /* lets the copy wrap instead of pushing the chevron out */
 }
 
+/* Styleguide "Card title" — the same as Document Cards' and every other
+ * card's title. */
 .cardTitle {
-  font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
   font-weight: var(--weight-bold);
-  line-height: 1.25;
+  line-height: var(--leading-card-title);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
   color: var(--color-text);
 }
 
-/*
- * 13.5px in the design, below the smallest step in the scale. Stated literally
- * rather than forced onto --text-body-sm, which would be 16px and crowd the
- * card — one for the type-scale pass in STYLEGUIDE.md.
- */
+/* Styleguide "Detail" — 13.5px, the size the design drew. */
 .cardDescription {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--text-detail);
   font-weight: var(--weight-regular);
-  line-height: 1.45;
+  line-height: var(--leading-body);
   color: var(--color-text-soft);
 }
 

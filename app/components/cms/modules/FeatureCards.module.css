@@ -51,13 +51,13 @@
   margin: 4px 0 0;
 }
 
-/* Figma "B1", in this section's muted grey */
+/* Styleguide "Body large" — intro copy */
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--muted-ink);
+  color: var(--color-text-body);
   max-width: 640px;
   margin: var(--space-1) 0 0;
 }
@@ -156,22 +156,25 @@
   padding-top: 10px; /* the design's gap between image and title */
 }
 
-/* Figma "H3", reversed out */
+/* Styleguide "Card title", reversed out. An <h3>, so tracking is restated or
+ * the eyebrow's 0.08em from typography.css leaks through. */
 .cardTitle {
   font-family: var(--font-display);
   font-size: var(--text-card-title); /* §03 card title, 15px */
   font-weight: var(--weight-bold);
   line-height: var(--leading-card-title);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;
 }
 
-/* Figma "B1". Grey at rest; on hover the card turns red, where grey muddies —
- * so it becomes white held back to 72%, as in the selected variant. */
+/* Styleguide "Body", on navy. Grey at rest; on hover the card turns red, where
+ * grey muddies — so it becomes white held back to 72%, as in the selected
+ * variant. */
 .cardDescription {
   font-family: var(--font-body);
-  font-size: var(--text-body);
+  font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--hero-meta-ink);

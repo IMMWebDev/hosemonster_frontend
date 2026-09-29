@@ -141,25 +141,43 @@
   padding-block: var(--space-5);
 }
 
-/* Same pill-plus-orange-button shape as the shop hero and the /search page. */
+/*
+ * Same shape as the shop hero and the /search page: one pill with the submit
+ * inset, so there's no seam between a flat field and a round button. 56px;
+ * the 2px border + 4px inset leave a 44px button. On this white panel the
+ * border stays visible (grey) and turns orange while the field has keyboard
+ * focus.
+ */
 .form {
   position: relative;
   flex: 1 1 auto;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   min-width: 0;
   /* reset.css caps every <form> at 400px above 768px. */
   max-width: none;
+  height: var(--button-height);
   margin: 0;
+  padding: var(--space-1);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  transition: border-color var(--duration-control) var(--ease-default);
 
   /* The submit is a fixed width so the clear button can be placed against it
    * from the form's right edge — see .clear. */
   --submit-w: 112px;
 }
 
+/* Orange on white is 3.6:1, clear of the 3:1 non-text contrast floor. */
+.form:has(.input:focus-visible) {
+  border-color: var(--color-action);
+}
+
 .formIcon {
   position: absolute;
-  left: var(--space-5);
+  /* Against the pill's padding box, inside its border: 20px from the edge. */
+  left: calc(var(--space-5) - var(--border-width-thick));
   top: 50%;
   width: 18px;
   height: 18px;
@@ -171,20 +189,22 @@
 .input {
   flex: 1 1 auto;
   min-width: 0;
-  height: var(--button-height);
+  height: 100%;
   margin: 0;
+  /* Right: room for the clear button. Left: clears the icon, measured from
+   * the pill's outer edge less its border and inset. `appearance: none`
+   * drops the native search-field look, which paints its own box. */
   padding: 0 calc(var(--space-4) + 32px) 0
-    calc(var(--space-5) + 18px + var(--space-3));
-  border: var(--border-width-thick) solid var(--color-border);
-  border-right: 0;
-  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
-  background: var(--color-surface);
+    calc(var(--space-5) + 18px + var(--space-3) - var(--space-1) - var(--border-width-thick));
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
   color: var(--color-text);
   font-family: var(--font-body);
   /* 18px, above the 16px that stops iOS zooming the page on focus. */
   font-size: 1.125rem;
   line-height: var(--leading-body);
-  transition: border-color var(--duration-control) var(--ease-default);
 }
 
 .input::placeholder {
@@ -197,24 +217,18 @@
   appearance: none;
 }
 
-/*
- * Focus is the field's own border turning orange, meeting the orange button so
- * the pair reads as one control. It used to be an outline inset 4px, which
- * stopped short of the button and sat inside the field's edge — the two looked
- * detached and slightly different heights even though they measure the same.
- * Orange on white is 3.6:1, clear of the 3:1 non-text contrast floor.
- */
+/* The focus ring is the pill's border (above). */
 .input:focus-visible {
   outline: none;
-  border-color: var(--color-action);
 }
 
 .clear {
   position: absolute;
   top: 50%;
-  /* Inside the input, just left of the submit. The input reserves 32px of
+  /* Inside the input, just left of the submit (measured from the pill's
+   * padding edge: the inset, then the submit). The input reserves 32px of
    * right padding for it, so typed text never runs underneath. */
-  right: calc(var(--submit-w) + var(--space-2));
+  right: calc(var(--space-1) + var(--submit-w) + var(--space-2));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -241,9 +255,10 @@
 
 .submit {
   flex: 0 0 var(--submit-w);
+  height: 100%; /* 44px inside the pill */
   padding: 0;
   border: 0;
-  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  border-radius: var(--radius-pill);
   background: var(--color-action);
   color: var(--color-action-text);
   font-family: var(--font-body);
@@ -259,7 +274,9 @@
 }
 
 .submit:focus-visible {
-  outline: var(--border-width-thick) solid var(--color-action);
+  /* Navy, as on the other search bars: an orange ring reads as part of the
+   * button. */
+  outline: var(--border-width-thick) solid var(--brand-navy);
   outline-offset: 2px;
 }
 
@@ -362,11 +379,19 @@
     display: none;
   }
 
-  .input {
+  /* No submit to inset: the pill is just the field, 48px. */
+  .form {
     height: 48px;
+    padding: 0;
+  }
+
+  .formIcon {
+    left: calc(var(--space-5) - var(--border-width-thick));
+  }
+
+  .input {
     padding-right: calc(var(--space-2) + 32px);
-    border-right: var(--border-width-thick) solid var(--color-border);
-    border-radius: var(--radius-pill);
+    padding-left: calc(var(--space-5) + 18px + var(--space-3) - var(--border-width-thick));
     /* Stays at 16px or above so iOS does not zoom on focus. */
     font-size: var(--text-body);
   }
@@ -384,7 +409,7 @@
   .dialog,
   .dialog::backdrop,
   .bodyInner,
-  .input,
+  .form,
   .submit {
     transition: none;
   }

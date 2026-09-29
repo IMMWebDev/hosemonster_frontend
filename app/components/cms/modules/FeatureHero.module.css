@@ -213,6 +213,7 @@
   font-size: var(--text-h1);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   white-space: pre-line;
@@ -252,12 +253,13 @@
     color-mix(in srgb, var(--white) 20%, transparent);
 }
 
+/* Styleguide "Detail", in the on-navy ink (the Hero trust bar's own token). */
 .trustItem {
   font-family: var(--font-body);
-  font-size: var(--text-detail); /* 13.5px in the design */
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-body-sm);
-  color: var(--color-text-inverse);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--hero-meta-ink);
   margin: 0;
 }
 
@@ -403,9 +405,9 @@
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-bold);
   line-height: var(--leading-eyebrow);
-  /* Wider than the 0.08em eyebrow tracking, as the design sets these labels
-   * (and as Page Hero's info band does). */
-  letter-spacing: 0.12em;
+  /* Styleguide Eyebrow tracking — the comp's wider 0.12em is not a guide
+   * value; the eyebrow is the only tracked style. */
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
   margin: 0 0 10px; /* exact value from the design */

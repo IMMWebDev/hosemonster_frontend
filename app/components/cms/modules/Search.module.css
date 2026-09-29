@@ -133,14 +133,15 @@
 
 /*
  * The results line under the search box — "55 products and 1 page for
- * “gauge”". §01 On Navy for the counts, the house ink for secondary copy on a
- * dark fill; the term itself in white and bold so it is what the eye lands on.
- * White rather than orange: §09 measures orange on navy at 2.95:1 and fails it
- * at this size.
+ * “gauge”". Body large, in §01 On Navy for the counts, the house ink for
+ * secondary copy on a dark fill; the term itself in white and bold so it is
+ * what the eye lands on. White rather than orange: §09 measures orange on navy
+ * at 2.95:1 and fails it at this size.
  */
 .resultsFor {
   font-family: var(--font-body);
   font-size: var(--text-body);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--hero-meta-ink);
   margin: var(--space-4) 0 0; /* the box above has its own top margin only */
@@ -182,16 +183,32 @@
 .search {
   position: relative;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   width: 100%;
   /* reset.css caps every <form> at 400px above 768px. */
   max-width: 560px;
   margin-top: var(--space-4);
+
+  /* Hero Search's bar: one white pill with the Go button inset (see the note
+   * there). 56px; 2px border + 4px inset leaves a 44px button. */
+  height: var(--button-height);
+  padding: var(--space-1);
+  border: var(--border-width-thick) solid var(--white);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  transition: border-color var(--duration-fast) var(--ease-default);
 }
 
+/* Orange on white is 3.6:1, clear of the 3:1 non-text contrast floor. */
+.search:has(.searchInput:focus-visible) {
+  border-color: var(--color-action);
+}
+
+/* Positioned against the pill's padding box, which starts inside its 2px
+ * border — so this lands 20px from the outer edge, as before. */
 .searchIcon {
   position: absolute;
-  left: var(--space-5);
+  left: calc(var(--space-5) - var(--border-width-thick));
   top: 50%;
   width: 18px;
   height: 18px;
@@ -203,20 +220,18 @@
 .searchInput {
   flex: 1 1 auto;
   min-width: 0;
-  height: var(--button-height);
+  height: 100%;
 
-  /* reset.css gives bare inputs margins, padding and a border; the margins in
-   * particular would make the row taller than the button. */
+  /* reset.css gives bare inputs margins, padding and a border — zeroed; the
+   * pill draws the edge. The left padding clears the icon (measured from the
+   * pill's outer edge, less the border and inset). `appearance: none` drops
+   * the native search-field look, which paints its own box. */
   margin: 0;
-  padding: 0 var(--space-4) 0 calc(var(--space-5) + 18px + var(--space-3));
-
-  /* Transparent until focus — see below. The white background paints under
-   * it, so at rest the field looks borderless, as on the navy panel it should.
-   * No right border: that edge meets the button. */
-  border: var(--border-width-thick) solid transparent;
-  border-right: 0;
-  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
-  background-color: var(--color-surface);
+  padding: 0 var(--space-3) 0 calc(var(--space-5) + 18px + var(--space-3) - var(--space-1) - var(--border-width-thick));
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background-color: transparent;
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-body);
@@ -229,28 +244,22 @@
   opacity: 1;
 }
 
-/* WebKit's own cancel "×" sits against the button seam — hidden. */
+/* WebKit's own cancel "×" would crowd the button — hidden. */
 .searchInput::-webkit-search-cancel-button {
   appearance: none;
 }
 
-/*
- * Focus is the field's own border turning orange, meeting the orange button so
- * the pair reads as one control. It used to be an outline inset 4px, which
- * stopped short of the button and sat inside the field's edge — the two looked
- * detached and slightly different heights even though they measure the same.
- * Orange on white is 3.6:1, clear of the 3:1 non-text contrast floor.
- */
+/* The focus ring is the pill's border (above). */
 .searchInput:focus-visible {
   outline: none;
-  border-color: var(--color-action);
 }
 
 .searchButton {
   flex: 0 0 auto;
+  height: 100%; /* 44px inside the pill */
   padding-inline: var(--space-button-x);
   border: 0;
-  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  border-radius: var(--radius-pill);
   background-color: var(--color-action);
   color: var(--color-action-text);
   font-family: var(--font-body);
@@ -265,9 +274,10 @@
   background-color: var(--color-action-hover);
 }
 
-/* White on navy — an orange ring would vanish against the orange button. */
+/* Navy: the button sits on the white pill, where a white ring would vanish
+ * (and an orange one would merge with the button). */
 .searchButton:focus-visible {
-  outline: var(--border-width-thick) solid var(--white);
+  outline: var(--border-width-thick) solid var(--brand-navy);
   outline-offset: 2px;
 }
 
@@ -301,17 +311,18 @@
   min-width: 0;
 }
 
-/* The small tracked label the §07 panels use: it names a group, it does not
- * compete with the heading. */
+/* UI label, as a filter heading: it names a group of chips, it does not
+ * compete with the heading. Every property stated — .groupTitle is an <h3>,
+ * and the bare-h3 eyebrow styles (tracked, uppercase, orange) would leak in. */
 .relatedLabel,
 .groupTitle {
   font-family: var(--font-body);
-  font-size: 0.78125rem; /* 12.5px, as the §07 panel labels */
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
-  line-height: 1.2;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  line-height: var(--leading-body-sm);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -350,6 +361,7 @@
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0;
@@ -360,14 +372,18 @@
 .error {
   font-family: var(--font-body);
   font-size: var(--text-body);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text-body);
   margin: 0;
 }
 
+/* UI label — an alert, so it reads as a status line rather than copy. */
 .error {
-  color: var(--color-text);
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
 }
 
 /*
@@ -389,6 +405,7 @@
 .noResultsBody {
   font-family: var(--font-body);
   font-size: var(--text-body);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text-body);
   margin: var(--space-3) 0 0;
@@ -410,6 +427,7 @@
 .help {
   font-family: var(--font-body);
   font-size: var(--text-body);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text-body);
   margin: 0;
@@ -480,28 +498,41 @@ a.helpLink:hover {
 }
 
 /* mobile — the pill would squeeze the placeholder to nothing beside the
- * button, so the two halves stack, as the shop hero's bar does. */
+ * button, so the two halves stack, as the shop hero's bar does: the field
+ * becomes its own white pill and carries the focus border itself. */
 @media (max-width: 499px) {
   .search {
     flex-wrap: wrap;
     gap: var(--space-2);
+    height: auto;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+  }
+
+  .searchInput,
+  .searchButton {
+    flex: 1 1 100%;
+    height: var(--button-height);
   }
 
   .searchInput {
-    flex: 1 1 100%;
-    /* Stacked, the field no longer meets the button: it needs its right edge
-     * back for the focus border to go all the way round. */
-    border-right-width: var(--border-width-thick);
-    border-radius: var(--radius-pill);
+    padding-left: calc(var(--space-5) + 18px + var(--space-3));
+    border: var(--border-width-thick) solid var(--white);
+    background-color: var(--color-surface);
   }
 
-  .searchButton {
-    flex: 1 1 100%;
-    min-height: 52px;
-    border-radius: var(--radius-pill);
+  .searchInput:focus-visible {
+    border-color: var(--color-action);
   }
 
+  .searchButton:focus-visible {
+    outline-color: var(--white);
+  }
+
+  /* Centred on the field, now the first row rather than the whole bar. */
   .searchIcon {
+    left: var(--space-5);
     top: calc(var(--button-height) / 2);
   }
 

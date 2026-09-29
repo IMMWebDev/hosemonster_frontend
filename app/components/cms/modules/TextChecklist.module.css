@@ -63,6 +63,7 @@
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0 0 var(--space-6); /* 24px in the design */
@@ -100,7 +101,7 @@
   gap: var(--space-3); /* 12px in the design */
   margin: 0; /* reset.css spaces every <li> */
   font-family: var(--font-body);
-  font-size: 0.90625rem; /* 14.5px in the design */
+  font-size: var(--text-ui); /* UI label */
   font-weight: var(--weight-bold);
   line-height: var(--leading-body-sm);
   color: var(--color-text);

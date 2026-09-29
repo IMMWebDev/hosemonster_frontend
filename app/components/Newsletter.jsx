@@ -3,7 +3,8 @@ import {strapiMedia} from '~/lib/strapi-media';
 import styles from './Newsletter.module.css';
 
 /**
- * Newsletter band — Figma "Homepage" → Footer with newsletter → Newsletter.
+ * Newsletter card — sprint-04 hifis, above the footer ("Flow testing tips, no
+ * fluff."); originally Figma "Homepage" → Footer with newsletter.
  *
  * Site-wide chrome, not a page module: the content is edited once on the
  * Options single type and this renders directly above the footer on every page
@@ -39,33 +40,43 @@ export default function Newsletter({newsletter, baseUrl, siteEnv}) {
 
   return (
     <section className={styles.section}>
-      {backgroundUrl ? (
-        <img
-          src={backgroundUrl}
-          /* Decorative — the heading carries the meaning. */
-          alt=""
-          className={styles.backgroundImage}
-          loading="lazy"
-          decoding="async"
-        />
-      ) : null}
-      <div className={styles.wash} aria-hidden="true" />
-
-      <div className={styles.inner}>
-        <div className={styles.copy} data-reveal>
-          {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
-          <h2 className={styles.heading}>{heading}</h2>
-          {body ? <p className={styles.body}>{body}</p> : null}
-        </div>
-
-        <div className={styles.formColumn} data-reveal style={{'--reveal-i': 1}}>
-          {canEmbed ? (
-            <HubSpotForm
-              portalId={portalId}
-              region={region}
-              formId={hubspotFormId}
+      <div className={styles.container}>
+        {/* An inset rounded card inside the content column, per the comp —
+            it used to be a full-bleed band. */}
+        <div className={styles.card}>
+          {backgroundUrl ? (
+            <img
+              src={backgroundUrl}
+              /* Decorative — the heading carries the meaning. */
+              alt=""
+              className={styles.backgroundImage}
+              loading="lazy"
+              decoding="async"
             />
           ) : null}
+          <div className={styles.wash} aria-hidden="true" />
+
+          <div className={styles.inner}>
+            <div className={styles.copy} data-reveal>
+              {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
+              <h2 className={styles.heading}>{heading}</h2>
+              {body ? <p className={styles.body}>{body}</p> : null}
+            </div>
+
+            <div
+              className={styles.formColumn}
+              data-reveal
+              style={{'--reveal-i': 1}}
+            >
+              {canEmbed ? (
+                <HubSpotForm
+                  portalId={portalId}
+                  region={region}
+                  formId={hubspotFormId}
+                />
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
     </section>

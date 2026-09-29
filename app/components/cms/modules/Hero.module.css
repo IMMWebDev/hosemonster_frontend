@@ -132,15 +132,14 @@
   margin: 0;
 }
 
-/* Figma "B1" / Standard Body Copy, reversed out */
+/* Body large (intro copy), in the on-navy ink the guide gives body copy on a
+ * dark ground — white is for the heading. */
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  /* Regular, not the B1 default of medium — this copy is reversed out on a dark
-   * photo, where the heavier weight reads as too dense. */
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-inverse);
+  color: var(--color-text-on-navy);
   white-space: pre-line;
   max-width: 532px; /* narrower than the heading, per the design */
   margin: 0;
@@ -148,7 +147,8 @@
 
 /*
  * Trust bar — "Gold standard since 1993 · FM Approved · Built to NFPA 25…".
- * Separators are decoration, generated in CSS and hidden from screen readers.
+ * Body, in the on-navy ink. Separators are decoration, generated in CSS and
+ * hidden from screen readers.
  */
 .trust {
   display: flex;
@@ -167,7 +167,7 @@
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
-  line-height: var(--leading-body-sm);
+  line-height: var(--leading-body);
   color: var(--hero-meta-ink);
   margin: 0;
 }

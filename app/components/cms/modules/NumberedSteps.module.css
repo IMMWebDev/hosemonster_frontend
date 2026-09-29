@@ -2,7 +2,7 @@
  * Numbered Steps module — sprint-04 hifi_fireflow.html, "How it works"
  *
  * Intro lockup, then a row of steps under a single top rule, each separated
- * from the last by a vertical one. The big orange numerals are the only
+ * from the last by a vertical one. The big ghosted numerals are the only
  * ornament. An optional navy CTA bar closes the section.
  */
 
@@ -41,16 +41,13 @@
   margin: 0 0 var(--space-3); /* 12px in the design */
 }
 
-/*
- * The standard section H2, clamp(24px, 2.6vw, 32px), the same as every other
- * section heading (the dechlorination comp's size). It used to take §03's
- * "H2 large", which made it the one oversized heading on the page.
- */
+/* The section H2 — --text-h2, the same as every other module. */
 .heading {
   font-family: var(--font-display);
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0 0 var(--space-4);
@@ -127,9 +124,11 @@
 }
 
 /*
- * The numeral, in the accent orange — the dechlorination comp's colour, which
- * replaced the Fire Flow comp's ghosted #E8E8E8. It is hidden from screen
- * readers in the markup — the <ol> already announces the position.
+ * The ghosted numeral, in the BORDER colour (#E8E8E8) rather than an ink —
+ * the Fire Flow comp's watermark. At 56px it sits behind the content rather
+ * than being read; an ink would compete with the step title under it. It is
+ * hidden from screen readers in the markup — the <ol> already announces the
+ * position.
  */
 .number {
   display: block;
@@ -137,18 +136,19 @@
   font-size: 56px; /* from the design */
   font-weight: var(--weight-bold);
   line-height: 0.9;
-  color: var(--color-text-accent);
+  color: var(--color-border);
   margin-bottom: 14px; /* exact value from the design */
 }
 
-/* Sentence case, as both comps draw it. The global h3 rule (typography.css)
- * styles every h3 as the uppercase, tracked eyebrow, so both are undone here. */
+/* Styleguide UI label, in sentence case as both comps draw it. The global h3
+ * rule (typography.css) styles every h3 as the uppercase, tracked eyebrow, so
+ * both are undone here. */
 .stepTitle {
   font-family: var(--font-body);
   font-size: var(--text-ui);
   font-weight: var(--weight-bold);
   line-height: var(--leading-body-sm);
-  letter-spacing: normal;
+  letter-spacing: var(--tracking-normal);
   text-transform: none;
   color: var(--color-text);
   margin: 0 0 10px; /* exact value from the design */
@@ -198,7 +198,7 @@
   font-size: var(--text-h3);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h3);
-  letter-spacing: normal; /* the global h3 rule tracks it like an eyebrow */
+  letter-spacing: var(--tracking-normal); /* the global h3 rule tracks it like an eyebrow */
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;

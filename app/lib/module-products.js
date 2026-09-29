@@ -97,10 +97,17 @@ function collectCollectionSources(modules) {
  * C-style comment comes back as a parse error pointing at a column number in a
  * query you never wrote.
  *
+ * Tagged `#graphql` (a GraphQL comment, so it's safe) because the product
+ * page's related-products query spreads it, and codegen only resolves
+ * fragments it can see: untagged, `dev --codegen` refuses to start with
+ * "Unknown fragment ModuleProductCard". The runtime-assembled ModuleProducts
+ * query below stays untagged — codegen can't extract a document built at
+ * runtime.
+ *
  * maxVariantPrice is here purely so the card can tell a price RANGE from a
  * single price, and print "From $X" only when there is actually a range.
  */
-export const PRODUCT_CARD_FRAGMENT = `
+export const PRODUCT_CARD_FRAGMENT = `#graphql
   fragment ModuleProductCard on Product {
     id
     handle
