@@ -173,6 +173,7 @@
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;

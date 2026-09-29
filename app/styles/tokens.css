@@ -113,18 +113,15 @@
     ),
     linear-gradient(90deg, var(--color-action) 0%, var(--color-action) 100%);
 
-  /* Newsletter band wash — vertical darkening plus a navy sweep from the left,
-   * so the copy column stays legible over the photo. */
+  /* Newsletter card scrim — the comp's deep navy (#12232F) solid at the left
+   * edge, easing out by three-quarters so the copy sits on navy and the right
+   * of the photo shows clean. */
   --newsletter-wash: linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.25) 0%,
-      rgba(102, 102, 102, 0) 73%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(28, 58, 85, 0.67) 24%,
-      rgba(28, 58, 85, 0) 100%
-    );
+    90deg,
+    #12232f 0%,
+    rgb(18 35 47 / 75%) 35%,
+    rgb(18 35 47 / 0%) 75%
+  );
 
   /* Full-bleed promo band wash — vertical, over a 20%-opacity texture on navy.
    * Darkest at the bottom so white copy stays legible wherever it lands. */
@@ -282,7 +279,6 @@
    * is the opposite of what the spec asks for. Do not add them back.
    */
   --text-h1: clamp(1.625rem, 3.1vw, 2.5rem); /* 26 → 40px, "Page headline" */
-  --text-h2-lg: clamp(1.75rem, 3.2vw, 2.625rem); /* 28 → 42px, "Major section" */
   --text-h2: clamp(1.5rem, 2.6vw, 2rem); /* 24 → 32px, "Standard section" */
   --text-h3: 1.25rem; /* 20px — a real H3 now, NOT the eyebrow */
 

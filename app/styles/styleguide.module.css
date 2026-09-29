@@ -164,6 +164,12 @@
   color: var(--color-text);
 }
 
+/* The px size of the token — what most people check first. */
+.typePx {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
 .sampleH1,
 .sampleH2,
 .sampleH3 {
@@ -188,8 +194,8 @@
 .sampleH3 {
   font-size: var(--text-h3);
   line-height: var(--leading-h3);
-  font-weight: var(--weight-bold);
-  color: var(--color-text);
+  /* The global h3 rule tracks every <h3> like the eyebrow; H3 is untracked. */
+  letter-spacing: var(--tracking-normal);
 }
 
 /* ---- generic token list ---- */
@@ -241,6 +247,7 @@
 }
 
 .onNavy .groupTitle,
+.onNavy .groupNote,
 .onRed .groupTitle,
 .onRed .groupNote {
   color: var(--color-text-inverse);

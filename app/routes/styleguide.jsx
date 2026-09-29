@@ -6,6 +6,7 @@ import {useEffect, useState} from 'react';
  * CSS rule.
  */
 import styles from '~/styles/styleguide.module.css';
+import headerStyles from '~/components/Header.module.css';
 
 /**
  * Living styleguide — a hardcoded route, NOT a CMS page.
@@ -25,7 +26,7 @@ const COLOR_GROUPS = [
   {
     title: "Brand",
     note:
-      "Two colours carry the identity (styleguide \u00a701). Everything else is ink, surface or border.",
+      "Orange and navy carry the identity (styleguide \u00a701). Orange-hover is only the hover fill of orange buttons. Deep navy ink is text on an orange fill; white is the absolute.",
     tokens: [
       "--brand-orange",
       "--brand-orange-hover",
@@ -37,7 +38,7 @@ const COLOR_GROUPS = [
   {
     title: "Ink",
     note:
-      "Four inks, and only four. Faint is for counts, chevrons and non-text marks \u2014 never body copy.",
+      "Four blue-grey inks for copy. Faint is for counts, chevrons, icons and disabled labels \u2014 never body copy.",
     tokens: ["--ink-body", "--ink-muted", "--ink-on-navy", "--ink-faint"],
   },
   {
@@ -87,34 +88,41 @@ const COLOR_GROUPS = [
   {
     title: "Still off-palette",
     note:
-      "Everything else collapsed onto the four inks. These two are rules on NAVY grounds, where the single #E8E8E8 border is far too loud \u2014 open with design.",
+      "Two colours outside the palette: --hero-meta-rule is the hero trust-bar separator and the Tabbed Cards tab divider; --newsletter-input-border strokes the newsletter email field. Open with design.",
     tokens: ["--hero-meta-rule", "--newsletter-input-border"],
   },
 ];
 
 const HEADINGS = [
-  {tag: "h1", token: "--text-h1", label: "H1 \u00b7 Page headline", sample: "Flow like you mean it"},
-  {tag: "h2", token: "--text-h2-lg", label: "H2 large \u00b7 Major section", sample: "What buyers ask us"},
-  {tag: "h2", token: "--text-h2", label: "H2 \u00b7 Standard section", sample: "Pick your test"},
-  {tag: "h3", token: "--text-h3", label: "H3 \u00b7 Sub-section", sample: "Shop by category"},
+  {tag: "h1", cls: "sampleH1", token: "--text-h1", label: "H1 \u00b7 Page headline", spec: "Nimbus Sans Extended 700 \u00b7 1.1 \u00b7 -0.05em \u00b7 uppercase", sample: "Flow like you mean it"},
+  {tag: "h2", cls: "sampleH2", token: "--text-h2", label: "H2 \u00b7 Standard section", spec: "Nimbus Sans Extended 700 \u00b7 1.1 \u00b7 uppercase", sample: "Pick your test"},
+  {tag: "h3", cls: "sampleH3", token: "--text-h3", label: "H3 \u00b7 Sub-section", spec: "Nimbus Sans Extended 700 \u00b7 1.2 \u00b7 uppercase", sample: "Shop by category"},
 ];
 
 const BODY_STYLES = [
-  {token: "--text-eyebrow", label: "Eyebrow \u00b7 Gopher 700, 0.08em"},
-  {token: "--text-body", label: "Body large \u00b7 intro and callout copy"},
-  {token: "--text-body-sm", label: "Body \u00b7 standard section copy"},
-  {token: "--text-detail", label: "Detail"},
-  {token: "--text-card-title", label: "Card title"},
-  {token: "--text-price", label: "Price"},
-  {token: "--text-button", label: "Button"},
-  {token: "--text-ui", label: "UI label"},
+  {token: "--text-eyebrow", label: "Eyebrow", spec: "Gopher 700 \u00b7 1.1 \u00b7 0.08em \u00b7 uppercase \u00b7 orange",
+    style: {fontFamily: "var(--font-body)", fontWeight: "var(--weight-bold)", lineHeight: "var(--leading-eyebrow)", letterSpacing: "var(--tracking-eyebrow)", textTransform: "uppercase", color: "var(--color-text-accent)"}},
+  {token: "--text-body", label: "Body large \u00b7 intro and callout copy", spec: "Gopher 400 \u00b7 1.6 \u00b7 body ink",
+    style: {fontFamily: "var(--font-body)", fontWeight: "var(--weight-regular)", lineHeight: "var(--leading-body)", color: "var(--color-text-body)"}},
+  {token: "--text-body-sm", label: "Body \u00b7 standard section copy", spec: "Gopher 400 \u00b7 1.6 \u00b7 body ink",
+    style: {fontFamily: "var(--font-body)", fontWeight: "var(--weight-regular)", lineHeight: "var(--leading-body)", color: "var(--color-text-body)"}},
+  {token: "--text-detail", label: "Detail \u00b7 filters, SKUs, unit prices", spec: "Gopher 400 \u00b7 1.6 \u00b7 muted ink",
+    style: {fontFamily: "var(--font-body)", fontWeight: "var(--weight-regular)", lineHeight: "var(--leading-body)", color: "var(--color-text-muted)"}},
+  {token: "--text-card-title", label: "Card title", spec: "Nimbus Sans Extended 700 \u00b7 1.3 \u00b7 uppercase",
+    style: {fontFamily: "var(--font-display)", fontWeight: "var(--weight-bold)", lineHeight: "var(--leading-card-title)", letterSpacing: "var(--tracking-normal)", textTransform: "uppercase", color: "var(--color-text)"}},
+  {token: "--text-price", label: "Price", spec: "Gopher 700 \u00b7 1.2 \u00b7 navy",
+    style: {fontFamily: "var(--font-body)", fontWeight: "var(--weight-bold)", lineHeight: 1.2, color: "var(--color-text)"}},
+  {token: "--text-button", label: "Button", spec: "Gopher 700 \u00b7 1 \u00b7 sentence case",
+    style: {fontFamily: "var(--font-body)", fontWeight: "var(--weight-bold)", lineHeight: "var(--leading-button)", color: "var(--color-text)"}},
+  {token: "--text-ui", label: "UI label \u00b7 FAQ questions, step titles, nav", spec: "Gopher 700 \u00b7 1.5 \u00b7 navy",
+    style: {fontFamily: "var(--font-body)", fontWeight: "var(--weight-bold)", lineHeight: "var(--leading-body-sm)", color: "var(--color-text)"}},
 ];
 
 const WEIGHTS = [
   {token: '--weight-regular', label: 'Regular'},
   {token: '--weight-medium', label: 'Medium'},
   {token: '--weight-bold', label: 'Bold'},
-  {token: '--weight-black', label: 'Black'},
+  {token: '--weight-black', label: 'Black \u00b7 not used'},
 ];
 
 
@@ -165,6 +173,42 @@ function useTokenValues(names) {
   return values;
 }
 
+/** `1rem` → "16px"; `clamp(1.5rem, 2.6vw, 2rem)` → "24px → 32px". */
+function pxLabel(value, rootPx) {
+  if (!value) return null;
+  const toPx = (n, unit) => `${Number((unit === 'rem' ? n * rootPx : n).toFixed(2))}px`;
+  const clamp = value.match(/^clamp\(\s*([\d.]+)(rem|px)\s*,[^,]+,\s*([\d.]+)(rem|px)\s*\)$/);
+  if (clamp) return `${toPx(+clamp[1], clamp[2])} → ${toPx(+clamp[3], clamp[4])}`;
+  const single = value.match(/^([\d.]+)(rem|px)$/);
+  return single ? toPx(+single[1], single[2]) : null;
+}
+
+/** What each size token renders at right now, re-read on resize. */
+function useRenderedSizes(names) {
+  const [state, setState] = useState({sizes: {}, rootPx: 16});
+  useEffect(() => {
+    const measure = () => {
+      const probe = document.createElement('span');
+      probe.style.cssText = 'position:absolute;visibility:hidden';
+      document.body.appendChild(probe);
+      const sizes = {};
+      for (const name of names) {
+        probe.style.fontSize = `var(${name})`;
+        sizes[name] = `${Number(parseFloat(getComputedStyle(probe).fontSize).toFixed(2))}px`;
+      }
+      probe.remove();
+      setState({sizes, rootPx: parseFloat(getComputedStyle(document.documentElement).fontSize) || 16});
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return state;
+}
+
+const SIZE_TOKENS = [...HEADINGS.map((h) => h.token), ...BODY_STYLES.map((b) => b.token)];
+
 const ALL_TOKENS = [
   ...COLOR_GROUPS.flatMap((g) => g.tokens),
   ...HEADINGS.map((h) => h.token),
@@ -177,6 +221,7 @@ const ALL_TOKENS = [
 export default function Styleguide() {
   const v = useTokenValues(ALL_TOKENS);
   const val = (name) => v[name] || '—';
+  const {sizes, rootPx} = useRenderedSizes(SIZE_TOKENS);
 
   return (
     <div className={styles.page}>
@@ -223,28 +268,32 @@ export default function Styleguide() {
       >
         <div className={styles.group}>
           <h3 className={styles.groupTitle}>Headings</h3>
-          {HEADINGS.map(({tag: Tag, token, label, sample}) => (
+          {HEADINGS.map(({tag: Tag, cls, token, label, spec, sample}) => (
             <div key={token} className={styles.typeRow}>
               <div className={styles.typeMeta}>
                 <strong>{label}</strong>
                 <code>{token}</code>
                 <span>{val(token)}</span>
+                <SizeInPx range={pxLabel(v[token], rootPx)} rendered={sizes[token]} />
+                <span>{spec}</span>
               </div>
-              <Tag className={styles[`sample${Tag.toUpperCase()}`]}>{sample}</Tag>
+              <Tag className={styles[cls]}>{sample}</Tag>
             </div>
           ))}
         </div>
 
         <div className={styles.group}>
           <h3 className={styles.groupTitle}>Body &amp; UI</h3>
-          {BODY_STYLES.map(({token, label}) => (
+          {BODY_STYLES.map(({token, label, spec, style}) => (
             <div key={token} className={styles.typeRow}>
               <div className={styles.typeMeta}>
                 <strong>{label}</strong>
                 <code>{token}</code>
                 <span>{val(token)}</span>
+                <SizeInPx range={pxLabel(v[token], rootPx)} rendered={sizes[token]} />
+                <span>{spec}</span>
               </div>
-              <p style={{fontSize: `var(${token})`, margin: 0}}>
+              <p style={{...style, fontSize: `var(${token})`, margin: 0}}>
                 Gear for flow testing fire hydrants, fire pumps and standpipes.
               </p>
             </div>
@@ -270,7 +319,7 @@ export default function Styleguide() {
       <Section
         id="buttons"
         title="Buttons"
-        note="One geometry, five fills — 19px / 700 Gopher, min-height 56px, padding 0 32px, 250ms. The 19px is an accessibility constraint, not a preference: white on orange measures 3.99:1 and only clears AA as large text."
+        note="One geometry, six fills — 19px / 700 Gopher, min-height 56px, padding 0 32px (tertiary 26px), 250ms. The 19px is an accessibility constraint, not a preference: white on orange measures 3.99:1 and only clears AA as large text."
       >
         <div className={styles.group}>
           <h3 className={styles.groupTitle}>On light grounds</h3>
@@ -293,16 +342,19 @@ export default function Styleguide() {
         <div className={`${styles.group} ${styles.onNavy}`}>
           <h3 className={styles.groupTitle}>On navy</h3>
           <p className={styles.groupNote}>
-            Not a case the styleguide covers. Primary holds up because its fill
-            is its own colour; secondary keeps a white fill here rather than the
-            specced transparent one, or it would vanish.
+            Primary keeps its orange. The white button is .btn--inverse-navy and
+            the outlined one is .btn--secondary-on-orange. Don&apos;t use
+            .btn--secondary on navy: its hover fills navy and it disappears.
           </p>
           <div className={styles.buttonRow}>
             <button type="button" className="btn btn--primary">
               Primary
             </button>
-            <button type="button" className="btn btn--secondary">
-              Secondary
+            <button type="button" className="btn btn--inverse-navy">
+              Inverse navy
+            </button>
+            <button type="button" className="btn btn--secondary-on-orange">
+              Outlined white
             </button>
           </div>
         </div>
@@ -328,15 +380,16 @@ export default function Styleguide() {
       <Section id="links" title="Links">
         <div className={styles.group}>
           <p>
-            A standard <a href="#links">inline link</a> in body copy. Hover turns
-            it orange — which §09 now forbids at this size, and supplies no
-            replacement for. Open question for design.
+            A standard <a href="#links">inline link</a> in body copy: navy with no
+            underline, turning orange on hover — which §09 forbids at this size.
+            Open question for design.
           </p>
           <p>
-            <a href="#links" aria-current="page">
-              A link marked aria-current=&quot;page&quot;
+            <a href="#links" className={headerStyles.navLink} aria-current="page">
+              Current page
             </a>{' '}
-            — this is the state the nav underline hangs off.
+            — the header nav&apos;s current-page state (aria-current): orange
+            with an underline. Only the header nav styles it.
           </p>
         </div>
       </Section>
@@ -355,5 +408,22 @@ function Section({id, title, note, children}) {
       {note ? <p className={styles.sectionNote}>{note}</p> : null}
       {children}
     </section>
+  );
+}
+
+/**
+ * The px line under a size token: its px size (or range, for a fluid one),
+ * and for a fluid one what it measures at the current window width.
+ *
+ * @param {{range: string | null, rendered?: string}} props
+ */
+function SizeInPx({range, rendered}) {
+  if (!range) return null;
+  const fluid = range.includes('→');
+  return (
+    <span className={styles.typePx}>
+      {range}
+      {fluid && rendered ? ` · ${rendered} at this width` : null}
+    </span>
   );
 }

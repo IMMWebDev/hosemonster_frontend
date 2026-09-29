@@ -45,6 +45,7 @@
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0;
@@ -55,7 +56,7 @@
   font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-soft);
+  color: var(--color-text-body);
   max-width: 48ch; /* from the design — shorter measure than the heading */
   margin: var(--space-4) 0 0;
 }
@@ -92,10 +93,11 @@
    * float at the middle of a cap-height it is a quarter the size of. */
   align-items: baseline;
   gap: var(--space-3);
+  /* UI label */
   font-family: var(--font-body);
   font-size: var(--text-ui);
   font-weight: var(--weight-bold);
-  line-height: var(--leading-body);
+  line-height: var(--leading-body-sm);
   color: var(--color-text);
   margin: 0;
 }
@@ -139,7 +141,7 @@
   font-family: var(--font-body);
   font-size: var(--text-ui);
   font-weight: var(--weight-bold);
-  line-height: var(--leading-body);
+  line-height: var(--leading-body-sm);
   color: var(--color-text);
   margin: 0;
 }
@@ -149,7 +151,7 @@
   font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-soft);
+  color: var(--color-text-body);
   margin: var(--space-2) 0 0;
 }
 

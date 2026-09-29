@@ -57,24 +57,25 @@
   margin: var(--space-2) 0 0;
 }
 
+/* Styleguide "Body large" — intro copy */
 .body {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-size: var(--text-body);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-soft);
+  color: var(--color-text-body);
   max-width: var(--measure);
   margin: var(--space-3) 0 0;
 }
 
+/* Styleguide "UI label" — a nav-style text link, so untracked and not
+ * uppercased (only the eyebrow is tracked). */
 .viewAll {
   flex: 0 0 auto;
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
   line-height: var(--leading-body-sm);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--color-text);
   white-space: nowrap;
 }
@@ -144,30 +145,32 @@
 
 .cardLabel {
   font-family: var(--font-body);
-  font-size: 0.75rem; /* 12px — below the scale's smallest, per the design */
-  font-weight: var(--weight-bold);
-  line-height: 1.25;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--text-detail); /* Styleguide "Detail" — small secondary text */
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
   color: var(--color-text-soft);
   margin: 0;
 }
 
+/* An <h3>, so every eyebrow property typography.css gives bare h3s is
+ * restated here — tracking especially, or the title picks up 0.08em. */
 .cardTitle {
   font-family: var(--font-display);
   font-size: var(--text-card-title); /* §03 card title, 15px */
   font-weight: var(--weight-bold);
-  line-height: 1.2;
+  line-height: var(--leading-card-title);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0;
 }
 
+/* Styleguide "Detail" — card specs */
 .cardSpec {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
+  font-size: var(--text-detail);
   font-weight: var(--weight-regular);
-  line-height: var(--leading-body-sm);
+  line-height: var(--leading-body);
   color: var(--color-text-soft);
   margin: 0;
 }
@@ -189,12 +192,11 @@
 
 .cardCta {
   font-family: var(--font-body);
-  /* 19px, not 16: §09 only clears orange text at 19px / 700. */
+  /* Styleguide "Button" text — sentence case, untracked. 19px, not 16: §09
+   * only clears orange text at 19px / 700. */
   font-size: var(--text-button);
   font-weight: var(--weight-bold);
-  line-height: var(--leading-body-sm);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  line-height: var(--leading-button);
   color: var(--color-action);
 }
 

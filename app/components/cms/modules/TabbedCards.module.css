@@ -41,24 +41,25 @@
   margin: 0 0 var(--space-2);
 }
 
-/* Figma "H2" */
+/* H2 · Section heading */
 .heading {
   font-family: var(--font-display);
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0 0 var(--space-2);
 }
 
-/* Figma "B1", in the muted grey this module uses rather than navy */
+/* Body large — intro copy */
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--muted-ink);
+  color: var(--color-text-body);
   max-width: 671px; /* from the design; narrower than the 920px container */
   margin: 0 0 var(--space-4);
 }
@@ -89,7 +90,7 @@
   line-height: var(--leading-button);
   text-transform: capitalize;
   text-align: center;
-  color: var(--nav-ink);
+  color: var(--color-text);
   background: transparent;
   border: 0;
   /* Divider between segments. The last one is removed below so the pill's own
@@ -169,18 +170,20 @@
   min-width: 0;
 }
 
-/* Figma "H2", reversed out */
+/* H2 · Section heading, reversed out. It is an <h3>, so the tracking has to be
+ * restated — typography.css gives a bare h3 the eyebrow's 0.08em. */
 .cardTitle {
   font-family: var(--font-display);
   font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0;
 }
 
-/* Figma "B3" — 16px Gopher Regular */
+/* Body large, in the on-navy ink */
 .cardDescription {
   font-family: var(--font-body);
   font-size: var(--text-body);

@@ -50,12 +50,13 @@
   margin: var(--space-2) 0 0;
 }
 
+/* Styleguide "Body large" — intro copy */
 .body {
   font-family: var(--font-body);
   font-size: var(--text-body);
   font-weight: var(--weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text);
+  color: var(--color-text-body);
   max-width: var(--measure);
   margin: var(--space-3) 0 0;
 }
@@ -133,25 +134,26 @@
   flex: 1 1 auto;
 }
 
+/* An <h3>, so every eyebrow property typography.css gives bare h3s is
+ * restated here — tracking especially, or the title picks up 0.08em. */
 .cardTitle {
   font-family: var(--font-display);
   font-size: var(--text-card-title); /* §03 card title, 15px */
   font-weight: var(--weight-bold);
   line-height: var(--leading-card-title);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0;
 }
 
-/* --color-text-soft: see tokens.css. The palette's only muted ink is
- * --color-text-muted (#282727), a warm near-black that turns muddy beside a
- * navy title, so supporting copy uses the soft navy instead. */
+/* Styleguide "Body" — standard copy, in the body ink. */
 .cardDescription {
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
   font-weight: var(--weight-regular);
-  line-height: var(--leading-body-sm);
-  color: var(--color-text-soft);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
   margin: 0;
 }
 
@@ -161,12 +163,11 @@
   margin-top: auto;
   padding-top: var(--space-1);
   font-family: var(--font-body);
-  /* 19px, not 16: §09 only clears orange text at 19px / 700. */
+  /* Styleguide "Button" text — sentence case, untracked. 19px, not 16: §09
+   * only clears orange text at 19px / 700. */
   font-size: var(--text-button);
   font-weight: var(--weight-bold);
-  line-height: var(--leading-body-sm);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  line-height: var(--leading-button);
   color: var(--color-action);
 }
 

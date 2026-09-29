@@ -36,12 +36,13 @@
   margin: 0 0 var(--space-3); /* 12px in the design */
 }
 
-/* The larger H2 — §03's "H2 large", as Numbered Steps and Document Cards use. */
+/* The section H2 — --text-h2, the same as every other module. */
 .heading {
   font-family: var(--font-display);
-  font-size: var(--text-h2-lg);
+  font-size: var(--text-h2);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
   margin: 0 0 14px; /* exact value from the design */
@@ -89,17 +90,18 @@
 }
 
 /*
- * Smaller and more tracked than a section eyebrow, and NAVY-MUTED rather than
- * orange: three of these stacked beside each other in orange would fight the
+ * Card title — the plan's name is the card's title. Deliberately not an
+ * eyebrow: three of those stacked beside each other in orange would fight the
  * prices for attention, which are the thing being compared.
  */
 .planLabel {
-  font-family: var(--font-body);
-  font-size: 0.75rem; /* 12px in the design */
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
   font-weight: var(--weight-bold);
-  letter-spacing: 0.12em;
+  line-height: var(--leading-card-title);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   margin: 0 0 14px; /* exact value from the design */
 }
 
@@ -133,9 +135,12 @@
   font-size: 28px; /* from the design */
 }
 
+/* Detail — unit prices */
 .priceUnit {
   font-family: var(--font-body);
-  font-size: var(--text-detail); /* 13.5px in the design */
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
   color: var(--color-text-muted);
 }
 
@@ -154,9 +159,11 @@
   padding: 0;
 }
 
+/* Body — standard copy */
 .feature {
   font-family: var(--font-body);
-  font-size: 0.875rem; /* 14px in the design */
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-body);
   color: var(--color-text-body);
   margin: 0;
@@ -208,6 +215,7 @@
   font-family: var(--font-body);
   font-size: var(--text-button);
   font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
   color: var(--color-text);
   cursor: pointer;
   list-style: none;
@@ -280,30 +288,35 @@
   border-bottom: 0;
 }
 
-/* Column headers — the grey band across the top. */
+/* Column headers — the grey band across the top. UI label. */
 .table thead th {
   background: var(--color-surface-alt);
-  font-size: 0.78125rem; /* 12.5px in the design */
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
   color: var(--color-text);
   text-align: center;
   white-space: nowrap;
 }
 
-/* The corner cell and the feature names are the row axis: left, wider, darker. */
+/* The corner cell and the feature names are the row axis: left and wider.
+ * UI label, the same as the column headers. */
 .table thead th:first-child,
 .table tbody th {
   text-align: left;
   width: 40%;
-  font-size: 0.8125rem; /* 13px in the design */
+  font-size: var(--text-ui);
   font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
   color: var(--color-text);
 }
 
+/* Body — the plan values. */
 .table tbody td {
-  font-size: 0.8125rem; /* 13px in the design */
-  font-weight: var(--weight-bold);
-  color: var(--color-text);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
   text-align: center;
 }
 
