@@ -143,15 +143,6 @@
   flex: 1 1 auto;
 }
 
-.cardLabel {
-  font-family: var(--font-body);
-  font-size: var(--text-detail); /* Styleguide "Detail" — small secondary text */
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-body);
-  color: var(--color-text-soft);
-  margin: 0;
-}
-
 /* An <h3>, so every eyebrow property typography.css gives bare h3s is
  * restated here — tracking especially, or the title picks up 0.08em. */
 .cardTitle {

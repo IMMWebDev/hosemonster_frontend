@@ -14,11 +14,10 @@ import styles from './ProductCards.module.css';
  *
  * Filled one of two ways:
  *  - a Collection picked in Strapi: its first N products, in the chosen
- *    order, live from Shopify; each card's label is the product's type. The
- *    hand-picked items are ignored, and with no view-all link of its own the
- *    module links to the collection's page.
- *  - otherwise the hand-picked items: a handle per card plus its label and
- *    spec line.
+ *    order, live from Shopify. The hand-picked items are ignored, and with
+ *    no view-all link of its own the module links to the collection's page.
+ *  - otherwise the hand-picked items: a handle per card plus its spec line
+ *    (the label field is kept in Strapi but no longer shown).
  * Title, price, image and URL always come live from the Storefront API. The
  * lookup happens in the route loader (see app/lib/module-products.js) because
  * BlockManager renders straight from the CMS payload and cannot fetch —
@@ -120,7 +119,9 @@ export default function ProductCards({data, products = {}}) {
  */
 function ProductCard({item, product, ctaLabel, index = 0}) {
   const pathFor = useProductPath();
-  const {label, spec} = item;
+  // `label` (the type, or Strapi's per-item label) is no longer shown: the
+  // card is image, name, blurb, price, button.
+  const {spec} = item;
   const {handle, title, featuredImage, priceRange} = product;
   // The admin's meta description, as on every product card.
   const blurb = product.seo?.description?.trim() || '';
@@ -161,7 +162,6 @@ function ProductCard({item, product, ctaLabel, index = 0}) {
       ) : null}
 
       <div className={styles.cardText}>
-        {label ? <p className={styles.cardLabel}>{label}</p> : null}
         <h3 className={styles.cardTitle}>{title}</h3>
         {spec ? <p className={styles.cardSpec}>{spec}</p> : null}
         {blurb ? <p className={styles.cardBlurb}>{blurb}</p> : null}
