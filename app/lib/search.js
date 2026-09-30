@@ -9,7 +9,7 @@ export const SEARCH_PATH = '/search';
 export const SEARCH_PAGE_SIZE = 12;
 
 /** Where a search that finds nothing points people (a Shopify page). */
-export const CONTACT_PATH = '/pages/contact';
+export const CONTACT_PATH = '/contact';
 
 /** Placeholder for the header and /search boxes; Hero Search sets its own. */
 export const SEARCH_PLACEHOLDER = 'Search equipment, parts, or part #';
@@ -61,7 +61,9 @@ export function urlWithTrackingParams({baseUrl, trackingParams, term}) {
  * @returns {Array<{key: string, text: string, typed: boolean}>}
  */
 export function splitSuggestion(text, term) {
-  const needle = String(term ?? '').trim().toLowerCase();
+  const needle = String(term ?? '')
+    .trim()
+    .toLowerCase();
   const at = needle ? text.toLowerCase().indexOf(needle) : -1;
   if (at === -1) return [{key: 'all', text, typed: false}];
 

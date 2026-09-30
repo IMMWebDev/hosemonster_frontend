@@ -55,42 +55,42 @@ export function CartTotals({cart, layout, onContinue}) {
   }, [checkoutWanted, busy, cart?.checkoutUrl]);
 
   return (
-    <div className={styles.totals} role="group" aria-labelledby={headingId} data-layout={layout}>
+    <div
+      className={styles.totals}
+      role="group"
+      aria-labelledby={headingId}
+      data-layout={layout}
+    >
       <h2 className="sr-only" id={headingId}>
         Totals
       </h2>
 
-      <dl className={styles.rows} aria-busy={busy || undefined}>
-        <div className={styles.row}>
-          <dt>Subtotal</dt>
-          <dd>{subtotal ? <Money data={subtotal} as="span" /> : '—'}</dd>
-        </div>
-        {saved ? (
+      {/* Receipt shape, as on the current site: what's still to come has
+          its own line between the subtotal and the total, rather than a
+          footnote under it. */}
+      <div className={styles.rows} aria-busy={busy || undefined}>
+        <dl className={styles.group}>
           <div className={styles.row}>
-            <dt>Discounts</dt>
-            <dd>
-              −<Money data={saved} as="span" />
-            </dd>
+            <dt>Subtotal</dt>
+            <dd>{subtotal ? <Money data={subtotal} as="span" /> : '—'}</dd>
           </div>
-        ) : null}
-        {/* Receipt shape, as on the current site: what's still to come
-            has its own line rather than a footnote under the total. The
-            phone drawer folds these two back into one line (CSS) to keep
-            its pinned foot short. */}
-        <div className={`${styles.row} ${styles.rowNote}`}>
-          <dt>Shipping</dt>
-          <dd>Calculated at checkout</dd>
-        </div>
-        <div className={`${styles.row} ${styles.rowNote}`}>
-          <dt>Taxes</dt>
-          <dd>Calculated at checkout</dd>
-        </div>
-        <div className={`${styles.row} ${styles.rowTotal}`}>
-          <dt>Estimated total</dt>
-          <dd>{total ? <Money data={total} as="span" /> : '—'}</dd>
-        </div>
-      </dl>
-      <p className={styles.fine}>Taxes and shipping calculated at checkout.</p>
+          {saved ? (
+            <div className={styles.row}>
+              <dt>Discounts</dt>
+              <dd>
+                −<Money data={saved} as="span" />
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+        <p className={styles.fine}>Shipping &amp; taxes calculated at checkout</p>
+        <dl className={styles.group}>
+          <div className={`${styles.row} ${styles.rowTotal}`}>
+            <dt>Estimated total</dt>
+            <dd>{total ? <Money data={total} as="span" /> : '—'}</dd>
+          </div>
+        </dl>
+      </div>
 
       {unavailable ? (
         <p className={styles.alert} role="status">
@@ -127,10 +127,6 @@ export function CartTotals({cart, layout, onContinue}) {
         ) : null}
       </div>
 
-      {/* The page's Continue shopping is in its head; the note sits under
-          Check out so nothing pushes the button down. */}
-      {layout === 'page' ? <CartNote cart={cart} /> : null}
-
       <p className={styles.help}>
         Questions?{' '}
         {phone ? (
@@ -151,19 +147,28 @@ export function CartTotals({cart, layout, onContinue}) {
 
 /**
  * A note for the order — a PO number, a delivery instruction — saved to the
- * Shopify cart so it reaches the order. In the page's summary panel; in the
- * drawer's scrolling body, so the pinned foot stays short on a phone.
+ * Shopify cart so it reaches the order. Under the lines on the page, and in
+ * the drawer's scrolling body, so the pinned foot stays short on a phone.
  *
  * @param {{cart: object}} props
  */
 export function CartNote({cart}) {
   const textareaId = useId();
+  const panelId = useId();
   const fetcher = useFetcher({key: 'cart-note'});
   const [savedAt, setSavedAt] = useState(0);
   const note = cart?.note ?? '';
+  // Open from the start when there's already a note to see. A disclosure
+  // button and a panel rather than <details>, which can't animate: the panel
+  // eases open and shut (CSS grid rows, see .notePanel).
+  const [open, setOpen] = useState(Boolean(note));
 
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data && !fetcher.data.errors?.length) {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data &&
+      !fetcher.data.errors?.length
+    ) {
       setSavedAt(Date.now());
       const timer = setTimeout(() => setSavedAt(0), 2500);
       return () => clearTimeout(timer);
@@ -172,34 +177,52 @@ export function CartNote({cart}) {
   }, [fetcher.state, fetcher.data]);
 
   return (
-    <details className={styles.note} open={Boolean(note) || undefined}>
-      <summary className={styles.noteSummary}>
+    <div className={styles.note} data-open={open || undefined}>
+      <button
+        type="button"
+        className={styles.noteSummary}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((current) => !current)}
+      >
         <span>Order notes (optional)</span>
         <UiIcon name="chevron" className={styles.disclosureIcon} />
-      </summary>
-      <CartForm route="/cart" action={CartForm.ACTIONS.NoteUpdate} fetcherKey="cart-note">
-        <label htmlFor={textareaId} className="sr-only">
-          Order notes (optional)
-        </label>
-        <textarea
-          id={textareaId}
-          name="note"
-          className={styles.noteField}
-          rows={3}
-          maxLength={500}
-          defaultValue={note}
-          placeholder="Notes about your order, e.g. special notes for delivery."
-        />
-        <div className={styles.noteActions}>
-          <button
-            type="submit"
-            className={`btn btn--secondary ${styles.noteSave}`}
-            disabled={fetcher.state !== 'idle'}
+      </button>
+      <div id={panelId} className={styles.notePanel}>
+        <div className={styles.noteInner}>
+          <CartForm
+            route="/cart"
+            action={CartForm.ACTIONS.NoteUpdate}
+            fetcherKey="cart-note"
           >
-            {fetcher.state !== 'idle' ? 'Saving…' : savedAt ? 'Saved' : 'Save note'}
-          </button>
+            <label htmlFor={textareaId} className="sr-only">
+              Order notes (optional)
+            </label>
+            <textarea
+              id={textareaId}
+              name="note"
+              className={styles.noteField}
+              rows={3}
+              maxLength={500}
+              defaultValue={note}
+              placeholder="Notes about your order, e.g. special notes for delivery."
+            />
+            <div className={styles.noteActions}>
+              <button
+                type="submit"
+                className={`btn btn--secondary ${styles.noteSave}`}
+                disabled={fetcher.state !== 'idle'}
+              >
+                {fetcher.state !== 'idle'
+                  ? 'Saving…'
+                  : savedAt
+                    ? 'Saved'
+                    : 'Save note'}
+              </button>
+            </div>
+          </CartForm>
         </div>
-      </CartForm>
-    </details>
+      </div>
+    </div>
   );
 }

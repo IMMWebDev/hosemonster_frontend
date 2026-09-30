@@ -11,9 +11,11 @@
   margin-top: calc(-1 * var(--space-2));
 }
 
-/* The note draws its own top rule. */
+/* At the bottom of the scrolling body, just above the totals, however
+ * short the list is; it draws its own top rule. */
 .note {
-  margin-top: var(--space-4);
+  margin-top: auto;
+  padding-top: var(--space-4);
 }
 
 /* Styleguide Body. */
