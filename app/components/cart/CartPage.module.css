@@ -68,8 +68,19 @@ a.continue:hover {
   align-items: start;
 }
 
+/* Stretched to the row, so the note below the lines can sit at its foot —
+ * level with the bottom of the summary panel when that is the taller. */
 .lines {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
   min-width: 0;
+}
+
+/* The order note draws its own top rule; pushed to the column's foot. */
+.note {
+  margin-top: auto;
+  padding-top: var(--space-2);
 }
 
 /* Column headings over the lines — Detail, uppercase, muted. Decorative:

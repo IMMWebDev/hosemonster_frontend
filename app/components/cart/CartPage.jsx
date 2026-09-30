@@ -1,7 +1,7 @@
 import {Link} from 'react-router';
 import {Money, useOptimisticCart} from '@shopify/hydrogen';
 import {CartLines, CartNotices} from './CartLines';
-import {CartTotals} from './CartSummary';
+import {CartNote, CartTotals} from './CartSummary';
 import CartEmpty from './CartEmpty';
 import {useJustEmptied} from './CartDrawer';
 import {countLabel} from '~/lib/cart';
@@ -55,6 +55,11 @@ export default function CartPage({cart: loaderCart}) {
                 <span>Total</span>
               </div>
               <CartLines cart={cart} layout="page" />
+              {/* Under the lines, as on the current site: it's about the
+                  order, not the total. */}
+              <div className={styles.note}>
+                <CartNote cart={cart} />
+              </div>
             </div>
 
             <aside className={styles.panel} aria-label="Order summary">

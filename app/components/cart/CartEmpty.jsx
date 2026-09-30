@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useId, useRef} from 'react';
 import {Link, useFetcher, useRouteLoaderData} from 'react-router';
 import CmsLink from '~/components/cms/CmsLink';
 import SearchChips from '~/components/search/SearchChips';
@@ -22,7 +22,7 @@ import styles from './CartEmpty.module.css';
  */
 export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
   const browse = useFetcher({key: 'quick-search-browse'});
-  const showCategories = variant === 'page';
+  const browseId = useId();
   const headingRef = useRef(null);
 
   useEffect(() => {
@@ -30,13 +30,12 @@ export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
   }, [focusHeading]);
 
   useEffect(() => {
-    if (!showCategories) return;
     if (!browse.data && browse.state === 'idle') {
       void browse.load(`${SEARCH_PATH}?predictive=1&q=`);
     }
     // Once, on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCategories]);
+  }, []);
 
   const categories = browse.data?.browseCollections ?? [];
   const Heading = variant === 'page' ? 'h1' : 'h2';
@@ -70,7 +69,9 @@ export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
           </Link>
         )}
       </div>
-      {showCategories && categories.length ? (
+      {/* The page has room for chips; the drawer's column gets a list, one
+          collection per row, which also fills what was empty space. */}
+      {variant === 'page' && categories.length ? (
         <div className={styles.categories}>
           <p className={styles.categoriesTitle}>Shop by category</p>
           <SearchChips
@@ -83,6 +84,23 @@ export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
             onNavigate={onNavigate}
           />
         </div>
+      ) : null}
+      {variant === 'drawer' && categories.length ? (
+        <nav className={styles.browse} aria-labelledby={browseId}>
+          <p className={styles.browseTitle} id={browseId}>
+            Shop by category
+          </p>
+          <ul className={styles.browseList} role="list">
+            {categories.map((c) => (
+              <li key={c.id}>
+                <Link to={`/collections/${c.handle}`} className={styles.browseLink} onClick={onNavigate}>
+                  {c.title}
+                  <UiIcon name="chevron" className={styles.browseIcon} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       ) : null}
     </div>
   );
