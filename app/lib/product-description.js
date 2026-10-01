@@ -28,16 +28,23 @@ function text(html) {
 }
 
 /**
+ * @typedef {{title: string, html: string, kind: 'overview' | 'specifications' | 'downloads'}} Section
+ */
+
+/**
  * @param {string | null | undefined} html - Shopify's descriptionHtml
  * @returns {{
  *   intro: string,
- *   overview: Array<{title: string, html: string}>,
- *   specifications: Array<{title: string, html: string}>,
- *   downloads: Array<{title: string, html: string}>,
+ *   sections: Array<Section>,
+ *   overview: Array<Section>,
+ *   specifications: Array<Section>,
+ *   downloads: Array<Section>,
  * }}
+ *   `sections` is every <h3> section in the order the description has them;
+ *   the three buckets are the same sections sorted by kind.
  */
 export function splitDescription(html) {
-  const empty = {intro: '', overview: [], specifications: [], downloads: []};
+  const empty = {intro: '', sections: [], overview: [], specifications: [], downloads: []};
   if (!html) return empty;
 
   // The leading <h2> repeats the product name, which the page's <h1> already
@@ -46,14 +53,20 @@ export function splitDescription(html) {
 
   // [intro, title1, html1, title2, html2, …]
   const parts = body.split(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
-  const out = {...empty, intro: parts[0].trim()};
+  const out = {intro: parts[0].trim(), sections: [], overview: [], specifications: [], downloads: []};
 
   for (let i = 1; i < parts.length; i += 2) {
-    const section = {title: text(parts[i]), html: (parts[i + 1] ?? '').trim()};
-    if (!section.html) continue;
-    if (SPECS.test(section.title)) out.specifications.push(section);
-    else if (DOWNLOADS.test(section.title)) out.downloads.push(section);
-    else out.overview.push(section);
+    const title = text(parts[i]);
+    const sectionHtml = (parts[i + 1] ?? '').trim();
+    if (!sectionHtml) continue;
+    const kind = SPECS.test(title)
+      ? 'specifications'
+      : DOWNLOADS.test(title)
+        ? 'downloads'
+        : 'overview';
+    const section = {title, html: sectionHtml, kind};
+    out.sections.push(section);
+    out[kind].push(section);
   }
 
   return out;
