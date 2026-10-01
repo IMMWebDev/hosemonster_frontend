@@ -453,87 +453,50 @@ a.link:hover {
   text-underline-offset: 3px;
 }
 
-/* ---- details: overview, specifications, downloads ---- */
+/* ---- details: the description's sections, as an accordion ---- */
 
 .details {
   margin-top: var(--container-block);
 }
 
-.jump {
-  border-bottom: var(--border-width) solid var(--color-border);
+/* Ruled rows, the rule above the first one too. */
+.accordion {
+  border-top: var(--border-width) solid var(--color-border);
 }
 
-.jumpList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.jumpList li {
-  margin: 0;
-}
-
-a.jumpLink {
-  display: inline-block;
-  padding-block: var(--space-4);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
-  font-family: var(--font-body);
-  font-size: var(--text-body-sm);
-  font-weight: var(--weight-bold);
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-a.jumpLink:hover {
-  color: var(--color-text);
-  border-bottom-color: var(--brand-navy);
-}
-
-/* Title on the left, body on the right — the long-form layout of spec-heavy
- * product pages; it keeps a 64ch measure without a wall of white. */
 .block {
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  gap: var(--space-8);
-  padding-block: var(--space-10);
   border-bottom: var(--border-width) solid var(--color-border);
 
-  /* Jump links land here: clear the sticky header. */
+  /* Linked rows (#specifications) land here: clear the sticky header. */
   scroll-margin-top: 96px;
 }
 
-/* A jump link moves focus here; the scroll is the cue, not a ring round
- * the whole section. */
-.block:focus {
-  outline: none;
-}
-
+/* Styleguide H3. The heading only holds the button; every property is
+ * stated because the global h2 rule is the section size. */
 .blockTitle {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-h3);
   font-weight: var(--weight-bold);
   line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
 }
 
-/* The accordion toggle (phones only; see ProductPage.jsx). On wider screens
- * it's only there before hydration, and reads as the plain title. */
+/* The whole row is the control. */
 .blockToggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-5);
   width: 100%;
-  padding: 0;
+  min-height: 76px;
+  padding: var(--space-5) 0;
   border: 0;
   background: none;
   font: inherit;
+  letter-spacing: inherit;
   text-align: left;
   text-transform: inherit;
   color: inherit;
@@ -542,35 +505,72 @@ a.jumpLink:hover {
 
 .blockToggle:focus-visible {
   outline: var(--border-width-thick) solid var(--color-action);
-  outline-offset: 4px;
+  outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-.blockChevron {
-  display: none;
+/* The FAQ module's tile (Faq.module.css): 30px, orange, plus becoming minus. */
+.toggle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: var(--color-action);
+  color: var(--color-action-text);
+  transition: background-color var(--duration-control) var(--ease-default);
 }
 
+.blockToggle:hover .toggle {
+  background: var(--color-action-hover);
+}
+
+.toggle svg {
+  display: block;
+  stroke: currentColor;
+}
+
+/* Opacity, not a transform: SVG <line>s drop transforms here (see the FAQ). */
+.toggleBar {
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.block[data-open] .toggleBar {
+  opacity: 0;
+}
+
+/*
+ * The panel eases open and shut: a one-row grid whose track goes from 0fr to
+ * 1fr, which browsers animate where `height: auto` can't. Hidden, not just
+ * clipped, once shut, so its links leave the tab order — the delay holds that
+ * until the close has finished.
+ */
+.blockPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--duration-slide) var(--ease-default),
+    visibility 0s linear var(--duration-slide);
+}
+
+.block[data-open] .blockPanel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition-delay: 0s, 0s;
+}
+
+.blockInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The padding is inside the clipped box, so it collapses with the copy. */
 .blockBody {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  min-width: 0;
   max-width: 820px;
-}
-
-.subsection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.subTitle {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 1.125rem;
-  font-weight: var(--weight-bold);
-  line-height: 1.35;
-  color: var(--color-text);
+  padding-bottom: var(--space-8);
 }
 
 /* ---- the description's own markup ---- */
@@ -738,18 +738,11 @@ a.jumpLink:hover {
  * -----------------------------------------------------------------------------
  */
 
-/* tablet — gallery and buy box side by side at equal width; the details stack
- * their title over the body. */
+/* tablet — gallery and buy box side by side at equal width. */
 @media (max-width: 1099px) {
   .top {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--space-8);
-  }
-
-  .block {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-5);
-    padding-block: var(--space-8);
   }
 
   .relatedGrid {
@@ -830,45 +823,12 @@ a.jumpLink:hover {
     margin-top: var(--space-10);
   }
 
-  /* The accordion replaces the jump links. */
-  .jump {
-    display: none;
-  }
-
-  .block {
-    padding-block: 0;
-    gap: 0;
-  }
-
-  .block:first-of-type {
-    border-top: var(--border-width) solid var(--color-border);
-  }
-
   .blockToggle {
-    min-height: 60px;
+    min-height: 64px;
+    padding-block: var(--space-4);
   }
 
-  .blockChevron {
-    display: block;
-    flex: none;
-    width: 10px;
-    height: 10px;
-    margin-right: 4px;
-    border-right: var(--border-width-thick) solid currentColor;
-    border-bottom: var(--border-width-thick) solid currentColor;
-    transform: translateY(-3px) rotate(45deg);
-    transition: transform var(--duration-control) var(--ease-default);
-  }
-
-  .block[data-open] .blockChevron {
-    transform: translateY(2px) rotate(-135deg);
-  }
-
-  .block:not([data-open]) .blockBody {
-    display: none;
-  }
-
-  .block[data-open] .blockBody {
+  .blockBody {
     padding-bottom: var(--space-6);
   }
 
@@ -900,7 +860,9 @@ a.jumpLink:hover {
 @media (prefers-reduced-motion: reduce) {
   .thumb,
   .chip,
-  .blockChevron,
+  .toggle,
+  .toggleBar,
+  .blockPanel,
   .downloads :global(a) {
     transition: none;
   }

@@ -20,8 +20,8 @@ import styles from './ProductPage.module.css';
  *  - Above the fold, the gallery beside a sticky buy box: category, name, SKU,
  *    price, options as chips, quantity, Add to cart — and, when Shopify won't
  *    sell it online, a plain "contact us to order" instead of a dead button.
- *  - Below, the description reorganised into Overview, Specifications and
- *    Downloads (see lib/product-description.js), with jump links.
+ *  - Below, the description's sections (Key Features, Specifications,
+ *    Downloads…) as an accordion (see lib/product-description.js).
  *  - "More in {collection}": other products from the product's collection.
  *
  * Everything comes from Shopify; nothing here is editorial.
@@ -453,63 +453,23 @@ function OptionChips({option, markUnavailable, onSelect}) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * True at phone width. Starts true so the server renders the phone's
- * markup; the stylesheet, not this, decides what's visible, so correcting it
- * after hydration never moves anything.
- */
-function useNarrow() {
-  const [narrow, setNarrow] = useState(true);
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 699px)');
-    const update = () => setNarrow(query.matches);
-    update();
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
-  }, []);
-  return narrow;
-}
-
-/**
- * A jump link's click. Left to the browser, a `#hash` link pushes a history
- * entry the router didn't make; React Router's ScrollRestoration then reads
- * every one as a "back" to the same saved position, and from the second
- * click on the page snaps back instead of moving. So: scroll here, and only
- * rewrite the URL — replaceState with the router's own state fires nothing
- * the router listens to. Focus follows, for keyboard and screen-reader
- * visitors.
+ * The description's <h3> sections — "Key Features", "Applications",
+ * "Specifications", "Downloads" and the rest — as an accordion, one row per
+ * section, titled with the product's own heading and in the description's
+ * order. All start closed: the opening copy is already in the buy box, and
+ * shut rows let a shopper see everything there is to read in one glance
+ * instead of scrolling past it to the related products.
  *
- * @param {import('react').MouseEvent<HTMLAnchorElement>} event
- */
-function jumpTo(event) {
-  const hash = event.currentTarget.hash;
-  const target = hash && document.getElementById(hash.slice(1));
-  if (!target) return; // no such section: the browser's own hash jump
-  event.preventDefault();
-  target.scrollIntoView({block: 'start'});
-  target.focus({preventScroll: true});
-  window.history.replaceState(window.history.state, '', hash);
-}
-
-/**
- * Overview, Specifications, Downloads — each a titled block, with jump links
- * when there's more than one. The description's opening copy is in the buy
- * box; Overview here holds its other <h3> sections ("Key Features", "What's
- * Included") as subheads.
- *
- * On a phone the blocks are an accordion, Overview open: stacked in full they
- * made a very long page to scroll past for the related products. Visibility
- * is the stylesheet's (by breakpoint, so nothing jumps on hydration); the
- * titles are toggle buttons only where toggling does something.
+ * Each row is a heading holding a disclosure button (the WAI accordion
+ * pattern); the panel eases open and shut by its grid row, as the cart's
+ * order note does. A link to `#specifications` (or any row's id) opens that
+ * row and scrolls to it.
  *
  * @param {{sections: ReturnType<typeof splitDescription>}} props
  */
 function Details({sections}) {
-  const {overview, specifications, downloads} = sections;
-  const collapsible = useNarrow();
-  // The first block starts open on a phone; the rest are folded.
-  const [open, setOpen] = useState(
-    () => new Set([overview.length ? 'overview' : specifications.length ? 'specifications' : 'downloads']),
-  );
+  const rows = useMemo(() => withIds(sections.sections), [sections.sections]);
+  const [open, setOpen] = useState(() => new Set());
   const toggle = (id) =>
     setOpen((current) => {
       const next = new Set(current);
@@ -517,97 +477,104 @@ function Details({sections}) {
       else next.add(id);
       return next;
     });
-  const blocks = [];
 
-  if (overview.length) {
-    blocks.push({
-      id: 'overview',
-      title: 'Overview',
-      body: overview.map((s) => (
-        <div key={s.title} className={styles.subsection}>
-          <h3 className={styles.subTitle}>{s.title}</h3>
-          <Prose html={s.html} />
-        </div>
-      )),
-    });
-  }
-  if (specifications.length) {
-    blocks.push({
-      id: 'specifications',
-      title: 'Specifications',
-      body: specifications.map((s) => (
-        <div key={s.title} className={styles.subsection}>
-          {specifications.length > 1 ? <h3 className={styles.subTitle}>{s.title}</h3> : null}
-          <Prose html={s.html} />
-        </div>
-      )),
-    });
-  }
-  if (downloads.length) {
-    blocks.push({
-      id: 'downloads',
-      title: 'Downloads',
-      body: downloads.map((s) => (
-        <Prose key={s.title} html={s.html} className={styles.downloads} />
-      )),
-    });
-  }
+  // Arrived with #specifications (or another row's id): open it and go there.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (!id || !rows.some((r) => r.id === id)) return;
+    setOpen((current) => new Set(current).add(id));
+    // The row's top doesn't move as its panel opens, so no need to wait.
+    document.getElementById(id)?.scrollIntoView({block: 'start'});
+    // Only on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (!blocks.length) return null;
+  if (!rows.length) return null;
 
   return (
     <div className={styles.details}>
       <div className={styles.inner}>
-        {blocks.length > 1 ? (
-          <nav className={styles.jump} aria-label="On this page">
-            <ul className={styles.jumpList} role="list">
-              {blocks.map((b) => (
-                <li key={b.id}>
-                  <a href={`#${b.id}`} className={styles.jumpLink} onClick={jumpTo}>
-                    {b.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ) : null}
-
-        {blocks.map((b) => {
-          const isOpen = open.has(b.id);
-          return (
-            <section
-              key={b.id}
-              id={b.id}
-              className={styles.block}
-              data-open={isOpen ? '' : undefined}
-              aria-labelledby={`${b.id}-title`}
-              tabIndex={-1}
-            >
-              <h2 id={`${b.id}-title`} className={styles.blockTitle}>
-                {collapsible ? (
+        <div className={styles.accordion}>
+          {rows.map((row) => {
+            const isOpen = open.has(row.id);
+            return (
+              <section
+                key={row.id}
+                id={row.id}
+                className={styles.block}
+                data-open={isOpen ? '' : undefined}
+                aria-labelledby={`${row.id}-title`}
+              >
+                <h2 className={styles.blockTitle}>
                   <button
                     type="button"
+                    id={`${row.id}-title`}
                     className={styles.blockToggle}
                     aria-expanded={isOpen}
-                    aria-controls={`${b.id}-body`}
-                    onClick={() => toggle(b.id)}
+                    aria-controls={`${row.id}-body`}
+                    onClick={() => toggle(row.id)}
                   >
-                    {b.title}
-                    <span className={styles.blockChevron} aria-hidden="true" />
+                    <span>{row.title}</span>
+                    {/* The FAQ module's +/− tile: the house accordion
+                        affordance. Decorative — aria-expanded says it. */}
+                    <span className={styles.toggle} aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 12 12" focusable="false">
+                        <line
+                          className={styles.toggleBar}
+                          x1="6"
+                          y1="1"
+                          x2="6"
+                          y2="11"
+                          strokeWidth="1.3"
+                          strokeLinecap="round"
+                        />
+                        <line x1="1" y1="6" x2="11" y2="6" strokeWidth="1.3" strokeLinecap="round" />
+                      </svg>
+                    </span>
                   </button>
-                ) : (
-                  b.title
-                )}
-              </h2>
-              <div id={`${b.id}-body`} className={styles.blockBody}>
-                {b.body}
-              </div>
-            </section>
-          );
-        })}
+                </h2>
+                <div id={`${row.id}-body`} className={styles.blockPanel}>
+                  <div className={styles.blockInner}>
+                    <div className={styles.blockBody}>
+                      <Prose
+                        html={row.html}
+                        className={row.kind === 'downloads' ? styles.downloads : ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
+}
+
+/**
+ * Each section with an id to link to: its title slugged ("Key Features" →
+ * key-features), the first Specifications and Downloads keeping the plain
+ * ids older links use, and a number added on a repeat.
+ *
+ * @param {Array<{title: string, html: string, kind: string}>} sections
+ */
+function withIds(sections) {
+  const used = new Set();
+  return sections.map((section) => {
+    const plain =
+      section.kind === 'overview'
+        ? section.title
+            .toLowerCase()
+            .normalize('NFKD')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') || 'section'
+        : section.kind;
+    let id = used.has(plain) ? '' : plain;
+    for (let n = 2; !id; n += 1) if (!used.has(`${plain}-${n}`)) id = `${plain}-${n}`;
+    used.add(id);
+    return {...section, id};
+  });
 }
 
 /**
