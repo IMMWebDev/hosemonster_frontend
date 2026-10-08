@@ -1,10 +1,10 @@
 /*
- * FAQ module — Smart Monster collection hifi
- * (sprint-04/hifi_smartmonstercollection.html, "What buyers ask us")
+ * FAQ module — Fire Flow hifi (sprint-04/hifi_fireflow.html, "Questions we
+ * get from the field")
  *
- * Two columns of <details> accordions. Card chrome matches Card Grid, Link
- * Cards and Product Cards — 2px rule, 8px radius — so the panels read as the
- * same family whether the band behind them is white or grey.
+ * Left-aligned lockup over two columns of <details> accordions. On the grey
+ * band the cards are plain white, as the comp draws them; on white they keep
+ * the 2px rule Card Grid, Link Cards and Product Cards use, or they'd vanish.
  */
 
 .section {
@@ -31,17 +31,6 @@
   padding-inline: var(--container-gutter-bleed);
 }
 
-/*
- * The lockup is CENTRED, unlike every other module on the page.
- *
- * An FAQ is a list people scan rather than a column of prose, and with the
- * accordion capped well short of the container a left-aligned heading over a
- * centred list — or a narrow list stranded against the left edge of a 1376px
- * band — both read as a mistake. Centring the whole thing makes the narrow
- * measure look deliberate. The question rows inside stay left-aligned; they
- * have to, with the toggle pinned to the right.
- */
-
 /* Styleguide eyebrow — matches every other module, 0.08em tracking included. */
 .eyebrow {
   /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
@@ -53,7 +42,6 @@
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--color-text-accent);
-  text-align: center;
   margin: 0;
 }
 
@@ -65,31 +53,34 @@
   letter-spacing: var(--tracking-normal);
   text-transform: uppercase;
   color: var(--color-text);
-  text-align: center;
   margin: var(--space-2) 0 0;
 }
 
 /*
- * One column, capped.
- *
- * The comp draws two; see the comment in Faq.jsx for why stacked won. The cap
- * is about measure, not taste — the container runs to 1376px here, and an
- * answer set across that is roughly 165 characters a line, far past the point
- * where the eye finds the next one. Left-aligned rather than centred so the
- * rows start on the same vertical as the heading above them.
+ * Two columns across the full container, filled row by row (see Faq.jsx).
+ * `start`, so an open answer grows its own card, not the one beside it.
  */
 .list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4); /* 16px in the design */
-  max-width: 900px;
-  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-4) var(--space-5); /* 16px / 20px in the design */
   margin-top: var(--space-7); /* 28px in the design */
 }
 
 .item {
   background: var(--color-surface);
   border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* White on grey needs no rule round it — the comp draws none. */
+.grey .item {
+  border: 0;
+}
+
+.grey .summary,
+.grey .summary:focus-visible {
   border-radius: var(--radius-md);
 }
 
@@ -148,8 +139,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px; /* from the design */
-  height: 30px;
+  width: 36px; /* from the design */
+  height: 36px;
   border-radius: var(--radius-md);
   background: var(--color-action);
   color: var(--color-action-text);
@@ -242,6 +233,13 @@
  * -----------------------------------------------------------------------------
  * ⚠ Not specced in Figma — desktop-only frame.
  */
+
+/* mdTablet — one column: the first half, then the rest, in reading order. */
+@media (max-width: 699px) {
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 
 /* mobile — the tile and the question crowd each other at 375px. */
 @media (max-width: 499px) {

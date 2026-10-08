@@ -2,13 +2,14 @@ import {useRef} from 'react';
 import styles from './Faq.module.css';
 
 /**
- * FAQ module — Smart Monster collection hifi
- * (sprint-04/hifi_smartmonstercollection.html, "What buyers ask us").
+ * FAQ module — Fire Flow hifi (sprint-04/hifi_fireflow.html, "Questions we
+ * get from the field").
  *
- * A stacked accordion of questions. The comp draws two columns; stacked is the
- * convention for a reason — opening an answer only lengthens one column, so a
- * two-column accordion falls out of alignment the moment anyone uses it, and
- * the reading order (across, or down?) is ambiguous before they do.
+ * Left-aligned lockup over two columns of questions, all closed, filled
+ * across the rows as the comp has them (1 2 / 3 4 / 5 6). One grid in the
+ * authored order rather than two stacks, so a screen reader and the phone's
+ * single column both read them 1–6; the cost is that an open answer leaves
+ * space under the question beside it until it closes. One column on a phone.
  *
  * Each item is a native <details>/<summary> rather than a button with React
  * state: it works before hydration and without JS, brings its own keyboard
@@ -53,16 +54,7 @@ export default function Faq({data}) {
         {items.length > 0 ? (
           <div className={styles.list}>
             {items.map((item, i) => (
-              <Item
-                key={item.id ?? i}
-                item={item}
-                /* The first question is open on load, matching the comp — it
-                   shows the shape of an answer without making anyone click.
-                   Everything else starts closed and opens independently, so two
-                   answers can be compared. */
-                open={i === 0}
-                index={i}
-              />
+              <Item key={item.id ?? i} item={item} index={i} />
             ))}
           </div>
         ) : null}
@@ -162,7 +154,7 @@ function Item({item, open = false, index = 0}) {
         {/* Decorative: <details> already announces its own expanded state, so
             an icon label here would say it a second time. */}
         <span className={styles.toggle} aria-hidden="true">
-          <svg width="12" height="12" viewBox="0 0 12 12" focusable="false">
+          <svg width="14" height="14" viewBox="0 0 12 12" focusable="false">
             <line
               className={styles.toggleBar}
               x1="6"
