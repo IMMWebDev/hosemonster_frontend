@@ -32,13 +32,6 @@
   padding-inline: var(--container-gutter-bleed);
 }
 
-/* Held in view while a long list scrolls past it, clear of the sticky nav
- * (its measured height, lib/use-nav-height.js). */
-.lockup {
-  position: sticky;
-  top: calc(var(--header-nav-h, 81px) + var(--space-6));
-}
-
 /* Styleguide eyebrow — matches every other module, 0.08em tracking included. */
 .eyebrow {
   /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
@@ -223,15 +216,11 @@
   }
 }
 
-/* mdTablet — stacked: the heading over the list, nothing sticky. */
+/* mdTablet — stacked: the heading over the list. */
 @media (max-width: 699px) {
   .inner {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-6);
-  }
-
-  .lockup {
-    position: static;
   }
 
   .summary {

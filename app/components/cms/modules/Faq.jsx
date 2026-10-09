@@ -3,7 +3,7 @@ import styles from './Faq.module.css';
 
 /**
  * FAQ module — a split layout: the eyebrow and heading in a narrow column on
- * the left (held in view while the list scrolls past), the questions down
+ * the left, the questions down
  * the right as ruled rows, the first one open so the shape of an answer
  * shows without a click. Stacked on a phone.
  *
