@@ -2,14 +2,10 @@ import {useRef} from 'react';
 import styles from './Faq.module.css';
 
 /**
- * FAQ module — Fire Flow hifi (sprint-04/hifi_fireflow.html, "Questions we
- * get from the field").
- *
- * Left-aligned lockup over two columns of questions, all closed, filled
- * across the rows as the comp has them (1 2 / 3 4 / 5 6). One grid in the
- * authored order rather than two stacks, so a screen reader and the phone's
- * single column both read them 1–6; the cost is that an open answer leaves
- * space under the question beside it until it closes. One column on a phone.
+ * FAQ module — a split layout: the eyebrow and heading in a narrow column on
+ * the left (held in view while the list scrolls past), the questions down
+ * the right as ruled rows, the first one open so the shape of an answer
+ * shows without a click. Stacked on a phone.
  *
  * Each item is a native <details>/<summary> rather than a button with React
  * state: it works before hydration and without JS, brings its own keyboard
@@ -41,20 +37,22 @@ export default function Faq({data}) {
   return (
     <section className={`${styles.section} ${backgroundClass}`.trim()}>
       <div className={styles.inner}>
-        {eyebrow ? (
-          <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
-            {eyebrow}
-          </p>
-        ) : null}
+        <div className={styles.lockup}>
+          {eyebrow ? (
+            <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+              {eyebrow}
+            </p>
+          ) : null}
 
-        <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
-          {heading}
-        </h2>
+          <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
+            {heading}
+          </h2>
+        </div>
 
         {items.length > 0 ? (
           <div className={styles.list}>
             {items.map((item, i) => (
-              <Item key={item.id ?? i} item={item} index={i} />
+              <Item key={item.id ?? i} item={item} open={i === 0} index={i} />
             ))}
           </div>
         ) : null}
