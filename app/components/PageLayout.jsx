@@ -1,13 +1,13 @@
 import {useMatches} from 'react-router';
 import {Aside} from '~/components/Aside';
-import Drawer, {MOBILE_MENU_ID} from '~/components/Drawer';
 import CartDrawer from '~/components/cart/CartDrawer';
 import {useReveal} from '~/lib/use-reveal';
 import PageWatermark from '~/components/cms/PageWatermark';
 import {strapiMedia} from '~/lib/strapi-media';
 import {Footer} from '~/components/Footer';
 import Newsletter from '~/components/Newsletter';
-import {Header, HeaderMenu} from '~/components/Header';
+import {Header} from '~/components/Header';
+import MobileMenu from '~/components/MobileMenu';
 import QuickSearch from '~/components/search/QuickSearch';
 
 /**
@@ -32,7 +32,7 @@ export function PageLayout({
     <Aside.Provider>
       <CartDrawer />
       <QuickSearch />
-      <MobileMenuAside cmsHeader={cmsHeader} />
+      <MobileMenu cmsHeader={cmsHeader} strapiBaseUrl={strapiBaseUrl} />
       {header && (
         <Header
           header={header}
@@ -94,26 +94,6 @@ function useIncludeNewsletter() {
     }
   }
   return true;
-}
-
-/**
- * Mobile nav drawer. Driven by the same CMS nav as the desktop header, so the
- * two cannot drift apart.
- *
- * @param {{cmsHeader?: Record<string, any>}}
- */
-function MobileMenuAside({cmsHeader}) {
-  const mainNav = cmsHeader?.mainNav ?? [];
-  if (mainNav.length === 0) return null;
-
-  return (
-    <Drawer type="mobile" id={MOBILE_MENU_ID} label="Menu">
-      <Drawer.Head title="Menu" />
-      <Drawer.Body>
-        <HeaderMenu mainNav={mainNav} />
-      </Drawer.Body>
-    </Drawer>
-  );
 }
 
 /**

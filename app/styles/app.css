@@ -123,12 +123,6 @@ button.reset:hover:not(:has(> *)) {
   }
 }
 
-.header-menu-mobile {
-  display: flex;
-  flex-direction: column;
-  grid-gap: 1rem;
-}
-
 .header-menu-desktop {
   display: none;
   grid-gap: 1rem;

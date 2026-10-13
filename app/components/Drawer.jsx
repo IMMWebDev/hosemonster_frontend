@@ -183,16 +183,19 @@ export function useDrawer() {
 
 /**
  * The top bar: a title, an optional note beside it ("3 items"), and Close.
+ * `brand` (the mobile menu's logo) shows in the title's place; the title
+ * stays as the heading, for screen readers only.
  *
- * @param {{title: string, meta?: import('react').ReactNode}} props
+ * @param {{title: string, meta?: import('react').ReactNode, brand?: import('react').ReactNode}} props
  */
-Drawer.Head = function DrawerHead({title, meta}) {
+Drawer.Head = function DrawerHead({title, meta, brand}) {
   const {dismiss} = useDrawer();
   const titleId = useId();
   return (
     <div className={styles.head}>
       <div className={styles.titles}>
-        <h2 className={styles.title} id={titleId}>
+        {brand}
+        <h2 className={brand ? 'sr-only' : styles.title} id={titleId}>
           {title}
         </h2>
         {/* Polite: a − / + tap changes the count, and that's the only
@@ -217,8 +220,8 @@ Drawer.Body = function DrawerBody({children, className = ''}) {
 };
 
 /** Pinned to the bottom, above the scrolling body. */
-Drawer.Foot = function DrawerFoot({children}) {
-  return <div className={styles.foot}>{children}</div>;
+Drawer.Foot = function DrawerFoot({children, className = ''}) {
+  return <div className={`${styles.foot} ${className}`.trim()}>{children}</div>;
 };
 
 /** Ids the header's toggles point their aria-controls at. */
