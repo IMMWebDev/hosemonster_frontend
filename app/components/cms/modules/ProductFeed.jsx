@@ -1,5 +1,11 @@
 import {useNavigate, useSearchParams} from 'react-router';
-import {FILTER_PARAM, SORT_OPTIONS, clearFilters, withSort} from '~/lib/collection-filters';
+import {
+  FILTER_PARAM,
+  SORT_OPTIONS,
+  clearFilters,
+  visibleFacets,
+  withSort,
+} from '~/lib/collection-filters';
 import {
   SortSelect,
   ListingLayout,
@@ -49,9 +55,7 @@ export default function ProductFeed({data, collection, activeSort, pagination}) 
   if (!collection?.products) return null;
 
   const products = collection.products;
-  const facets = (products.filters ?? []).filter(
-    (f) => (f.values ?? []).length > 0,
-  );
+  const facets = visibleFacets(products.filters);
   const hasActiveFilters = searchParams.getAll(FILTER_PARAM).length > 0;
   const total = pagination?.total ?? products.nodes.length;
   const count = products.nodes.length;

@@ -73,6 +73,18 @@ export const SEARCH_SORT_OPTIONS = [
 /** URL param holding one active filter, repeated per active value. */
 export const FILTER_PARAM = 'filter';
 
+/**
+ * The facets the filter rail shows: everything Shopify returns that has
+ * values, except price — the client doesn't want to filter by price.
+ *
+ * @param {Array<{type?: string, values?: Array<object>}>} facets
+ */
+export function visibleFacets(facets) {
+  return (facets ?? []).filter(
+    (f) => f?.type !== 'PRICE_RANGE' && (f?.values ?? []).length > 0,
+  );
+}
+
 /** URL param holding the chosen sort. */
 export const SORT_PARAM = 'sort';
 
@@ -95,7 +107,9 @@ export function sortFromSearchParams(searchParams, options = SORT_OPTIONS) {
  * metafield facets appear, they work here with no code change.
  *
  * Anything unparseable is dropped rather than thrown — a hand-edited URL should
- * not 500 the page. So is the /search page's own category (collection) filter
+ * not 500 the page. So is a price range: the client doesn't want price as a
+ * filter, and an old link carrying one shouldn't narrow the results with no
+ * control on the page to undo it. So is the /search page's own category (collection) filter
  * (`{"category": handle}`, see `collectionFilterHandles`): Shopify has no such
  * ProductFilter, and sending one fails the whole query.
  *
@@ -112,7 +126,8 @@ export function filtersFromSearchParams(searchParams) {
         parsed &&
         typeof parsed === 'object' &&
         !Array.isArray(parsed) &&
-        !Object.prototype.hasOwnProperty.call(parsed, COLLECTION_KEY)
+        !Object.prototype.hasOwnProperty.call(parsed, COLLECTION_KEY) &&
+        !Object.prototype.hasOwnProperty.call(parsed, 'price')
       ) {
         filters.push(parsed);
       }
@@ -251,84 +266,40 @@ export function removeFilter(searchParams, raw) {
  * draws above a filtered grid.
  *
  * Labels come from Shopify's own facet values, matched on the same
- * re-serialised JSON `isFilterActive` uses. A price range has no value to
- * match (Shopify returns one bounds value, not the chosen range), so it is
- * labelled from the URL. Anything that matches neither is still returned, as
- * "Filter", so a stale value in a pasted URL can be removed rather than
- * silently narrowing the results with no visible cause.
+ * re-serialised JSON `isFilterActive` uses. A price range in an old link is
+ * skipped — it isn't applied (see filtersFromSearchParams). Anything else that
+ * matches nothing is still returned, as "Filter", so a stale value in a pasted
+ * URL can be removed rather than silently narrowing the results with no
+ * visible cause.
  *
  * @param {Array<{label: string, type: string, values: Array<{label: string, input: string}>}>} facets
  * @param {URLSearchParams} searchParams
  * @returns {Array<{raw: string, label: string}>}
  */
 export function activeFilterLabels(facets, searchParams) {
-  return searchParams.getAll(FILTER_PARAM).map((raw) => {
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      return {raw, label: 'Filter'};
-    }
-
-    if (parsed?.price) {
-      const {min, max} = parsed.price;
-      const fmt = (n) => `$${Number(n).toLocaleString('en-US')}`;
-      const label =
-        min != null && max != null
-          ? `${fmt(min)} – ${fmt(max)}`
-          : min != null
-            ? `${fmt(min)} and up`
-            : `Up to ${fmt(max)}`;
-      return {raw, label};
-    }
-
-    const target = stableStringify(raw);
-    for (const facet of facets ?? []) {
-      const match = (facet.values ?? []).find(
-        (v) => stableStringify(v.input) === target,
-      );
-      if (match) return {raw, label: `${facet.label}: ${match.label}`};
-    }
-    return {raw, label: 'Filter'};
-  });
-}
-
-/**
- * Search params with the price range replaced.
- *
- * A price filter is singular — a second one would silently AND with the first
- * and return nothing — so any existing price filter is dropped rather than
- * appended to. Empty or non-numeric bounds are omitted, which lets you set only
- * a floor or only a ceiling.
- *
- * @param {URLSearchParams} searchParams
- * @param {string | number} min
- * @param {string | number} max
- * @returns {URLSearchParams}
- */
-export function setPriceRange(searchParams, min, max) {
-  const next = new URLSearchParams(searchParams);
-  const kept = next
+  return searchParams
     .getAll(FILTER_PARAM)
-    .filter((raw) => !hasPriceKey(raw));
+    .filter((raw) => !isPriceFilter(raw))
+    .map((raw) => {
+      try {
+        JSON.parse(raw);
+      } catch {
+        return {raw, label: 'Filter'};
+      }
 
-  next.delete(FILTER_PARAM);
-  for (const raw of kept) next.append(FILTER_PARAM, raw);
-
-  const price = {};
-  if (min !== '' && Number.isFinite(Number(min))) price.min = Number(min);
-  if (max !== '' && Number.isFinite(Number(max))) price.max = Number(max);
-
-  if (Object.keys(price).length > 0) {
-    next.append(FILTER_PARAM, JSON.stringify({price}));
-  }
-
-  clearPaging(next);
-  return next;
+      const target = stableStringify(raw);
+      for (const facet of facets ?? []) {
+        const match = (facet.values ?? []).find(
+          (v) => stableStringify(v.input) === target,
+        );
+        if (match) return {raw, label: `${facet.label}: ${match.label}`};
+      }
+      return {raw, label: 'Filter'};
+    });
 }
 
-/** @param {string} raw */
-function hasPriceKey(raw) {
+/** A price-range filter value. @param {string} raw */
+function isPriceFilter(raw) {
   try {
     return Object.prototype.hasOwnProperty.call(JSON.parse(raw), 'price');
   } catch {
