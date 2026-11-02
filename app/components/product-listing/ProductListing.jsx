@@ -6,7 +6,6 @@ import {
   isFilterActive,
   toggleFilter,
   clearFilters,
-  setPriceRange,
   removeFilter,
   activeFilterLabels,
 } from '~/lib/collection-filters';
@@ -86,10 +85,11 @@ export function ListingLayout({rail, children}) {
  * off-canvas drawers — fixed, 100vh, 400px wide — so using one here silently
  * gave the rail the cart drawer's width and made it overlap the grid.
  *
- * The UI is deliberately generic: it renders whatever facets Shopify returns
- * rather than modelling any particular one. Today that is Availability and
- * Price; if the Search & Discovery app is configured later, product-type and
- * metafield facets appear here with no code change.
+ * The UI is deliberately generic: it renders whatever facets it is given
+ * rather than modelling any particular one (price is left out upstream, by
+ * visibleFacets in lib/collection-filters.js). If the Search & Discovery app
+ * is configured later, product-type and metafield facets appear here with no
+ * code change.
  *
  * @param {{
  *   facets: Array<object>,
@@ -161,137 +161,39 @@ function Facet({facet, searchParams, onChange}) {
       </button>
 
       <div id={panelId} hidden={!open}>
-        {/*
-          A price facet is a RANGE, not a set of choices. Shopify returns it as
-          one value carrying the bounds, so rendering it like the others
-          produced a checkbox labelled "Price (0)".
-        */}
-        {facet.type === 'PRICE_RANGE' ? (
-          <PriceFacet
-            facet={facet}
-            searchParams={searchParams}
-            onApply={onChange}
-          />
-        ) : (
-          <ul className={styles.facetValues}>
-            {facet.values.map((value) => (
-              <li key={value.id}>
-                <label className={styles.option}>
-                  {/* A real checkbox, restyled. The comp draws these as
-                      buttons, which loses the checked state for assistive tech
-                      and the space-bar toggle. */}
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={isFilterActive(searchParams, value.input)}
-                    onChange={() =>
-                      onChange(toggleFilter(searchParams, value.input))
-                    }
-                  />
-                  <span className={styles.optionLabel}>{value.label}</span>
-                  {/* Counts are Shopify's, for the current selection — not a
-                      tally of what happens to be on this page. */}
-                  <span className={styles.count}>({value.count})</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul className={styles.facetValues}>
+          {facet.values.map((value) => (
+            <li key={value.id}>
+              <label className={styles.option}>
+                {/* A real checkbox, restyled. The comp draws these as
+                    buttons, which loses the checked state for assistive tech
+                    and the space-bar toggle. */}
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={isFilterActive(searchParams, value.input)}
+                  onChange={() =>
+                    onChange(toggleFilter(searchParams, value.input))
+                  }
+                />
+                <span className={styles.optionLabel}>{value.label}</span>
+                {/* Counts are Shopify's, for the current selection — not a
+                    tally of what happens to be on this page. */}
+                <span className={styles.count}>({value.count})</span>
+              </label>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
-}
-
-/**
- * Min/max inputs for a PRICE_RANGE facet.
- *
- * Bounds come from Shopify's own filter input, so the placeholders show the
- * real range of the current result set rather than invented numbers. Applied on
- * submit rather than on every keystroke — each change is a server round trip,
- * and filtering on a half-typed number is noise.
- *
- * @param {{facet: object, searchParams: URLSearchParams, onApply: Function}} props
- */
-function PriceFacet({facet, searchParams, onApply}) {
-  const bounds = readPriceBounds(facet.values?.[0]?.input);
-  const active = readActivePrice(searchParams);
-
-  const [min, setMin] = useState(active.min ?? '');
-  const [max, setMax] = useState(active.max ?? '');
-
-  return (
-    <div className={styles.priceRange} role="group" aria-label="Filter by price">
-      <div className={styles.priceInputs}>
-        <input
-          type="number"
-          className={styles.priceInput}
-          inputMode="decimal"
-          min={bounds.min}
-          max={bounds.max}
-          placeholder={
-            bounds.min != null ? String(Math.floor(bounds.min)) : 'Min'
-          }
-          aria-label="Minimum price"
-          value={min}
-          onChange={(e) => setMin(e.target.value)}
-        />
-        <span className={styles.priceDash} aria-hidden="true">
-          –
-        </span>
-        <input
-          type="number"
-          className={styles.priceInput}
-          inputMode="decimal"
-          min={bounds.min}
-          max={bounds.max}
-          placeholder={
-            bounds.max != null ? String(Math.ceil(bounds.max)) : 'Max'
-          }
-          aria-label="Maximum price"
-          value={max}
-          onChange={(e) => setMax(e.target.value)}
-        />
-      </div>
-      <button
-        type="button"
-        className={styles.priceApply}
-        onClick={() => onApply(setPriceRange(searchParams, min, max))}
-      >
-        Apply
-      </button>
-    </div>
-  );
-}
-
-/** @param {string | undefined} input */
-function readPriceBounds(input) {
-  try {
-    const price = JSON.parse(input)?.price ?? {};
-    return {min: price.min, max: price.max};
-  } catch {
-    return {min: undefined, max: undefined};
-  }
-}
-
-/** @param {URLSearchParams} searchParams */
-function readActivePrice(searchParams) {
-  for (const raw of searchParams.getAll(FILTER_PARAM)) {
-    try {
-      const price = JSON.parse(raw)?.price;
-      if (price) return {min: price.min ?? '', max: price.max ?? ''};
-    } catch {
-      // ignore
-    }
-  }
-  return {min: undefined, max: undefined};
 }
 
 /**
  * Removable filter chips — styleguide §07.
  *
  * The rail already shows what is ticked, but on a phone the rail is above the
- * grid and scrolled out of sight, and a price range is two numbers in small
- * inputs. The chips restate every active filter right where the results are,
+ * grid and scrolled out of sight. The chips restate every active filter right where the results are,
  * each with one-tap removal. Renders nothing when no filter is on.
  *
  * @param {{

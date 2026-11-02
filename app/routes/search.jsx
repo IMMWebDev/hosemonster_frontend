@@ -10,6 +10,7 @@ import {
   collectionFilterHandles,
   collectionFilterInput,
   filtersFromSearchParams,
+  visibleFacets,
 } from '~/lib/collection-filters';
 
 /**
@@ -495,7 +496,8 @@ async function regularSearch({url, context}) {
     selectedCollections,
     new Map((items.collectionNames?.nodes ?? []).map((c) => [c.handle, c.title])),
   );
-  const shopifyFacets = items.products?.productFilters ?? [];
+  // No price facet: the client doesn't want to filter by price.
+  const shopifyFacets = visibleFacets(items.products?.productFilters);
   const facets = [
     ...(collectionFacet ? [collectionFacet] : []),
     ...(selectedCollections.size

@@ -246,57 +246,6 @@
   color: var(--color-text-faint);
 }
 
-/* ---- price range ---- */
-
-.priceRange {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-2);
-}
-
-.priceInputs {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.priceInput {
-  /* reset.css gives bare `input` margins and its own border; a compact pair of
-   * number fields needs neither. */
-  margin: 0;
-  width: 4.75rem;
-  padding: 7px 9px;
-  font-family: var(--font-body);
-  font-size: var(--text-detail);
-  color: var(--color-text);
-  border: var(--border-width-thick) solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-.priceInput:focus-visible {
-  outline: var(--border-width-thick) solid var(--color-action);
-  outline-offset: 1px;
-}
-
-.priceDash {
-  color: var(--color-text-soft);
-}
-
-.priceApply {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  /* Navy, not orange: this control is 12px and §09 bans orange below 19px. */
-  color: var(--color-text);
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
-
 /* ---- results ---- */
 
 .showing {
