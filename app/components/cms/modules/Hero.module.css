@@ -105,11 +105,12 @@
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   /*
-   * The lighter orange made for navy grounds. The brand orange measures
-   * 2.95:1 on navy and fails even as large text; this keeps the eyebrow
-   * orange, as the comps draw it, at 4.6:1.
+   * Orange, even on navy — the brand orange, as every comp draws it. It
+   * measures 2.95:1 on navy; the design accepts that here (decided again
+   * 2026-11-12 after the lighter --color-text-accent-on-dark was tried).
+   * Don't swap it without the designer changing the comps.
    */
-  color: var(--color-text-accent-on-dark);
+  color: var(--color-text-accent);
   margin: 0;
 }
 

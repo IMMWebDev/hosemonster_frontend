@@ -103,8 +103,7 @@
   max-width: 720px; /* Hero Search's copy column */
 }
 
-/* The lighter orange made for navy grounds, as Hero Search: the brand orange
- * is 2.95:1 on this navy, this one 4.6:1. */
+/* The brand orange, as Hero Search's eyebrow (see the note there). */
 .eyebrow {
   font-family: var(--font-body);
   font-size: var(--text-eyebrow);
@@ -112,7 +111,7 @@
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-text-accent-on-dark);
+  color: var(--color-text-accent);
   margin: 0;
 }
 

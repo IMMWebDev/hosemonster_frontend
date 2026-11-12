@@ -278,9 +278,13 @@
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  /* The lighter orange made for navy grounds: the brand orange is 2.95:1 on
-   * the scrim's solid navy, this one 4.6:1. */
-  color: var(--color-text-accent-on-dark);
+  /*
+   * Orange, even on navy — the brand orange, as every comp draws it. It
+   * measures 2.95:1 on navy; the design accepts that here (decided again
+   * 2026-11-12 after the lighter --color-text-accent-on-dark was tried).
+   * Don't swap it without the designer changing the comps.
+   */
+  color: var(--color-text-accent);
   margin: 0;
 }
 
