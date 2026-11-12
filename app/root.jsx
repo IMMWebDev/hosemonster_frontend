@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
@@ -48,8 +49,8 @@ const TYPEKIT_KIT_ID = 'zny1qeh';
  *
  * ⚠ This currently loads on EVERY environment, production included. BugHerd's
  * sidebar stays hidden from ordinary visitors, but the script is still fetched
- * and run for them. To restrict it to non-production, gate the <script> in
- * `Layout` on an env flag rather than deleting this constant.
+ * and run for them. To restrict it to non-production, gate useBugHerd() (at
+ * the bottom of this file) on an env flag rather than deleting this constant.
  */
 const BUGHERD_API_KEY = 'qemlu54olb83vppojknrka';
 
@@ -267,6 +268,7 @@ function loadDeferredData({context}) {
  */
 export function Layout({children}) {
   const nonce = useNonce();
+  useBugHerd();
 
   return (
     /*
@@ -359,22 +361,6 @@ export function Layout({children}) {
         <link rel="stylesheet" href={appStyles}></link>
         <Meta />
         <Links />
-        {/*
-          BugHerd QA sidebar. `async` so it never blocks first paint.
-
-          Deliberately NOT given the CSP nonce. Browsers blank the `nonce`
-          content attribute after applying it (so a page cannot read its own
-          nonce back out), which means React hydration compares "" against the
-          client value and warns on every single load. Hydrogen's policy allows
-          the bugherd.com hosts outright, so the nonce bought nothing.
-
-          It loads from www.bugherd.com but pulls its bundles from
-          sidebar.bugherd.com — hence the wildcard in app/entry.server.jsx.
-        */}
-        <script
-          async
-          src={`https://www.bugherd.com/sidebarv2.js?apikey=${BUGHERD_API_KEY}`}
-        />
       </head>
       <body>
         {children}
@@ -459,6 +445,31 @@ export function ErrorBoundary() {
       )}
     </div>
   );
+}
+
+/**
+ * BugHerd QA sidebar, loaded once React has hydrated the page.
+ *
+ * Not a <script> in <head>: as an async tag it could run before hydration
+ * and insert its own element into <body>. React then found markup it hadn't
+ * rendered, threw away the server HTML and re-rendered the whole page in the
+ * browser (minified React errors #418/#423), and BugHerd itself failed
+ * reading its now-removed element ("reading 'shadowRoot'"). A race — fast,
+ * cached loads usually won it — so it showed up on slower first visits.
+ *
+ * No CSP nonce needed: Hydrogen's policy allows the bugherd.com hosts
+ * outright. It loads from www.bugherd.com and pulls its bundles from
+ * sidebar.bugherd.com — hence the wildcard in app/entry.server.jsx.
+ */
+function useBugHerd() {
+  useEffect(() => {
+    if (document.querySelector('script[data-bugherd]')) return;
+    const script = document.createElement('script');
+    script.src = `https://www.bugherd.com/sidebarv2.js?apikey=${BUGHERD_API_KEY}`;
+    script.async = true;
+    script.dataset.bugherd = '';
+    document.body.appendChild(script);
+  }, []);
 }
 
 /** @typedef {LoaderReturnData} RootLoader */
