@@ -1,0 +1,539 @@
+/*
+ * Blog Modules — the body blocks of a blog post (Strapi category
+ * "blog-modules"): CTA Card, Image, Image Gallery, Note and Video. One stylesheet for all
+ * three, because they share the column, the spacing, the radius and the
+ * caption.
+ *
+ * Styles from sprint-05 hifi_blogposttemplate.html: a figure the width of the
+ * article column, 8px radius, 32px below, an optional one-line caption under it.
+ *
+ * Image and Image Gallery photos are buttons that open the post's photo viewer
+ * (blog/PhotoViewer.jsx); they share one hover and one focus treatment, at the
+ * foot of the gallery section.
+ */
+
+/*
+ * The post's article column (BlogBody) sets the width — a block fills it, as
+ * the WYSIWYG text does. 32px above and below, the template's figure spacing;
+ * a paragraph's 20px collapses into it.
+ */
+.block {
+  margin-block: var(--space-8);
+}
+
+/* <figure> carries a 40px UA margin; the column handles spacing. */
+.figure {
+  margin: 0;
+}
+
+/*
+ * The caption — the template's one line of small print under the figure. It
+ * draws it #8a97a3, which is 2.9:1 on white and fails AA for text; the muted
+ * ink (#5c7186, 5.3:1) is the nearest token that passes.
+ */
+.caption {
+  margin-top: 10px; /* from the design */
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-muted);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * IMAGE
+ * -----------------------------------------------------------------------------
+ */
+
+/* "photo" (and null): fill the column in a 16:9 frame, cropping to fit. */
+.photo {
+  display: block;
+  width: 100%;
+  /* auto, or the img's height attribute (there for layout stability) would
+   * win over the aspect ratio. */
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-subtle); /* shows before it loads */
+}
+
+/*
+ * "fit": the whole image at its own proportions, centred. `max-width` and no
+ * `width` means it is never enlarged past its own size — an old 380px figure
+ * stays sharp instead of being blown up to the column.
+ */
+.fit {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border-radius: var(--radius-md);
+}
+
+/*
+ * The buttons the image sits in. Every UA button style goes, so the image
+ * looks exactly as it did before it opened anything; `zoom-in` is the hint
+ * that a click shows it bigger.
+ */
+.photoButton,
+.fitButton {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  cursor: zoom-in;
+}
+
+/*
+ * "photo": the column's width, clipping the hover zoom to the rounded frame.
+ * `isolation` makes Safari clip a scaled child to the radius — without it the
+ * image's square corners poke out for the length of the transition.
+ */
+.photoButton {
+  width: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* "fit": shrink-wraps the image, centred, so the clickable area is the image
+ * and not the empty column either side of a small figure. */
+.fitButton {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * IMAGE GALLERY — a mosaic that keeps its footprint as photos are added
+ * -----------------------------------------------------------------------------
+ * The old Image Row set every photo side by side, so each one added shrank
+ * them all — four across the 760px column were 180px thumbnails. The mosaic
+ * changes shape with the count instead, and from three photos up the whole
+ * block stays 16:9, the shape of a single Image module.
+ *
+ * Keyed on data-count (set by BlogImageRow; "5" means five or more) and
+ * nth-child only, so any count can be checked by cloning a gallery in the
+ * browser and changing the attribute. The tiles' images are absolutely
+ * positioned, so a cell's size comes from the grid alone and a tall photo
+ * can't stretch its row.
+ */
+
+.gallery {
+  display: grid;
+  gap: var(--space-3); /* 12px, the old row's gap */
+}
+
+/* 1 — one photo, 16:9, as an Image module. */
+.gallery[data-count='1'] > .tile {
+  aspect-ratio: 16 / 9;
+}
+
+/* 2 — a pair, 4:3 each: taller than 16:9 halves, which would be letterbox
+ * strips at 374px wide. */
+.gallery[data-count='2'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gallery[data-count='2'] > .tile {
+  aspect-ratio: 4 / 3;
+}
+
+/* 3 — a feature photo two-thirds wide, two stacked beside it. */
+.gallery[data-count='3'] {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  aspect-ratio: 16 / 9;
+}
+
+/* 4 — an even 2×2. */
+.gallery[data-count='4'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  aspect-ratio: 16 / 9;
+}
+
+/* 5+ — a feature photo the left half, a 2×2 beside it. The component draws
+ * five tiles at most; the sixth rule is a guard for a hand-made clone. */
+.gallery[data-count='5'] {
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  aspect-ratio: 16 / 9;
+}
+
+.gallery:is([data-count='3'], [data-count='5']) > .tile:first-child {
+  grid-row: 1 / -1;
+}
+
+.gallery > .tile:nth-child(n + 6) {
+  display: none;
+}
+
+/* One photo-button per cell. The placeholder grey shows until it loads. */
+.tile {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  /* Safari: clip the hover zoom to the radius (see .photoButton). */
+  isolation: isolate;
+  background-color: var(--color-surface-subtle);
+  color: inherit;
+  cursor: zoom-in;
+}
+
+/* Fills the cell, cropped to it — the mosaic's shapes rarely match the
+ * photo's. */
+.tileImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/*
+ * "+3" — the photos a full mosaic can't show, over the last tile: a navy
+ * scrim, the count in the display face. The photo under it still zooms on
+ * hover, so it reads as a tile too. moreLg is the fifth tile's (the mosaic),
+ * moreSm the third's (the stack, below); only one shows at a time.
+ */
+.more {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background-color: color-mix(
+    in srgb,
+    var(--color-surface-inverse) 72%,
+    transparent
+  );
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  color: var(--color-text-inverse);
+  pointer-events: none;
+}
+
+.moreSm {
+  display: none;
+}
+
+/*
+ * Hover — §05's card image scale, over its slightly longer duration, inside
+ * the rounded frame. Pointer devices only: on touch a tap would leave the
+ * photo stuck zoomed. Not for "fit" images (see BlogImage.jsx).
+ */
+.tileImage,
+.photoButton .photo {
+  transition: transform var(--duration-image) var(--ease-default);
+}
+
+@media (hover: hover) {
+  .tile:hover .tileImage,
+  .photoButton:hover .photo {
+    transform: scale(var(--card-image-scale));
+  }
+}
+
+/* The house focus ring, as on the post's links. */
+.tile:focus-visible,
+.photoButton:focus-visible,
+.fitButton:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * VIDEO — YouTube's own player in a 16:9 frame
+ * -----------------------------------------------------------------------------
+ */
+
+.videoFrame16x9 {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  /* Navy until the player draws. */
+  background-color: var(--color-surface-inverse);
+}
+
+.videoPlayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CTA CARD — the comp's "See the equipment": copy left, product shot right
+ * -----------------------------------------------------------------------------
+ */
+
+.ctaCard {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* from the design */
+  align-items: center;
+  gap: var(--space-6);
+  padding: 24px 26px; /* from the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default),
+    translate var(--duration-control) var(--ease-default);
+}
+
+/* No image: the copy takes the full width. */
+.ctaCardText {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Two classes, to outrank reset.css's a:hover:not(.btn), which would turn
+ * every word in the card orange. */
+.block .ctaCard:hover {
+  border-color: var(--color-action);
+  box-shadow: var(--shadow-card-hover);
+  /* `translate`, not `transform`: motion.css ends every reveal on
+   * `transform: none` at higher specificity, which would cancel the lift. */
+  translate: 0 var(--card-lift);
+  color: var(--color-text);
+}
+
+.ctaCard:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.ctaCopy {
+  min-width: 0;
+}
+
+.ctaHeading {
+  margin: 0 0 6px; /* from the design */
+  font-family: var(--font-display);
+  font-size: 1rem; /* 16px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.ctaBody {
+  margin: 0 0 14px; /* from the design */
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px, from the design */
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* The small-copy link look: bold, the darker link orange; on hover it turns
+ * brand orange and the chevron steps out. */
+.ctaLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* from the design */
+  font-family: var(--font-body);
+  font-size: 0.90625rem; /* 14.5px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+  color: var(--color-text-link);
+  transition:
+    gap var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default);
+}
+
+.ctaCard:hover .ctaLabel {
+  gap: 9px;
+  color: var(--color-action);
+}
+
+.ctaChevron {
+  flex: none;
+  color: var(--color-action);
+}
+
+/* The whole shot, never cropped, at the comp's height. */
+.ctaImage {
+  justify-self: center;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: clamp(120px, 14vw, 168px); /* from the design */
+  object-fit: contain;
+  transition: transform var(--duration-image) var(--ease-default);
+}
+
+.ctaCard:hover .ctaImage {
+  transform: scale(var(--card-image-scale));
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * NOTE — the comp's callout: grey, an orange edge, the body ink
+ * -----------------------------------------------------------------------------
+ * The same box as a quote typed into the post's text (.cms-post-body
+ * blockquote in app.css). Links take .cms-note-body's look: bold, the darker
+ * link orange.
+ */
+
+.note {
+  padding: 18px 22px; /* from the design */
+  border-left: 4px solid var(--color-action); /* from the design */
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+  font-family: var(--font-body);
+  /* 15.5px — the comp's 14.5px sits between steps; matches the quote box. */
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+}
+
+.noteHeading {
+  margin: 0;
+}
+
+.noteBody {
+  max-width: var(--measure-note);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the post template is a desktop frame.
+ */
+
+/*
+ * The stack — a full-width 16:9 feature over two 4:3 tiles, with "+N" on the
+ * third and the rest left to the viewer. The block's height then follows its
+ * tiles rather than a 16:9 frame.
+ *
+ * mdTablet, five or more only: the 2×2 beside a half-width feature drops to
+ * ~107px tiles at 500px, smaller than a phone's, so it stacks from here. Three
+ * and four keep their mosaic down to the phone, where their tiles are still
+ * over 200px.
+ */
+@media (max-width: 699px) {
+  .gallery[data-count='5'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    aspect-ratio: auto;
+  }
+
+  .gallery[data-count='5'] > .tile:first-child {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
+  }
+
+  .gallery[data-count='5'] > .tile:nth-child(n + 2) {
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Still in the viewer — the third tile's "+N" opens it. */
+  .gallery[data-count='5'] > .tile:nth-child(n + 4),
+  .gallery[data-count='5'] .moreLg {
+    display: none;
+  }
+
+  .gallery[data-count='5'] .moreSm {
+    display: grid;
+  }
+}
+
+/*
+ * mobile — a 2×2 would be thumbnails again at 343px, so the gallery steps
+ * down: a pair goes square, and three or more take the stack above.
+ */
+@media (max-width: 499px) {
+  .gallery {
+    gap: var(--space-2); /* 8px — 12 is a lot of white in a 343px column */
+  }
+
+  /* The note gives a 343px column back a little of its padding. */
+  .note {
+    padding: var(--space-4) 18px;
+  }
+
+  /* The CTA card stacks: the shot above, centred, then the copy. */
+  .ctaCard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+
+  .ctaImage {
+    order: -1;
+    height: 120px;
+  }
+
+  .gallery[data-count='2'] > .tile {
+    aspect-ratio: 1;
+  }
+
+  .gallery:is([data-count='3'], [data-count='4']) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    aspect-ratio: auto;
+  }
+
+  .gallery:is([data-count='3'], [data-count='4']) > .tile:first-child {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
+  }
+
+  .gallery:is([data-count='3'], [data-count='4']) > .tile:nth-child(n + 2) {
+    aspect-ratio: 4 / 3;
+  }
+
+  .gallery > .tile:nth-child(n + 4),
+  .moreLg {
+    display: none;
+  }
+
+  .moreSm {
+    display: grid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tileImage,
+  .photoButton .photo,
+  .ctaCard,
+  .ctaLabel,
+  .ctaImage {
+    transition: none;
+  }
+
+  .block .ctaCard:hover {
+    translate: none;
+  }
+
+  .ctaCard:hover .ctaImage {
+    transform: none;
+  }
+}

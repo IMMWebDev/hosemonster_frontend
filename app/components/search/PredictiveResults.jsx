@@ -4,10 +4,12 @@ import SearchChips from '~/components/search/SearchChips';
 import {
   SEARCH_PATH,
   CONTACT_PATH,
+  searchUrl,
   splitSuggestion,
   urlWithTrackingParams,
 } from '~/lib/search';
 import {useProductPath} from '~/lib/product-urls';
+import {useTrackId} from '~/lib/tracking';
 import styles from './PredictiveResults.module.css';
 
 /**
@@ -136,6 +138,7 @@ export function PredictiveEmptyState({categories, onNavigate}) {
       <Group title="Shop by category">
         <SearchChips
           label="Categories"
+          trackRole="category"
           items={categories.map((c) => ({
             key: c.id,
             label: c.title,
@@ -160,7 +163,6 @@ export function PredictiveEmptyState({categories, onNavigate}) {
  *   data: object,
  *   term: string,
  *   onNavigate: () => void,
- *   onViewAll: () => void,
  *   maxProducts?: number,
  * }} props
  */
@@ -178,9 +180,9 @@ function ResultsBody({
   data,
   term,
   onNavigate,
-  onViewAll,
   maxProducts = PRODUCT_PREVIEW_COUNT,
 }) {
+  const trackId = useTrackId();
   const {
     queries = [],
     collections = [],
@@ -209,6 +211,7 @@ function ResultsBody({
             className={styles.helpLink}
             onClick={onNavigate}
             data-qs-item
+            data-track-id={trackId('contact')}
           >
             Contact us
           </Link>
@@ -223,7 +226,7 @@ function ResultsBody({
         <div className={styles.areaSuggest}>
           <Group title="Suggestions">
             <ul className={styles.rows} role="list">
-              {queries.map((q) => (
+              {queries.map((q, i) => (
                 <li key={q.text}>
                   <Link
                     to={urlWithTrackingParams({
@@ -234,6 +237,7 @@ function ResultsBody({
                     className={styles.row}
                     onClick={onNavigate}
                     data-qs-item
+                    data-track-id={trackId(`suggestion-${i + 1}`)}
                   >
                     <RowIcon kind="search" />
                     <span className={styles.rowText}>
@@ -273,15 +277,18 @@ function ResultsBody({
             </ul>
           </Group>
 
+          {/* A link, not a button: it goes to a page, so it can be opened in
+              a new tab or copied, like every other row here. */}
           {total > 0 ? (
-            <button
-              type="button"
+            <Link
+              to={searchUrl(term)}
               className={`btn btn--secondary ${styles.viewAll}`}
-              onClick={onViewAll}
+              onClick={onNavigate}
               data-qs-item
+              data-track-id={trackId('view-all')}
             >
               View all {total} {total === 1 ? 'result' : 'results'}
-            </button>
+            </Link>
           ) : null}
         </div>
       ) : null}
@@ -300,6 +307,7 @@ function ResultsBody({
                     term,
                   }),
                 }))}
+                trackRole="category-result"
                 onNavigate={onNavigate}
               />
             </Group>
@@ -308,7 +316,12 @@ function ResultsBody({
           {pages.length > 0 ? (
             <Group title="Pages">
               <LinkRows
-                items={pages.map((p) => ({key: p.id, label: p.title, to: p.url}))}
+                items={pages.map((p) => ({
+                  key: p.id,
+                  label: p.title,
+                  to: p.url,
+                }))}
+                trackRole="page-result"
                 onNavigate={onNavigate}
               />
             </Group>
@@ -322,6 +335,7 @@ function ResultsBody({
                   label: a.title,
                   to: a.url,
                 }))}
+                trackRole="article-result"
                 onNavigate={onNavigate}
               />
             </Group>
@@ -337,6 +351,7 @@ function ResultsBody({
  */
 function ProductRow({product, term, onNavigate}) {
   const pathFor = useProductPath();
+  const trackId = useTrackId();
   const image = product.featuredImage;
   const price = product.priceRange?.minVariantPrice;
   const max = product.priceRange?.maxVariantPrice;
@@ -353,11 +368,14 @@ function ProductRow({product, term, onNavigate}) {
       className={styles.product}
       onClick={onNavigate}
       data-qs-item
+      data-track-id={trackId(`product-${product.handle}`)}
     >
       <span className={styles.productMedia}>
         {image ? (
           <Image
-            data={image}
+            /* altText cleared: Hydrogen's Image swaps an empty alt for it,
+               and the title beside it already names the product. */
+            data={{...image, altText: null}}
             aspectRatio="1/1"
             sizes="72px"
             width={72}
@@ -386,12 +404,14 @@ function ProductRow({product, term, onNavigate}) {
  * @param {{
  *   items: Array<{key: string, label: string, to: string}>,
  *   onNavigate: () => void,
+ *   trackRole: string,
  * }} props
  */
-function LinkRows({items, onNavigate}) {
+function LinkRows({items, onNavigate, trackRole}) {
+  const trackId = useTrackId();
   return (
     <ul className={styles.rows} role="list">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <li key={item.key}>
           <Link
             to={item.to}
@@ -399,6 +419,7 @@ function LinkRows({items, onNavigate}) {
             className={styles.row}
             onClick={onNavigate}
             data-qs-item
+            data-track-id={trackId(`${trackRole}-${i + 1}`)}
           >
             <span className={styles.rowText}>{item.label}</span>
             <RowIcon kind="arrow" />

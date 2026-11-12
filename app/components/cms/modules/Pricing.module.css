@@ -92,7 +92,8 @@
 /*
  * Card title — the plan's name is the card's title. Deliberately not an
  * eyebrow: three of those stacked beside each other in orange would fight the
- * prices for attention, which are the thing being compared.
+ * prices for attention, which are the thing being compared. It's an <h3>, so
+ * every property typography.css gives bare h3s is restated here.
  */
 .planLabel {
   font-family: var(--font-display);
@@ -269,6 +270,12 @@
   border-radius: var(--radius-md);
   overflow-x: auto;
   text-align: left;
+}
+
+/* The wrapper takes focus so the keyboard can scroll it (Pricing.jsx). */
+.tableWrap:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
 }
 
 .table {

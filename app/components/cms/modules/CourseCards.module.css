@@ -1,0 +1,308 @@
+/*
+ * Course Cards module — sprint-05 hifi_hmuhub.html, "Upcoming courses".
+ *
+ * Full-bleed band on a faint photo under a navy scrim: heading, a line of
+ * copy, then a card per training session.
+ */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #0f1f2c; /* the deep navy Numbered Benefits uses */
+
+  /* White keyboard focus rings on the navy band — orange is under 3:1 here. */
+  --color-focus-ring: var(--color-text-inverse);
+
+  /* Zero — reset.css gives a bare <section> `padding: 2rem 0`, which would
+   * stack outside .inner's padding. */
+  padding-block: 0;
+
+  /* Full-bleed: cancel <main>'s margin exactly, as Numbered Benefits does. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* Positive stack: photo 0, scrim 1, content 2. */
+.backgroundImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 20% center; /* from the design */
+  opacity: 0.28; /* from the design */
+}
+
+/* Near-solid navy, a touch lighter on the right. From the design. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgb(15 31 44 / 97%) 0%,
+    rgb(29 58 84 / 92%) 55%,
+    rgb(29 58 84 / 85%) 100%
+  );
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  /* The section rhythm (64/48/32 via the token) and the bleed gutter. */
+  padding: var(--container-block) var(--container-gutter-bleed);
+}
+
+/* Styleguide Eyebrow, in the light orange for dark grounds, as on every navy
+ * band. See CtaBanner.module.css. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent-on-dark);
+  margin: 0 0 9px; /* the house eyebrow-to-heading gap */
+}
+
+/* Styleguide H2, reversed out. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Styleguide Body, on navy. */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-on-navy);
+  max-width: var(--measure);
+  margin: var(--space-3) 0 0; /* 12px under the heading, from the design */
+}
+
+/* The comp's auto-fit grid: one or two sessions share the row, more wrap at
+ * 340px. min() keeps a single column from overflowing a phone. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: var(--space-5); /* 20px in the design */
+  margin: var(--space-7) 0 0; /* 28px under the copy, from the design */
+  padding: 0;
+  list-style: none;
+}
+
+/* The grid cell. It carries the scroll-in reveal, so the card inside owns
+ * its hover transition. Flex, so the card fills the cell and a row of cards
+ * stays even. */
+.item {
+  display: flex;
+  margin: 0; /* reset.css spaces every <li> */
+}
+
+/* Translucent card with the orange left edge. */
+.card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px; /* from the design */
+  padding: 26px 28px; /* from the design */
+  border: var(--border-width-thick) solid rgb(255 255 255 / 18%);
+  border-left: 4px solid var(--color-action);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 7%);
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default),
+    translate var(--duration-control) var(--ease-default);
+}
+
+/* The comp's hover: the whole border turns orange, a deeper shadow, a 2px
+ * lift (the row lift). The link inside keeps still until it's hovered. */
+.card:hover {
+  border-color: var(--color-action);
+  box-shadow: 0 14px 32px rgb(0 0 0 / 38%); /* from the design */
+  translate: 0 var(--card-lift-row);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+/*
+ * Dates. The comp's 12px / 0.08em caps sit under the guide's smallest size
+ * and tracking is the eyebrow's alone (§03), so it's Styleguide "Detail",
+ * bold caps, untracked — the same call as Link Cards' badge.
+ */
+.dates {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  text-transform: uppercase;
+  color: var(--color-text-on-navy);
+}
+
+.calendar {
+  flex: none;
+  display: block;
+}
+
+/* "Filling fast" — white on the darker orange, 5.5:1. Same type as the
+ * dates. */
+.status {
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-action-hover);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  white-space: nowrap;
+}
+
+/* City: display face, white. Every property is set because a bare h3 is the
+ * orange eyebrow in reset.css. */
+.city {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1875rem; /* 19px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+}
+
+/* Orange on navy is fine for a mark — it isn't text. Nudged to sit on the
+ * cap height, as the comp does. */
+.pin {
+  flex: none;
+  display: block;
+  margin-top: 1px;
+  color: var(--color-action);
+}
+
+.title {
+  margin: 0 0 6px; /* from the design */
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-on-navy);
+}
+
+/*
+ * "Register on Cvent ↗". White bold; on hover the arrow nudges, the site's
+ * arrow-link motion (Text & Badge, Featured Blog). The text stays white: the
+ * comp turns it orange, but orange text on navy is 2.95:1 and fails (§09).
+ * Two classes in the hover selector to outrank reset.css's
+ * a:hover:not(.btn), which would turn it orange.
+ */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text-inverse);
+  text-decoration: none;
+}
+
+.card .link:hover {
+  color: var(--color-text-inverse);
+}
+
+/* ↗ — a new-tab link. Nudges along its own direction, up and right. */
+.arrow {
+  display: inline-block;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.link:hover .arrow {
+  transform: translate(2px, -2px);
+}
+
+/* The orange chevron — a same-tab link. Orange on navy is fine for a mark. */
+.chevron {
+  flex: none;
+  color: var(--color-action);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.link:hover .chevron {
+  transform: translateX(3px);
+}
+
+.link:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* No sessions left: the card chrome without the orange edge, so it reads as a
+ * note rather than a session. */
+.empty {
+  margin: var(--space-7) 0 0;
+  padding: 26px 28px;
+  border: var(--border-width-thick) solid rgb(255 255 255 / 18%);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-on-navy);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints. Not specced; the auto-fit grid handles the
+ * columns, so phones only tighten the padding.
+ * -----------------------------------------------------------------------------
+ */
+@media (max-width: 499px) {
+  .card,
+  .empty {
+    padding: 22px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .arrow,
+  .chevron {
+    transition: none;
+  }
+
+  .card:hover {
+    translate: none;
+  }
+}

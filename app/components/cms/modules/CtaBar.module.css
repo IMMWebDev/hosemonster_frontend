@@ -32,6 +32,10 @@
   border-radius: var(--radius-md); /* 8px in the design */
   background-color: var(--brand-navy); /* shows before the texture loads */
 
+  /* Both fills are dark (navy, red), so keyboard focus rings inside go white:
+   * the orange ring is 2.95:1 on navy and invisible on red. */
+  --color-focus-ring: var(--color-text-inverse);
+
   /* `clip`, not `hidden`: hidden would create a scroll container and become the
    * nearest scrollport for the parallax inside, measuring the texture against
    * this card instead of the document. */
@@ -58,7 +62,9 @@
 }
 
 /* Full white here, not the muted navy tint: --hero-meta-ink is tuned for copy
- * on a dark navy fill and turns dirty against red. */
+ * on a dark navy fill and turns dirty against red. The eyebrow too — any
+ * orange on this red fill is orange on orange. */
+.red .eyebrow,
 .red .body {
   color: var(--color-text-inverse);
 }
@@ -97,9 +103,12 @@
  * six CTA Bars on the site have none, and over a flat fill this would just be
  * a darker patch on the left for no reason.
  *
- * Full strength to 35%, gone by 75%, per the comp: the copy column gets solid
- * cover while the right quarter of the picture stays clean. Without it the
- * white heading sat straight on a pale photograph and was close to unreadable.
+ * At least 85% navy to 60%, gone by 90%: the copy keeps solid cover and the
+ * photo shows behind the button. The comp faded from 35% to 75%, but on the
+ * Smart Monster photo that left the eyebrow's last letters and the body copy
+ * at 2.9:1 over the bright water jet. This holds every line at 3.9:1 or more
+ * at 1100–1440. Below 1099px the copy runs wider than the fade, so the scrim
+ * goes even there (see RESPONSIVE).
  */
 .scrim {
   position: absolute;
@@ -108,8 +117,8 @@
   background: linear-gradient(
     90deg,
     var(--brand-navy) 0%,
-    color-mix(in srgb, var(--brand-navy) 75%, transparent) 35%,
-    transparent 75%
+    color-mix(in srgb, var(--brand-navy) 85%, transparent) 60%,
+    transparent 90%
   );
   pointer-events: none;
 }
@@ -119,8 +128,8 @@
   background: linear-gradient(
     90deg,
     var(--color-action) 0%,
-    color-mix(in srgb, var(--color-action) 75%, transparent) 35%,
-    transparent 75%
+    color-mix(in srgb, var(--color-action) 85%, transparent) 60%,
+    transparent 90%
   );
 }
 
@@ -142,11 +151,10 @@
 }
 
 /*
- * Orange, on navy, at 2.95:1 — which §09 says fails at every size, and which
- * the comp draws anyway. Same call as every other section eyebrow on a dark
- * ground (see Hero, Hero Search, CTA Banner): the design has accepted the ratio
- * and the newsletter band is the one documented exception. Do not white this
- * out without the comps changing first.
+ * The light orange for dark grounds, not the brand orange the comp draws: that
+ * is 2.95:1 on navy and fails at every size (§09); this keeps the brand colour
+ * at 4.6:1. Same token as the Hero, CTA Banner and newsletter eyebrows. The
+ * red variant whites it out above.
  *
  * No margin — .copy is a flex column with its own gap, and adding one here
  * would stack on top of it and space the eyebrow differently from the heading
@@ -159,7 +167,7 @@
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-text-accent);
+  color: var(--color-text-accent-on-dark);
   margin: 0;
 }
 
@@ -253,12 +261,40 @@
   gap: var(--space-3); /* 12px in the design */
 }
 
+/* On a bar with a photo the buttons sit past the scrim, on the bare picture.
+ * The shadow fills the gap inside the white ring, so the ring keeps a dark
+ * edge whatever the photo does there — the same fix as the hero badges.
+ * .scrim is only rendered when there is a photo. */
+.scrim ~ .content :global(.btn:focus-visible) {
+  box-shadow: 0 0 0 2px var(--brand-navy);
+}
+
+/* Red bars fill the gap with the darker orange: white on it is 5.5:1. */
+.red .scrim ~ .content :global(.btn:focus-visible) {
+  box-shadow: 0 0 0 2px var(--color-action-hover);
+}
+
 /*
  * -----------------------------------------------------------------------------
  * RESPONSIVE — house breakpoints (app/styles/layout.css)
  * -----------------------------------------------------------------------------
  * ⚠ Not specced in Figma — desktop-only 1440px frame.
  */
+
+/* tablet — the copy now runs past where the fade clears (and right across
+ * the photo once it stacks), so the scrim goes to an even 90%. 85% was not
+ * enough: over a white photo it leaves the eyebrow at 2.9:1. At 90% every
+ * line on a navy bar clears AA over any photo (eyebrow 3.4:1, body 5.5:1 on
+ * pure white). */
+@media (max-width: 1099px) {
+  .scrim {
+    background: color-mix(in srgb, var(--brand-navy) 90%, transparent);
+  }
+
+  .red .scrim {
+    background: color-mix(in srgb, var(--color-action) 90%, transparent);
+  }
+}
 
 /* mdTablet — side by side leaves the copy too narrow, so it stacks and the
  * button goes full width rather than floating alone on a line. */

@@ -11,6 +11,9 @@
   overflow: hidden;
   background-color: var(--brand-navy);
 
+  /* White keyboard focus rings on the navy band — orange is 2.95:1 here. */
+  --color-focus-ring: var(--color-text-inverse);
+
   /* Zero, deliberately. This element IS the navy band and its padding lives on
    * .inner below; without this, reset.css's `padding: 2rem 0` on a bare
    * <section> stacks OUTSIDE that and makes the band 64px taller than drawn. */
@@ -76,16 +79,12 @@
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   /*
-   * Orange, even on navy.
-   *
-   * §09 says orange on navy measures 2.95:1 and names the exceptions as "the
-   * footer eyebrow and required asterisks" — which is the newsletter band, and
-   * that one IS white. Every SECTION eyebrow in every sprint-04 comp is
-   * #EB3F21 regardless of ground, including ones on solid navy. The design has
-   * accepted the ratio here; do not white these out again without the designer
-   * changing the comps. Newsletter.module.css is the deliberate exception.
+   * The light orange for dark grounds. The comps draw every section eyebrow
+   * #EB3F21 whatever the ground, but on navy that is 2.95:1 and fails at every
+   * size (§09). --color-text-accent-on-dark keeps the eyebrow orange and
+   * clears AA (4.6:1). The Hero, CTA Bar and newsletter eyebrows use it too.
    */
-  color: var(--color-text-accent);
+  color: var(--color-text-accent-on-dark);
   margin: 0;
 }
 

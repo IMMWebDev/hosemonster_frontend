@@ -1,6 +1,7 @@
 import qs from 'qs';
 import {CacheShort, CacheLong, CacheNone} from '@shopify/hydrogen';
 import {MODULE_REGISTRY} from '~/components/cms/registry';
+import {LINK_POPULATE} from '~/lib/cms-links';
 
 /**
  * @typedef {Object} StrapiMedia
@@ -32,6 +33,44 @@ import {MODULE_REGISTRY} from '~/components/cms/registry';
  * @property {StrapiModule[]} [modules]
  * @property {StrapiSeo} [seo]
  */
+
+/** Where use pages live. See getPage. */
+const USES_PREFIX = '/uses/';
+
+/** Where blog posts live. See getPage. */
+const BLOGS_PREFIX = '/blogs/';
+
+/** The blog hub — a Page; its Page Hero's breadcrumbs lead the posts' trail. */
+const BLOG_HUB_PATH = '/blogs';
+
+/**
+ * Fields beyond `modules` and `seo` that an entry of a collection type needs
+ * populated. Blog posts render an automatic hero from their own fields
+ * (components/cms/blog/BlogHero.jsx), so its media come along, and their
+ * Author (Authors collection type) for the byline and the author card —
+ * with the photo and the social links' pages, or a link resolves to '#' —
+ * and the Jump Links for "On this page" (BlogBody).
+ */
+/** What the byline and the author card read from an Author. */
+const AUTHOR_POPULATE = {photo: true, socialLinks: {populate: LINK_POPULATE}};
+
+/**
+ * The `seo` component with its media. `seo: true` returns only the scalar
+ * fields in Strapi 5, so the share image (metaImage) and the per-network
+ * overrides' images never reached the page's meta tags.
+ */
+const SEO_POPULATE = {
+  populate: {metaImage: true, metaSocial: {populate: {image: true}}},
+};
+
+const ENTRY_POPULATE = {
+  blogs: {
+    heroImage: true,
+    cardImage: true,
+    author: {populate: AUTHOR_POPULATE},
+    jumpLinks: true,
+  },
+};
 
 /**
  * Creates a Strapi REST client bound to the current request's cache.
@@ -130,9 +169,10 @@ export function createStrapiClient({env, withCache}) {
    */
   async function getEntryWithModules(collection, filters, status) {
     // Pass 1 — shallow: learn which module __components exist on this entry.
+    const extra = ENTRY_POPULATE[collection] ?? {};
     const shallow = await strapiFetch(collection, {
       filters,
-      populate: {modules: true, seo: true},
+      populate: {modules: true, seo: SEO_POPULATE, ...extra},
       status,
     });
 
@@ -153,7 +193,7 @@ export function createStrapiClient({env, withCache}) {
     // Pass 2 — deep: re-fetch with the per-module populate options.
     const deep = await strapiFetch(collection, {
       filters,
-      populate: {modules: {on}, seo: true},
+      populate: {modules: {on}, seo: SEO_POPULATE, ...extra},
       status,
     });
 
@@ -164,13 +204,33 @@ export function createStrapiClient({env, withCache}) {
   /**
    * Fetch a CMS page by its Strapi `path` field.
    *
+   * Pages first, then — for a path under /uses/ — the Uses collection type,
+   * which holds the individual use pages. The hub itself (/uses) is an ordinary
+   * Page. A use page's `path` is kept as /uses/{slug} by a Strapi lifecycle, so
+   * it's looked up the same way. A Page given a /uses/… path would win, which
+   * keeps an editor's override possible.
+   *
+   * Blog posts follow the same pattern under /blogs/: the Blogs collection
+   * type, its `path` kept as /blogs/{slug}, with the hub (/blogs) a Page. A
+   * post comes back with `type: 'blog'`, which is what tells the route to put
+   * the automatic post hero above its modules.
+   *
    * @param {string} path - leading-slash path, e.g. '/about'
    * @param {'published' | 'draft'} [status]
-   * @returns {Promise<{page: StrapiPage | null, modules: StrapiModule[]}>}
+   * @returns {Promise<{page: StrapiPage | null, modules: StrapiModule[], type?: 'blog'}>}
    */
   async function getPage(path, status = 'published') {
     try {
-      return await getEntryWithModules('pages', {path: {$eq: path}}, status);
+      const filters = {path: {$eq: path}};
+      const result = await getEntryWithModules('pages', filters, status);
+      if (!result.page && path.startsWith(USES_PREFIX)) {
+        return await getEntryWithModules('uses', filters, status);
+      }
+      if (!result.page && path.startsWith(BLOGS_PREFIX)) {
+        const post = await getEntryWithModules('blogs', filters, status);
+        return post.page ? {...post, type: 'blog'} : post;
+      }
+      return result;
     } catch (error) {
       console.error('Strapi getPage failed:', error);
       return {page: null, modules: []};
@@ -255,9 +315,10 @@ export function createStrapiClient({env, withCache}) {
       // Pass 1 — shallow: discover which module __components are on this draft.
       // (Populating registry modules that aren't in this content type's dynamic
       // zone makes Strapi 400 with "Invalid key" — so only populate what's here.)
+      const extra = ENTRY_POPULATE[collection] ?? {};
       const shallow = await strapiFetch(
         `${collection}/${documentId}`,
-        {status: 'draft', populate: {modules: true, seo: true}},
+        {status: 'draft', populate: {modules: true, seo: SEO_POPULATE, ...extra}},
         {cacheStrategy: CacheNone()},
       );
 
@@ -277,7 +338,7 @@ export function createStrapiClient({env, withCache}) {
       // Pass 2 — deep: populate only the present, registered modules.
       const deep = await strapiFetch(
         `${collection}/${documentId}`,
-        {status: 'draft', populate: {modules: {on}, seo: true}},
+        {status: 'draft', populate: {modules: {on}, seo: SEO_POPULATE, ...extra}},
         {cacheStrategy: CacheNone()},
       );
 
@@ -286,6 +347,105 @@ export function createStrapiClient({env, withCache}) {
     } catch (error) {
       console.error('Strapi getPreview failed:', error);
       return {page: null, modules: []};
+    }
+  }
+
+  /**
+   * An Author's draft, for its preview, and the post to show it on.
+   *
+   * Authors have no page of their own: they appear on blog posts, so an
+   * author previews on one — its own newest post (by Publish Date), or, while
+   * it has none, the site's newest post. Drafts throughout, cache bypassed;
+   * the caller (page-preview) checks the secret first.
+   *
+   * Never throws: null when the author can't be read. `postDocumentId` is null
+   * when the site has no posts at all.
+   *
+   * @param {string} documentId
+   * @returns {Promise<{author: object, postDocumentId: string | null} | null>}
+   */
+  async function getAuthorPreview(documentId) {
+    try {
+      const payload = await strapiFetch(
+        `authors/${documentId}`,
+        {
+          status: 'draft',
+          populate: {
+            ...AUTHOR_POPULATE,
+            // Every tagged post (populate can't be limited), newest first.
+            blogs: {fields: ['documentId'], sort: ['publishDate:desc']},
+          },
+        },
+        {cacheStrategy: CacheNone()},
+      );
+      const author = payload?.data;
+      if (!author) return null;
+
+      let postDocumentId = author.blogs?.[0]?.documentId ?? null;
+      if (!postDocumentId) {
+        const newest = await strapiFetch(
+          'blogs',
+          {
+            status: 'draft',
+            fields: ['documentId'],
+            sort: ['publishDate:desc'],
+            pagination: {pageSize: 1},
+          },
+          {cacheStrategy: CacheNone()},
+        );
+        postDocumentId = newest?.data?.[0]?.documentId ?? null;
+      }
+
+      delete author.blogs;
+      return {author, postDocumentId};
+    } catch (error) {
+      console.error('Strapi getAuthorPreview failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * The breadcrumb trail above a blog post: the blog hub's own crumbs, then the
+   * hub itself. Read from the hub Page's Page Hero (its Breadcrumbs
+   * component's links and label), so the posts follow whatever an editor
+   * sets there —
+   * "Home / Resources / Blogs" today — instead of a second copy in code.
+   *
+   * Never throws: with no hub page, or no Page Hero on it, the trail falls
+   * back to Home and the hub, which is enough to get back up a level.
+   *
+   * @param {'published' | 'draft'} [status]
+   * @returns {Promise<{crumbs: Array<object>, hub: {label: string, path: string}}>}
+   */
+  async function getBlogTrail(status = 'published') {
+    const fallback = {
+      crumbs: [{id: 'home', linkText: 'Home', linkUrl: '/'}],
+      hub: {label: 'Blog', path: BLOG_HUB_PATH},
+    };
+    try {
+      const pageHero = MODULE_REGISTRY['module.page-hero'];
+      const payload = await strapiFetch('pages', {
+        filters: {path: {$eq: BLOG_HUB_PATH}},
+        fields: ['path'],
+        populate: {modules: {on: {'module.page-hero': pageHero.options}}},
+        status,
+      });
+      const hero = (payload?.data?.[0]?.modules ?? []).find(
+        (m) => m.__component === 'module.page-hero',
+      );
+      if (!hero) return fallback;
+      return {
+        crumbs: (hero.breadcrumbs?.breadcrumbLinks ?? []).filter(
+          (c) => c?.linkText,
+        ),
+        hub: {
+          label: hero.breadcrumbs?.breadcrumbLabel?.trim() || 'Blog',
+          path: BLOG_HUB_PATH,
+        },
+      };
+    } catch (error) {
+      console.error('Strapi getBlogTrail failed:', error);
+      return fallback;
     }
   }
 
@@ -306,6 +466,9 @@ export function createStrapiClient({env, withCache}) {
    * "| Hose Monster" on every page — searching it made "hose" or "monster"
    * return the whole site's pages.
    *
+   * Use pages (the Uses collection type) are searched alongside Pages and
+   * listed after them.
+   *
    * Left out: the home page, the search page itself (every search would
    * otherwise "find" it), and anything marked preventIndexing. Never throws;
    * search still works if Strapi is down, just without pages.
@@ -322,23 +485,34 @@ export function createStrapiClient({env, withCache}) {
 
     if (words.length === 0) return [];
 
-    try {
-      const payload = await strapiFetch('pages', {
-        fields: ['name', 'path'],
-        populate: {seo: {fields: ['preventIndexing']}},
-        filters: {
-          $and: words.map((w) => ({
-            $or: [
-              {name: {$containsi: w}},
-              {path: {$containsi: w}},
-              {seo: {keywords: {$containsi: w}}},
-            ],
-          })),
-        },
-        pagination: {pageSize: 10},
-      });
+    const query = {
+      fields: ['name', 'path'],
+      populate: {seo: {fields: ['preventIndexing']}},
+      filters: {
+        $and: words.map((w) => ({
+          $or: [
+            {name: {$containsi: w}},
+            {path: {$containsi: w}},
+            {seo: {keywords: {$containsi: w}}},
+          ],
+        })),
+      },
+      pagination: {pageSize: 10},
+    };
 
-      return (payload?.data ?? [])
+    try {
+      // Either collection failing shouldn't cost the other's results.
+      const payloads = await Promise.all(
+        ['pages', 'uses', 'blogs'].map((collection) =>
+          strapiFetch(collection, query).catch((error) => {
+            console.error(`Strapi searchPages (${collection}) failed:`, error);
+            return null;
+          }),
+        ),
+      );
+
+      return payloads
+        .flatMap((payload) => payload?.data ?? [])
         .filter(
           (p) =>
             p.path &&
@@ -385,6 +559,8 @@ export function createStrapiClient({env, withCache}) {
     getCollectionPage,
     getSingle,
     getPreview,
+    getAuthorPreview,
+    getBlogTrail,
     searchPages,
     getCollectionHandles,
   };

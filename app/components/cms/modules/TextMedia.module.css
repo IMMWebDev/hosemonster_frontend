@@ -39,6 +39,43 @@
   background-color: var(--color-surface-alt);
 }
 
+/*
+ * "navy" — the dark band from Smart Monster's Long Range Connect section: the
+ * deep navy with the lighter sweep toward the right, as drawn (the comp's
+ * faint photo and orange glow barely show through it, so they're left out).
+ * The type reverses; the eyebrow and the orange button stay as they are.
+ */
+.navy {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(15 31 44 / 97%) 0%,
+      rgb(29 58 84 / 92%) 55%,
+      rgb(29 58 84 / 85%) 100%
+    ),
+    #0f1f2c;
+}
+
+.navy .heading,
+.navy .bullet {
+  color: var(--color-text-inverse);
+}
+
+.navy .body,
+.navy .footnote {
+  color: var(--ink-on-navy);
+}
+
+/* Orange dots, as drawn — on navy the navy default marker would vanish. */
+.navy .bullet::marker {
+  color: var(--color-action);
+}
+
+/* Lifts the photo off the dark ground, as drawn. */
+.navy .media {
+  box-shadow: 0 24px 64px rgb(0 0 0 / 26%);
+}
+
 .inner {
   display: flex;
   align-items: center;
@@ -52,12 +89,21 @@
 }
 
 /*
- * mediaSide="left" reverses the visual order only. DOM order stays copy-first,
- * so screen readers and the mobile stack always read heading before media
- * regardless of which way the desktop layout faces.
+ * mediaSide="left": the eyebrow and heading leave the copy column and span the
+ * top, the way the Smart Monster comp draws it. Same column as .inner so the
+ * heading lines up with the media's left edge. The media comes first in the
+ * DOM for this layout, so there's no row-reverse to undo when it stacks.
  */
-.mediaLeft {
-  flex-direction: row-reverse;
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px; /* the copy column's own eyebrow-to-heading gap */
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  margin-bottom: var(--space-8); /* ~31px in the design */
+  padding-inline: var(--container-gutter-bleed);
 }
 
 /*
@@ -162,6 +208,21 @@
 }
 
 /*
+ * Small print under the buttons — Smart Monster's "Need more distance?" line.
+ * Styleguide Detail (the comp draws 13px; Detail is the role at that size).
+ * Same measure as the body so it doesn't run wider than the copy above it.
+ */
+.footnote {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  max-width: 520px;
+  margin: var(--space-2) 0 0; /* + the column's 9px gap = the comp's 16px */
+}
+
+/*
  * -----------------------------------------------------------------------------
  * MEDIA
  * -----------------------------------------------------------------------------
@@ -184,6 +245,22 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/*
+ * "fit" image style — sprint-05 hifi_hydrantflowtesting.html, "Convert
+ * your pitot reading". The frame follows the image instead of forcing 16:9, so
+ * nothing is cropped, on white inside the cards' 2px border.
+ */
+.fit {
+  aspect-ratio: auto;
+  border: var(--border-width-thick) solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.fit .mediaImage {
+  height: auto;
+  object-fit: contain;
 }
 
 /*
@@ -262,16 +339,19 @@
  * ⚠ Not specced in Figma — desktop-only 1280px frame.
  */
 
-/* tablet — stack, media below the copy regardless of mediaSide. */
+/*
+ * tablet — stack, in DOM order: copy then media when the media is on the right;
+ * heading, media, then the rest of the copy when it's on the left.
+ */
 @media (max-width: 1099px) {
-  .inner,
-  .mediaLeft {
+  .inner {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-8);
   }
 
-  .body {
+  .body,
+  .footnote {
     max-width: none;
   }
 
@@ -283,6 +363,10 @@
 
 /* mobile */
 @media (max-width: 499px) {
+  .header {
+    margin-bottom: var(--space-6);
+  }
+
   .actions {
     width: 100%;
   }
@@ -290,5 +374,14 @@
   .actions > * {
     flex: 1 1 auto;
     text-align: center;
+  }
+
+  /* A label longer than the screen ("Open The Hydrant Flow Test
+   * Calculator") wraps inside its button rather than running off the edge.
+   * `a`, not `*`, so it outranks the global .btn's nowrap whatever order the
+   * stylesheets load in. */
+  .actions > a {
+    min-width: 0;
+    white-space: normal;
   }
 }

@@ -40,7 +40,9 @@ a {
 }
 
 /*
- * Site-wide link hover: the link turns red. NO underline — that is reserved for
+ * Site-wide link hover: the link turns red — the darker link orange
+ * (--color-text-link, 5.5:1 on white), since most links are below the 19px
+ * bold where the brand orange (3.99:1) passes. NO underline — that is reserved for
  * the CURRENT PAGE, so the two states stay distinguishable. See the
  * `[aria-current='page']` rule in Header.module.css.
  *
@@ -50,7 +52,7 @@ a {
  * hover fill. Excluding buttons is clearer than escalating every button rule.
  */
 a:hover:not(.btn) {
-  color: var(--color-action);
+  color: var(--color-text-link);
   text-decoration: none;
   cursor: pointer;
 }

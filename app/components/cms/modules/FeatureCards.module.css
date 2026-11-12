@@ -96,12 +96,22 @@
  * The red hover state is a stacked layer faded in by opacity, not a swap of
  * `background`. Gradients are not an animatable property, so changing the
  * background on hover snaps instead of sweeping.
+ *
+ * Its fill is the darker hover orange, not the brand orange: the 15px title
+ * and the description are white, and white on #eb3f21 is 3.99:1 where 4.5:1
+ * is needed. On #c62f14 it is 5.5:1.
  */
 .cardHoverBg {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--feature-card-bg-hover);
+  background:
+    linear-gradient(
+      180deg,
+      transparent 73%,
+      color-mix(in srgb, var(--black) 16%, transparent) 100%
+    ),
+    var(--color-action-hover);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--duration-slow) var(--ease-default);
@@ -169,9 +179,10 @@
   margin: 0;
 }
 
-/* Styleguide "Body", on navy. Grey at rest; on hover the card turns red, where
- * grey muddies — so it becomes white held back to 72%, as in the selected
- * variant. */
+/* Styleguide "Body", on navy. Grey at rest; on hover the card turns orange,
+ * where grey muddies — so it becomes white. Full white, not the selected
+ * variant's 72%: held back like that it is about 3.5:1 on the orange, and
+ * this 15.5px copy needs 4.5:1. */
 .cardDescription {
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
@@ -179,14 +190,33 @@
   line-height: var(--leading-body);
   color: var(--hero-meta-ink);
   margin: 0;
-  transition: color var(--duration-slow) var(--ease-default),
-    opacity var(--duration-slow) var(--ease-default);
+  transition: color var(--duration-slow) var(--ease-default);
 }
 
 .card:hover .cardDescription,
 .card:focus-visible .cardDescription {
   color: var(--color-text-inverse);
-  opacity: 0.72;
+}
+
+/*
+ * A card with nowhere to go stays navy: no red, no lift, the default cursor.
+ * After the hover rules on purpose — equal specificity, so source order
+ * decides.
+ */
+.static {
+  cursor: default;
+}
+
+.static:hover {
+  box-shadow: none;
+}
+
+.static:hover .cardHoverBg {
+  opacity: 0;
+}
+
+.static:hover .cardDescription {
+  color: var(--hero-meta-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

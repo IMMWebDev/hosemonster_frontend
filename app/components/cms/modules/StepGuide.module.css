@@ -1,0 +1,484 @@
+/*
+ * Step Guide module — sprint-05 hifi_hydrantflowtesting.html, "Running the
+ * test – step by step".
+ *
+ * A numbered list of steps beside one card; picking a step swaps the panel
+ * inside it. Every step's panel is in the HTML; all but the current one are
+ * `hidden`.
+ * The list's look follows Card Picker's options, with a numeral in place of
+ * the chevron.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed always, so a grey band reaches the viewport edges — the same
+   * rule the other tinted bands use. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+/* Styleguide Eyebrow */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-2);
+}
+
+/* Styleguide H2 */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+/* Body large — intro copy */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * LAYOUT
+ * -----------------------------------------------------------------------------
+ * List left, card right (the comp's 320 : 440 flex split). The button and note
+ * share the list's column under it, while the card runs down the right.
+ */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  grid-template-areas:
+    'list card'
+    'extras card';
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  column-gap: var(--space-10); /* 40px in the design */
+  margin-top: var(--space-7); /* 28px in the design */
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * STEP LIST
+ * -----------------------------------------------------------------------------
+ */
+
+.list {
+  grid-area: list;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2); /* 8px in the design */
+}
+
+/* Styleguide "UI label" — 16px bold; the comp's 15px is a hair under it.
+ * Card Picker's option, with a numeral leading. */
+.step {
+  display: flex;
+  align-items: center;
+  gap: 14px; /* exact value from the design */
+  width: 100%;
+  padding: 14px 18px; /* exact values from the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  text-align: left;
+  color: var(--color-text-body);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+/* Hover — the orange is the stroke, not the text, so §09 doesn't apply. */
+.step:hover:not([aria-selected='true']) {
+  border-color: var(--color-action);
+  color: var(--color-text);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.step[aria-selected='true'] {
+  background: var(--color-surface-inverse);
+  border-color: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+}
+
+.step:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* The numeral in a 30px disc: grey at rest, the deep orange on the current
+ * step. A fill, not text colour, so #c62f14 is allowed here. */
+.stepNumber {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-surface-alt);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--color-text-soft);
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.step[aria-selected='true'] .stepNumber {
+  background: var(--color-action-hover);
+  color: var(--color-text-inverse);
+}
+
+.stepTitle {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CARD
+ * -----------------------------------------------------------------------------
+ */
+
+.card {
+  grid-area: card;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+/* `hidden` must win over the tablet layout's display: grid below. */
+.panel[hidden] {
+  display: none;
+}
+
+.panel:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: -2px;
+}
+
+.cardMedia {
+  aspect-ratio: 16 / 9;
+  background: var(--color-surface-inverse);
+}
+
+.cardImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardCopy {
+  padding: 30px 30px 32px; /* exact values from the design */
+}
+
+/*
+ * The arrows sit outside the panels (StepGuide.jsx), so the copy's bottom
+ * padding moves onto them — the same 20px gap and 32px foot as when they sat
+ * inside the copy.
+ */
+.hasPager .cardCopy {
+  padding-bottom: 0;
+}
+
+/* With no body, the title's margin would add to the arrows' 20px rather than
+ * collapse into it. */
+.hasPager .cardTitle:last-child {
+  margin-bottom: 0;
+}
+
+/* "Step 1 of 6" — Detail, bold caps, muted: the comp's 12.5px tracked #c62f14
+ * is under the guide's smallest size, tracking is the eyebrow's alone, and
+ * #c62f14 is never a text colour. The same call as Card Picker's label. */
+.cardCounter {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 10px; /* exact value from the design */
+}
+
+/* Styleguide H3. An <h3>, so the tracking typography.css gives bare h3s is
+ * restated. */
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+/* Styleguide "Body". */
+.cardBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+/* Previous / next — 52px discs, orange chevrons. Inset to line up with the
+ * copy above. */
+.pager {
+  display: flex;
+  gap: var(--space-3); /* 12px in the design */
+  margin-top: var(--space-5); /* 20px in the design */
+  padding: 0 30px 32px; /* .cardCopy's inline and bottom padding */
+}
+
+.pagerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-action);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.pagerButton:hover:not([aria-disabled='true']) {
+  border-color: var(--color-action);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.pagerButton:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* At the ends: still focusable (see StepGuide.jsx), visibly inert. */
+.pagerButton[aria-disabled='true'] {
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+}
+
+/* UiIcon's chevron points down; turned to point left and right. */
+.pagerPrev {
+  transform: rotate(90deg);
+}
+
+.pagerNext {
+  transform: rotate(-90deg);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * UNDER THE LIST — button and note
+ * -----------------------------------------------------------------------------
+ */
+
+.extras {
+  grid-area: extras;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5); /* 20px in the design */
+  margin-top: var(--space-5); /* 8 + 12 = 20px in the design */
+}
+
+/* Full-width outlined button, as drawn. */
+.cta {
+  width: 100%;
+}
+
+/* Bold navy line on the section tint, with an orange edge. */
+.note {
+  margin: 0;
+  padding: 20px 22px; /* exact values from the design */
+  border-left: 4px solid var(--color-action);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+/* On a grey band the tint would vanish, so the note goes white. */
+.grey .note {
+  background: var(--color-surface);
+}
+
+/* Heading and body are both bold; the heading just sits on its own line. */
+.note p {
+  margin: 0;
+}
+
+.note > * + * {
+  margin-top: var(--space-1);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * The hifi is desktop-only.
+ */
+
+/*
+ * tablet — one column. The card moves up under the list and the button and
+ * note drop below it, so the card a visitor just changed is the next thing
+ * they see. With the card full width, its photo sits beside the copy rather
+ * than above it, so the card stays about as tall as its text.
+ */
+@media (max-width: 1099px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'list'
+      'card'
+      'extras';
+    grid-template-rows: none;
+    row-gap: var(--space-6);
+  }
+
+  .extras {
+    margin-top: 0;
+  }
+
+  /*
+   * Photo in the left 42%, running the card's full height; copy and arrows in
+   * the right column. The panel spans the card and shares its tracks
+   * (subgrid), so the arrows — outside the panel — still land under the copy.
+   * The second row takes any spare height, so when the photo's 240px floor is
+   * taller than the copy the arrows stay right under the text.
+   */
+  .card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .hasMedia {
+    grid-template-columns: 42% minmax(0, 1fr);
+  }
+
+  .panel {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+  }
+
+  .cardMedia {
+    position: relative;
+    grid-column: 1;
+    grid-row: 1 / -1;
+    aspect-ratio: auto;
+    min-height: 240px;
+  }
+
+  .cardImage {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* The last column: beside the photo, or the full width without one. */
+  .cardCopy,
+  .pager {
+    grid-column: -2 / -1;
+    min-width: 0;
+  }
+
+  .cardCopy {
+    grid-row: 1;
+  }
+
+  .pager {
+    grid-row: 2;
+    align-self: start;
+  }
+}
+
+/* mdTablet — too narrow for side by side: the photo goes back on top. */
+@media (max-width: 699px) {
+  .card,
+  .panel {
+    display: block;
+  }
+
+  .cardMedia {
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+}
+
+/* mobile — slimmer card padding. */
+@media (max-width: 499px) {
+  .cardCopy {
+    padding: var(--space-6) var(--space-5);
+  }
+
+  .pager {
+    padding: 0 var(--space-5) var(--space-6);
+  }
+
+  .step {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .stepNumber,
+  .pagerButton {
+    transition: none;
+  }
+}

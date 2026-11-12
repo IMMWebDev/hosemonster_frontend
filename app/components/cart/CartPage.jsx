@@ -5,6 +5,7 @@ import {CartNote, CartTotals} from './CartSummary';
 import CartEmpty from './CartEmpty';
 import {useJustEmptied} from './CartDrawer';
 import {countLabel} from '~/lib/cart';
+import {TrackingScope} from '~/lib/tracking';
 import styles from './CartPage.module.css';
 
 /**
@@ -24,64 +25,77 @@ export default function CartPage({cart: loaderCart}) {
   const justEmptied = useJustEmptied(hasItems);
   const total = cart?.cost?.totalAmount;
 
+  // The scope's own controls carry literal ids; everything rendered below
+  // (lines, totals, note, empty state) reads "cart" from the scope.
   return (
-    <div className={styles.page}>
-      <div className={styles.inner}>
-        {/* Empty, the page IS the empty state: its heading is the page's. */}
-        {!hasItems ? (
-          <>
-            <CartNotices />
-            <CartEmpty variant="page" focusHeading={justEmptied} />
-          </>
-        ) : (
-          <div className={styles.head}>
-            <h1 className={styles.title}>
-              Your cart
-              <span className={styles.count}>{countLabel(count)}</span>
-            </h1>
-            <Link to="/shop" className={styles.continue}>
-              Continue shopping
-            </Link>
-          </div>
-        )}
-
-        {!hasItems ? null : (
-          <div className={styles.layout}>
-            <div className={styles.lines}>
+    <TrackingScope id="cart">
+      <div className={styles.page} data-track-module="cart">
+        <div className={styles.inner}>
+          {/* Empty, the page IS the empty state: its heading is the page's. */}
+          {!hasItems ? (
+            <>
               <CartNotices />
-              <div className={styles.columns} aria-hidden="true">
-                <span>Product</span>
-                <span>Quantity</span>
-                <span>Total</span>
-              </div>
-              <CartLines cart={cart} layout="page" />
-              {/* Under the lines, as on the current site: it's about the
-                  order, not the total. */}
-              <div className={styles.note}>
-                <CartNote cart={cart} />
-              </div>
+              <CartEmpty variant="page" focusHeading={justEmptied} />
+            </>
+          ) : (
+            <div className={styles.head}>
+              <h1 className={styles.title}>
+                Your cart
+                <span className={styles.count}>{countLabel(count)}</span>
+              </h1>
+              <Link
+                to="/shop"
+                className={styles.continue}
+                data-track-id="cart__continue-shopping"
+              >
+                Continue shopping
+              </Link>
             </div>
+          )}
 
-            <aside className={styles.panel} aria-label="Order summary">
-              <h2 className={styles.panelTitle}>Order summary</h2>
-              <CartTotals cart={cart} layout="page" />
-            </aside>
-
-            {/* Phone: the total and the way out, pinned. */}
-            {cart?.checkoutUrl ? (
-              <div className={styles.mobileBar}>
-                <p className={styles.mobileTotal}>
-                  <span className={styles.mobileTotalLabel}>Estimated total</span>
-                  {total ? <Money data={total} as="span" /> : null}
-                </p>
-                <a href={cart.checkoutUrl} target="_self" className="btn btn--primary">
-                  Check out
-                </a>
+          {!hasItems ? null : (
+            <div className={styles.layout}>
+              <div className={styles.lines}>
+                <CartNotices />
+                <div className={styles.columns} aria-hidden="true">
+                  <span>Product</span>
+                  <span>Quantity</span>
+                  <span>Total</span>
+                </div>
+                <CartLines cart={cart} layout="page" />
+                {/* Under the lines, as on the current site: it's about the
+                    order, not the total. */}
+                <div className={styles.note}>
+                  <CartNote cart={cart} />
+                </div>
               </div>
-            ) : null}
-          </div>
-        )}
+
+              <aside className={styles.panel} aria-label="Order summary">
+                <h2 className={styles.panelTitle}>Order summary</h2>
+                <CartTotals cart={cart} layout="page" />
+              </aside>
+
+              {/* Phone: the total and the way out, pinned. */}
+              {cart?.checkoutUrl ? (
+                <div className={styles.mobileBar}>
+                  <p className={styles.mobileTotal}>
+                    <span className={styles.mobileTotalLabel}>Estimated total</span>
+                    {total ? <Money data={total} as="span" /> : null}
+                  </p>
+                  <a
+                    href={cart.checkoutUrl}
+                    target="_self"
+                    className="btn btn--primary"
+                    data-track-id="cart__mobile-checkout"
+                  >
+                    Check out
+                  </a>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </TrackingScope>
   );
 }

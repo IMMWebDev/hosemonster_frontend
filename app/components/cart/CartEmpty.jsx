@@ -4,6 +4,7 @@ import CmsLink from '~/components/cms/CmsLink';
 import SearchChips from '~/components/search/SearchChips';
 import UiIcon from '~/components/icons/UiIcon';
 import {CONTACT_PATH, SEARCH_PATH} from '~/lib/search';
+import {useTrackId} from '~/lib/tracking';
 import styles from './CartEmpty.module.css';
 
 /**
@@ -24,6 +25,7 @@ export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
   const browse = useFetcher({key: 'quick-search-browse'});
   const browseId = useId();
   const headingRef = useRef(null);
+  const trackId = useTrackId();
 
   useEffect(() => {
     if (focusHeading) headingRef.current?.focus();
@@ -55,16 +57,36 @@ export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
       <p className={styles.body}>{body}</p>
       <div className={styles.actions}>
         {cms.primaryCTA?.linkText ? (
-          <CmsLink link={cms.primaryCTA} className="btn btn--primary" onClick={onNavigate} />
+          <CmsLink
+            link={cms.primaryCTA}
+            className="btn btn--primary"
+            onClick={onNavigate}
+            trackRole="primary-cta"
+          />
         ) : (
-          <Link to="/shop" className="btn btn--primary" onClick={onNavigate}>
+          <Link
+            to="/shop"
+            className="btn btn--primary"
+            onClick={onNavigate}
+            data-track-id={trackId('primary-cta')}
+          >
             {DEFAULTS.primary}
           </Link>
         )}
         {cms.secondaryCTA?.linkText ? (
-          <CmsLink link={cms.secondaryCTA} className="btn btn--tertiary" onClick={onNavigate} />
+          <CmsLink
+            link={cms.secondaryCTA}
+            className="btn btn--tertiary"
+            onClick={onNavigate}
+            trackRole="secondary-cta"
+          />
         ) : (
-          <Link to={CONTACT_PATH} className="btn btn--tertiary" onClick={onNavigate}>
+          <Link
+            to={CONTACT_PATH}
+            className="btn btn--tertiary"
+            onClick={onNavigate}
+            data-track-id={trackId('secondary-cta')}
+          >
             {DEFAULTS.secondary}
           </Link>
         )}
@@ -76,6 +98,7 @@ export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
           <p className={styles.categoriesTitle}>Shop by category</p>
           <SearchChips
             label="Categories"
+            trackRole="browse"
             items={categories.map((c) => ({
               key: c.id,
               label: c.title,
@@ -91,9 +114,14 @@ export default function CartEmpty({variant, onNavigate, focusHeading = false}) {
             Shop by category
           </p>
           <ul className={styles.browseList} role="list">
-            {categories.map((c) => (
+            {categories.map((c, i) => (
               <li key={c.id}>
-                <Link to={`/collections/${c.handle}`} className={styles.browseLink} onClick={onNavigate}>
+                <Link
+                  to={`/collections/${c.handle}`}
+                  className={styles.browseLink}
+                  onClick={onNavigate}
+                  data-track-id={trackId(`browse-${i + 1}`)}
+                >
                   {c.title}
                   <UiIcon name="chevron" className={styles.browseIcon} />
                 </Link>

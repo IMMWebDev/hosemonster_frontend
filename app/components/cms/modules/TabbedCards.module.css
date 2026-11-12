@@ -109,8 +109,11 @@
   background: var(--color-surface-subtle);
 }
 
+/* The darker hover orange, not the brand orange: the label is 16px bold,
+ * which is not large text, and white on #eb3f21 is 3.99:1 where 4.5:1 is
+ * needed. White on #c62f14 is 5.5:1. */
 .tab[aria-selected='true'] {
-  background: var(--color-action);
+  background: var(--color-action-hover);
   color: var(--color-text-inverse);
   border-right-color: transparent;
 }
@@ -118,6 +121,13 @@
 .tab:focus-visible {
   outline: var(--border-width-thick) solid var(--color-action);
   outline-offset: -4px; /* inset, so the pill's rounded corner is not clipped */
+}
+
+/* An orange ring barely shows on the selected tab's orange fill (1.4:1), and
+ * with roving focus the focused tab is always the selected one — so the ring
+ * turns white there, or keyboard users see no focus at all. */
+.tab[aria-selected='true']:focus-visible {
+  outline-color: var(--color-text-inverse);
 }
 
 /*
@@ -139,6 +149,14 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--brand-navy); /* shows before the image loads */
+  /* The CTAs' focus ring goes white on the navy card: orange on navy is
+   * 2.95:1, and a focus indicator needs 3:1. */
+  --color-focus-ring: var(--color-text-inverse);
+}
+
+/* Every tab's panel is in the HTML; `hidden` has to beat display: grid. */
+.card[hidden] {
+  display: none;
 }
 
 /* Same positive-stack approach as the Hero: image 0, wash 1, content 2. */

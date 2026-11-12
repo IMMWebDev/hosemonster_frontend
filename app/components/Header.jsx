@@ -10,7 +10,9 @@ import {MOBILE_MENU_ID} from '~/components/Drawer';
 import {CART_DRAWER_ID} from '~/components/cart/CartDrawer';
 import {QUICK_SEARCH_ID} from '~/components/search/QuickSearch';
 import CmsLink from '~/components/cms/CmsLink';
+import {linkDestination} from '~/lib/cms-links';
 import {strapiMedia} from '~/lib/strapi-media';
+import {TrackingScope, useTrackId} from '~/lib/tracking';
 import styles from './Header.module.css';
 
 /**
@@ -20,6 +22,11 @@ import styles from './Header.module.css';
  * utility bar links. The commerce controls (search, account, cart) are rendered
  * by Hydrogen because they depend on live session and cart state; the CMS only
  * decides whether they appear and what they are labelled.
+ *
+ * Tracking scope "header" (app/lib/tracking.js). The scope is set up here, so
+ * this component's own controls carry literal ids; CmsLink and the child
+ * components read the scope themselves. Nav roles come from the labels — the
+ * nav is a fixed list, and its labels are what the items are.
  *
  * @param {HeaderProps}
  */
@@ -56,95 +63,123 @@ export function Header({header, isLoggedIn, cart, cmsHeader, strapiBaseUrl}) {
   const navBarRef = useNavHeight();
 
   return (
-    /*
-     * Empty-string attributes, not booleans. React renders data-hidden="false"
-     * for a boolean false, and CSS attribute selectors match on presence — so
-     * the collapsed styles would apply permanently. `undefined` omits it.
-     */
-    <header
-      className={styles.header}
-      ref={headerRef}
-      data-site-header=""
-      data-hidden={hidden ? '' : undefined}
-    >
-      <div className={styles.utilityBar} ref={utilityBarRef}>
-        <div className={styles.utilityInner}>
-          {showSearch && <SearchToggle />}
+    <TrackingScope id="header">
+      {/*
+       * Empty-string attributes, not booleans. React renders data-hidden="false"
+       * for a boolean false, and CSS attribute selectors match on presence — so
+       * the collapsed styles would apply permanently. `undefined` omits it.
+       */}
+      <header
+        className={styles.header}
+        ref={headerRef}
+        data-site-header=""
+        data-track-module="header"
+        data-hidden={hidden ? '' : undefined}
+      >
+        <div className={styles.utilityBar} ref={utilityBarRef}>
+          <div className={styles.utilityInner}>
+            {showSearch && <SearchToggle />}
 
-          {utilityLinks.map((link, i) => (
-            <UtilityItem key={link.id ?? i} showSeparator={showSearch || i > 0}>
-              <CmsLink link={link} className={styles.utilityLink} />
-            </UtilityItem>
-          ))}
-
-          {showAccount && (
-            <UtilityItem showSeparator={showSearch || utilityLinks.length > 0}>
-              <AccountLink
-                isLoggedIn={isLoggedIn}
-                label={cmsHeader?.accountLabel || 'My Account'}
-              />
-            </UtilityItem>
-          )}
-
-          {showCart && (
-            <UtilityItem
-              showSeparator={
-                showSearch || showAccount || utilityLinks.length > 0
-              }
-            >
-              <CartToggle cart={cart} label={cmsHeader?.cartLabel || 'Cart'} />
-            </UtilityItem>
-          )}
-        </div>
-      </div>
-
-      <div className={styles.mainBar} ref={navBarRef}>
-        <div className={styles.mainBarInner}>
-          <NavLink prefetch="intent" to="/" className={styles.logo} end>
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={logoAlt}
-                className={styles.logoImage}
-                width={cmsHeader?.logo?.width ?? 185}
-                height={cmsHeader?.logo?.height ?? 48}
-              />
-            ) : (
-              <span className={styles.logoFallback}>{shop.name}</span>
-            )}
-          </NavLink>
-
-          <nav className={styles.nav} role="navigation">
-            {mainNav.map((item, i) =>
-              item?.isDropdown ? (
-                <NavDropdown key={item.id ?? i} item={item} />
-              ) : (
+            {utilityLinks.map((link, i) => (
+              <UtilityItem key={link.id ?? i} showSeparator={showSearch || i > 0}>
                 <CmsLink
-                  key={item.id ?? i}
-                  link={item?.link}
-                  className={styles.navLink}
+                  link={link}
+                  className={styles.utilityLink}
+                  trackRole={link?.linkText}
                 />
-              ),
-            )}
-          </nav>
+              </UtilityItem>
+            ))}
 
-          <HeaderMenuMobileToggle />
+            {showAccount && (
+              <UtilityItem showSeparator={showSearch || utilityLinks.length > 0}>
+                <AccountLink
+                  isLoggedIn={isLoggedIn}
+                  label={cmsHeader?.accountLabel || 'My Account'}
+                />
+              </UtilityItem>
+            )}
+
+            {showCart && (
+              <UtilityItem
+                showSeparator={
+                  showSearch || showAccount || utilityLinks.length > 0
+                }
+              >
+                <CartToggle cart={cart} label={cmsHeader?.cartLabel || 'Cart'} />
+              </UtilityItem>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+
+        <div className={styles.mainBar} ref={navBarRef}>
+          <div className={styles.mainBarInner}>
+            <NavLink
+              prefetch="intent"
+              to="/"
+              className={styles.logo}
+              end
+              data-track-id="header__logo"
+            >
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={logoAlt}
+                  className={styles.logoImage}
+                  width={cmsHeader?.logo?.width ?? 185}
+                  height={cmsHeader?.logo?.height ?? 48}
+                />
+              ) : (
+                <span className={styles.logoFallback}>{shop.name}</span>
+              )}
+            </NavLink>
+
+            {/* Named so it reads as "Main navigation" in a screen reader's
+                landmark list, as the mobile menu's nav does. */}
+            <nav className={styles.nav} aria-label="Main">
+              {mainNav.map((item, i) =>
+                item?.isDropdown ? (
+                  <NavDropdown key={item.id ?? i} item={item} />
+                ) : (
+                  <CmsLink
+                    key={item.id ?? i}
+                    link={item?.link}
+                    className={styles.navLink}
+                    trackRole={`nav-${item?.link?.linkText ?? ''}`}
+                    markSection
+                  />
+                ),
+              )}
+            </nav>
+
+            <HeaderMenuMobileToggle />
+          </div>
+        </div>
+      </header>
+    </TrackingScope>
   );
 }
 
 /**
- * True when a CMS link actually points somewhere. Unset links come back from
- * Strapi as '#' placeholders or empty, and a parent that only opens a menu is a
- * legitimate configuration — "Resources" is a grouping label, not a page.
+ * True when a CMS link points somewhere. A parent that only opens a menu is a
+ * legitimate configuration — leave its destination empty and it renders as a
+ * button. A "#" placeholder counts as a destination, so it renders as a link.
  *
- * @param {{linkUrl?: string, pageLink?: {path?: string}}} [link]
+ * @param {object} [link]
  */
 function hasDestination(link) {
-  const to = link?.linkUrl || link?.pageLink?.path;
-  return Boolean(to) && to !== '#';
+  return Boolean(linkDestination(link));
+}
+
+/** Fired on window by a NavDropdown as it opens, with its menu id. */
+const NAV_OPEN_EVENT = 'header:nav-dropdown-open';
+
+/**
+ * Whether keyboard focus sits inside an open panel. Closing it then would make
+ * the panel inert under the focused link and drop focus to <body>, so the
+ * auto-close paths leave it open; focus leaving the item still closes it.
+ */
+function hasKeyboardFocus(panel) {
+  return Boolean(panel?.querySelector(':focus-visible'));
 }
 
 /**
@@ -163,6 +198,11 @@ function hasDestination(link) {
  * renders. If a landing page should be reachable from inside the menu, it is
  * added in Strapi like any other link.
  *
+ * A disclosure: the mouse opens it by resting on the item, and the toggle opens
+ * it on click, Enter or Space. Focus alone never opens it, so Tab walks the top
+ * level only and the panel's links stay out of the tab order until asked for.
+ * Escape, a click outside, or focus leaving the item closes it.
+ *
  * @param {{item: {id?: number, link?: object, dropdownLinks?: Array<object>}}}
  */
 function NavDropdown({item}) {
@@ -171,9 +211,15 @@ function NavDropdown({item}) {
   const [alignEnd, setAlignEnd] = useState(false);
   const wrapRef = useRef(null);
   const panelRef = useRef(null);
+  const toggleRef = useRef(null);
   const closeTimer = useRef(null);
+  // Whether hovering alone opened the menu (so leaving closes it, and a click
+  // doesn't flip it shut), and whether the pointer is over the item now.
+  const hoverOpened = useRef(false);
+  const pointerInside = useRef(false);
   const menuId = useId();
   const {pathname} = useLocation();
+  const trackId = useTrackId();
   const linked = hasDestination(link);
 
   const cancelClose = useCallback(() => {
@@ -227,30 +273,68 @@ function NavDropdown({item}) {
   useEffect(() => {
     if (!open) return undefined;
 
+    // A menu opened by click or keyboard stays put when the pointer moves on,
+    // so opening another closes it. A hover-opened one is left to its own
+    // mouseleave grace period, which a diagonal path across a neighbour needs.
+    window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT, {detail: menuId}));
+    const onOtherOpen = (e) => {
+      if (
+        e.detail !== menuId &&
+        !hoverOpened.current &&
+        !hasKeyboardFocus(panelRef.current)
+      ) {
+        setOpen(false);
+      }
+    };
     const onKeyDown = (e) => {
       if (e.key !== 'Escape') return;
+      hoverOpened.current = false;
       setOpen(false);
-      // Return focus to the control that opened the menu, or Escape strands
-      // keyboard users at the top of the document.
-      wrapRef.current?.querySelector('[aria-expanded]')?.focus();
+      // Return focus to the toggle, or Escape strands keyboard users at the
+      // top of the document. Only when focus was in this menu, though: one the
+      // mouse opened shouldn't pull focus from wherever it is.
+      if (wrapRef.current?.contains(document.activeElement)) {
+        toggleRef.current?.focus();
+      }
     };
     const onPointerDown = (e) => {
       if (!wrapRef.current?.contains(e.target)) setOpen(false);
     };
 
+    window.addEventListener(NAV_OPEN_EVENT, onOtherOpen);
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('pointerdown', onPointerDown);
     return () => {
+      window.removeEventListener(NAV_OPEN_EVENT, onOtherOpen);
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('pointerdown', onPointerDown);
     };
-  }, [open]);
+  }, [open, menuId]);
 
   if (dropdownLinks.length === 0) {
     // Flagged as a dropdown but empty. Fall back to a plain link rather than
     // rendering a control that opens nothing.
-    return <CmsLink link={link} className={styles.navLink} />;
+    return (
+      <CmsLink
+        link={link}
+        className={styles.navLink}
+        trackRole={`nav-${link?.linkText ?? ''}`}
+        markSection
+      />
+    );
   }
+
+  const onToggle = (event) => {
+    // A mouse resting on the item has already opened it, so its click keeps
+    // the menu open (and now it stays when the pointer leaves) rather than
+    // flipping it shut. Keyboard clicks (detail 0) always toggle.
+    if (open && hoverOpened.current && event.detail > 0) {
+      hoverOpened.current = false;
+      return;
+    }
+    hoverOpened.current = false;
+    setOpen((v) => !v);
+  };
 
   const label = link?.linkText ?? '';
   const caret = (
@@ -271,39 +355,63 @@ function NavDropdown({item}) {
       className={styles.navItem}
       ref={wrapRef}
       onMouseEnter={() => {
+        pointerInside.current = true;
         cancelClose();
-        setOpen(true);
+        if (!open) {
+          hoverOpened.current = true;
+          setOpen(true);
+        }
       }}
-      onMouseLeave={scheduleClose}
-      onFocus={() => {
-        cancelClose();
-        setOpen(true);
+      onMouseLeave={() => {
+        pointerInside.current = false;
+        // A menu opened by click or keyboard stays until it's dismissed, and
+        // so does one keyboard focus has since moved into. Only the panel
+        // counts: focus resting on the parent link or caret survives the close.
+        if (hoverOpened.current && !hasKeyboardFocus(panelRef.current)) {
+          scheduleClose();
+        }
       }}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+        const next = e.relatedTarget;
+        if (next && e.currentTarget.contains(next)) return;
+        // Safari doesn't focus a link on click, so clicking a panel link blurs
+        // to nothing; closing then would pull the panel out from under it.
+        if (!next && pointerInside.current) return;
+        setOpen(false);
       }}
     >
       {linked ? (
         <>
-          <CmsLink link={link} className={styles.navLink} />
+          <CmsLink
+            link={link}
+            className={styles.navLink}
+            trackRole={`nav-${label}`}
+            markSection
+          />
           <button
+            ref={toggleRef}
             type="button"
             className={styles.navCaretButton}
             aria-expanded={open}
             aria-controls={menuId}
-            aria-label={`${open ? 'Close' : 'Open'} ${label} menu`}
-            onClick={() => setOpen((v) => !v)}
+            // Constant: aria-expanded already says whether it's open.
+            aria-label={`${label} submenu`}
+            onClick={onToggle}
+            data-track-id={trackId(`nav-${label}-toggle`)}
           >
             {caret}
           </button>
         </>
       ) : (
         <button
+          ref={toggleRef}
           type="button"
           className={`${styles.navLink} ${styles.navTrigger}`}
           aria-expanded={open}
           aria-controls={menuId}
-          onClick={() => setOpen((v) => !v)}
+          onClick={onToggle}
+          // Opens the menu only — no destination — so it's the toggle.
+          data-track-id={trackId(`nav-${label}-toggle`)}
         >
           {label}
           {caret}
@@ -324,7 +432,11 @@ function NavDropdown({item}) {
         <ul className={styles.dropdownList}>
           {dropdownLinks.map((child, i) => (
             <li key={child.id ?? i}>
-              <CmsLink link={child} className={styles.dropdownLink} />
+              <CmsLink
+                link={child}
+                className={styles.dropdownLink}
+                trackRole={`nav-${label}-${child?.linkText ?? ''}`}
+              />
             </li>
           ))}
         </ul>
@@ -356,8 +468,14 @@ function UtilityItem({showSeparator, children}) {
  * @param {{isLoggedIn: Promise<boolean>, label: string}}
  */
 function AccountLink({isLoggedIn, label}) {
+  const trackId = useTrackId();
   return (
-    <NavLink prefetch="intent" to="/account" className={styles.utilityLink}>
+    <NavLink
+      prefetch="intent"
+      to="/account"
+      className={styles.utilityLink}
+      data-track-id={trackId('account')}
+    >
       <Suspense fallback={label}>
         <Await resolve={isLoggedIn} errorElement={label}>
           {(loggedIn) => (loggedIn ? label : 'Sign In')}
@@ -370,6 +488,7 @@ function AccountLink({isLoggedIn, label}) {
 function HeaderMenuMobileToggle() {
   const {type, open, close} = useAside();
   const isOpen = type === 'mobile';
+  const trackId = useTrackId();
 
   return (
     <button
@@ -384,6 +503,7 @@ function HeaderMenuMobileToggle() {
       aria-expanded={isOpen}
       aria-controls={MOBILE_MENU_ID}
       aria-label={isOpen ? 'Close menu' : 'Open menu'}
+      data-track-id={trackId('menu-toggle')}
     >
       {isOpen ? '\u2715' : '\u2630'}
     </button>
@@ -392,6 +512,7 @@ function HeaderMenuMobileToggle() {
 
 function SearchToggle() {
   const {type, open} = useAside();
+  const trackId = useTrackId();
   return (
     <button
       type="button"
@@ -401,6 +522,7 @@ function SearchToggle() {
       aria-haspopup="dialog"
       aria-expanded={type === 'search'}
       aria-controls={QUICK_SEARCH_ID}
+      data-track-id={trackId('search')}
     >
       {/* Inline rather than an asset: the Figma node is a text layer containing
           an emoji, not an exported icon, so there is no vector to pull. */}
@@ -430,6 +552,7 @@ function SearchToggle() {
 function CartBadge({count, label}) {
   const {type, open} = useAside();
   const onCartPage = useLocation().pathname === '/cart';
+  const trackId = useTrackId();
   const n = count ?? 0;
 
   return (
@@ -439,6 +562,7 @@ function CartBadge({count, label}) {
       aria-haspopup={onCartPage ? undefined : 'dialog'}
       aria-expanded={onCartPage ? undefined : type === 'cart'}
       aria-controls={onCartPage ? undefined : CART_DRAWER_ID}
+      data-track-id={trackId('cart')}
       onClick={(e) => {
         if (onCartPage) return;
         e.preventDefault();

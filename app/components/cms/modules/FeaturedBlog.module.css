@@ -1,0 +1,214 @@
+/*
+ * Featured Blog module — sprint-05 hifi_blog.html, "Featured".
+ *
+ * A wide bordered card, photo left and copy right, with the Styleguide §05
+ * card hover: the border turns orange, the card lifts, the photo scales.
+ */
+
+.section {
+  /* --container-block steps 64 → 48 → 32 on its own. Stated, not omitted:
+   * reset.css gives a bare <section> its own padding otherwise. */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Gopher 19/700, the house eyebrow — the size §09 requires for orange text. */
+.eyebrow {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+}
+
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(24px, 3vw, 36px); /* from the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  /* Clips the photo to the rounded corners. */
+  overflow: hidden;
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default),
+    translate var(--duration-control) var(--ease-default);
+}
+
+/* Two classes, to outrank reset.css's a:hover:not(.btn), which would turn
+ * every word in the card orange. */
+.inner .card:hover {
+  border-color: var(--color-action);
+  box-shadow: var(--shadow-card-hover);
+  /* `translate`, not `transform`: motion.css ends every reveal on
+   * `transform: none` at higher specificity, which would cancel the lift. */
+  translate: 0 var(--card-lift);
+  color: var(--color-text);
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* At least 16:9 (the ::before props it open); taller when the copy runs
+ * longer — the grid stretches it to the row, the photo cropped to fit. Not
+ * aspect-ratio: a grid item with one doesn't stretch. */
+.media {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-alt);
+}
+
+.media::before {
+  content: '';
+  display: block;
+  padding-top: 56.25%; /* 16:9 */
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-image) var(--ease-default);
+}
+
+.card:hover .image {
+  transform: scale(var(--card-image-scale));
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: 28px 28px 28px 0; /* from the design */
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem; /* 22px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.title sup {
+  font-size: 0.55em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+/* A teaser: four lines at most, so a long excerpt can't stretch the card. */
+.excerpt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  margin: 0;
+  max-width: 80ch;
+  font-family: var(--font-body);
+  font-size: 0.9375rem; /* 15px, from the design */
+  font-weight: var(--weight-regular);
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.meta {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.8125rem; /* 13px, from the design */
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-muted);
+}
+
+/* The small-copy link look: bold, the darker link orange; on hover it turns
+ * brand orange and the chevron steps out. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px; /* from the design */
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: 0.90625rem; /* 14.5px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+  color: var(--color-text-link);
+  transition:
+    gap var(--duration-control) var(--ease-default),
+    color var(--duration-control) var(--ease-default);
+}
+
+.card:hover .cta {
+  gap: 9px;
+  color: var(--color-action);
+}
+
+.chevron {
+  flex: none;
+  color: var(--color-action);
+}
+
+/* tablet — the copy column narrows; its padding with it. */
+@media (max-width: 1099px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+
+  .copy {
+    padding: var(--space-6) var(--space-6) var(--space-6) 0;
+  }
+
+  .title {
+    font-size: 1.1875rem; /* 19px */
+  }
+}
+
+/* mdTablet — the photo stacks over the copy. */
+@media (max-width: 699px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .copy {
+    padding: var(--space-5) var(--space-5) var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .image,
+  .cta {
+    transition: none;
+  }
+
+  .inner .card:hover {
+    translate: none;
+  }
+
+  .card:hover .image {
+    transform: none;
+  }
+}

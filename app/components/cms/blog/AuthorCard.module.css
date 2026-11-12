@@ -1,0 +1,157 @@
+/*
+ * Author card — sprint-05 hifi_blogposttemplate.html, the card under "On this
+ * page". Its place in the post's layout is BlogBody's (.author there).
+ */
+
+.card {
+  padding: 20px 22px 22px; /* from the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 14px; /* from the design */
+}
+
+/* A name with no bio or link under it. */
+.head:last-child {
+  margin-bottom: 0;
+}
+
+.photo {
+  flex: none;
+  display: block;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.875rem; /* 14px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+/* Name over title, beside the photo. */
+.who {
+  min-width: 0;
+}
+
+.title {
+  margin: 2px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-muted);
+}
+
+.name sup {
+  font-size: 0.6em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+/* The card closes on its links; with none, nothing hangs below the bio. */
+.bio {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-muted);
+  white-space: pre-line; /* line breaks typed in the CMS are kept */
+}
+
+.bio:last-child {
+  margin-bottom: 0;
+}
+
+/* The house arrow link: bold, the darker link orange; on hover the text
+ * turns orange (reset.css's a:hover) and the chevron nudges right, as on
+ * Text & Table's and Link Cards' arrows. No underline. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px; /* from the design */
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+
+.link:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* View Bio on the left, the social icons on the right. */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+/* A 32px round hit area around a 16px icon, navy, orange on hover. */
+.social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.card .social:hover {
+  color: var(--color-action);
+  border-color: var(--color-action);
+}
+
+.social:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* The brand-orange chevron, as on every arrow link. */
+.chevron {
+  flex: none;
+  color: var(--color-action);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.link:hover .chevron {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}

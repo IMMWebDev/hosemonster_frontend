@@ -124,6 +124,32 @@
 .cardText {
   flex: 1 1 0;
   min-width: 0; /* lets the copy wrap instead of pushing the card wider */
+
+  /*
+   * Fill the card's full height (the grid stretches cards in a row to the
+   * tallest) and stack the copy as a column, so the button can be pushed to
+   * the foot. Otherwise each button sits right under its own copy and lands
+   * at a different height whenever the descriptions run to different lengths.
+   */
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* The optional line over the title — "Capture · Smart Monster™". Detail,
+ * bold caps, muted: the comp's 12px tracked label, brought up to the
+ * smallest size the style guide allows and untracked, since only the section
+ * eyebrow is tracked. Same treatment as Card Picker's card eyebrow. */
+.cardEyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-2);
 }
 
 /* Card title. Sets its own face, tracking and case: the global h3 rule would
@@ -148,8 +174,59 @@
   margin: 0;
 }
 
+/* Pinned to the foot of the card so buttons line up across a row. */
 .cardCta {
-  margin-top: var(--space-4); /* 16px in the design */
+  margin-top: auto;
+}
+
+/* ...keeping the design's 16px between the copy and the button. */
+.cardText > :has(+ .cardCta) {
+  margin-bottom: var(--space-4);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * NOTE
+ * -----------------------------------------------------------------------------
+ * sprint-05 hifi_hydrantflowtesting.html: a hairline across the band, then an
+ * asterisk tile beside one line of copy with a bold lead-in. The tile is white
+ * in the cards' chrome, so it reads on either background.
+ */
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: 14px; /* exact value from the design */
+  margin-top: var(--space-6); /* 22px in the design */
+  padding-top: var(--space-5); /* 18px in the design */
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.noteIcon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-action);
+}
+
+.noteText {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+.noteText strong {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
 }
 
 /*
@@ -170,5 +247,11 @@
 
   .cardCta {
     width: 100%;
+  }
+
+  /* A wrapped note reads better with the tile at the top of the first line
+   * than floating at the middle of three. */
+  .note {
+    align-items: flex-start;
   }
 }

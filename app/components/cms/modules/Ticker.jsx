@@ -1,5 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
+import {useRouteLoaderData} from 'react-router';
 import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './Ticker.module.css';
 
 /** Scroll speed in pixels per second. Constant regardless of how many items
@@ -23,6 +25,13 @@ const MAX_COPIES = 24;
  *
  * A continuously scrolling strip of short claims. Page-agnostic.
  *
+ * The claims are usually the same everywhere, so they live once in the
+ * Options single type (`tickerItems`, loaded by the root loader). With "Use
+ * defaults" on (the default; null counts as on) a module shows those. Switched
+ * off, it shows its own items instead — an override for one page, not an
+ * addition. If Options has none yet, a module falls back to its own items
+ * rather than vanishing.
+ *
  * HOW THE SEAMLESS LOOP WORKS, and why it is measured rather than fixed:
  * the item list is repeated N times and the track is translated left by
  * exactly ONE copy's width, which lands on a pixel-identical frame so the
@@ -33,13 +42,27 @@ const MAX_COPIES = 24;
  * screen; with a handful of short items on a wide monitor it is not, so the
  * count is derived from the measured copy width instead.
  *
+ * A pause button sits at the strip's right end: moving content that runs on
+ * forever needs a way to stop it (WCAG 2.2.2), and hover alone does nothing
+ * for keyboard or touch. It stays paused until pressed again. Readers who ask
+ * for reduced motion get a still strip and no button.
+ *
  * @param {{data: {items?: Array<{id: number, label: string}>}}} props
  */
 export default function Ticker({data}) {
-  const items = data?.items ?? [];
+  const trackingRoot = useTrackingRoot();
+  const trackId = useTrackId();
+  const siteItems = (
+    useRouteLoaderData('root')?.cmsOptions?.tickerItems ?? []
+  ).filter((item) => item?.label);
+  const ownItems = (data?.items ?? []).filter((item) => item?.label);
+  const useDefaults = data?.useDefaults !== false;
+  const items =
+    useDefaults && siteItems.length > 0 ? siteItems : ownItems;
   const sectionRef = useRef(null);
   const groupRef = useRef(null);
   const [metrics, setMetrics] = useState({copies: MIN_COPIES, shift: 0, duration: 0});
+  const [paused, setPaused] = useState(false);
 
   const measure = useCallback(() => {
     const section = sectionRef.current;
@@ -99,34 +122,70 @@ export default function Ticker({data}) {
 
   if (items.length === 0) return null;
 
+  const sectionClass = [
+    styles.section,
+    // Strapi applies the "white" default on CREATE only; null is white too.
+    data?.background === 'navy' ? styles.navy : '',
+    paused ? styles.paused : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <section
-      className={styles.section}
-      ref={sectionRef}
-      aria-label="Why Hose Monster"
-    >
-      <div
-        className={styles.track}
-        style={{
-          // Translate by exactly one copy, not a percentage of the whole track
-          // — the percentage changes every time the copy count does.
-          '--ticker-shift': metrics.shift ? `${metrics.shift}px` : undefined,
-          '--ticker-duration': metrics.duration
-            ? `${metrics.duration}s`
-            : undefined,
-        }}
-      >
-        {Array.from({length: metrics.copies}, (_, i) => (
-          <TickerGroup
-            key={i}
-            items={items}
-            // Only the first copy is measured, and only the first is exposed to
-            // assistive tech — the rest are a rendering trick.
-            innerRef={i === 0 ? groupRef : undefined}
-            duplicate={i > 0}
-          />
-        ))}
+    // No aria-label: it made every ticker a landmark with the same fixed
+    // name. The list says what it is.
+    <section {...trackingRoot} className={sectionClass} ref={sectionRef}>
+      <div className={styles.viewport}>
+        <div
+          className={styles.track}
+          style={{
+            // Translate by exactly one copy, not a percentage of the whole
+            // track — the percentage changes every time the copy count does.
+            '--ticker-shift': metrics.shift ? `${metrics.shift}px` : undefined,
+            '--ticker-duration': metrics.duration
+              ? `${metrics.duration}s`
+              : undefined,
+          }}
+        >
+          {Array.from({length: metrics.copies}, (_, i) => (
+            <TickerGroup
+              key={i}
+              items={items}
+              // Only the first copy is measured, and only the first is exposed
+              // to assistive tech — the rest are a rendering trick.
+              innerRef={i === 0 ? groupRef : undefined}
+              duplicate={i > 0}
+            />
+          ))}
+        </div>
       </div>
+      {/* The label stays put and aria-pressed carries the state, so a voice
+          user can say "pause scrolling" either way. */}
+      <button
+        type="button"
+        className={styles.toggle}
+        aria-pressed={paused}
+        aria-label="Pause scrolling"
+        onClick={() => setPaused((p) => !p)}
+        data-track-id={trackId('pause-toggle')}
+      >
+        <svg
+          viewBox="0 0 16 16"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          {/* Shows what a press will do: pause while it runs, play once
+              stopped. */}
+          <path d={paused ? 'M5.5 3.5v9l7-4.5z' : 'M6 4v8M10 4v8'} />
+        </svg>
+      </button>
     </section>
   );
 }

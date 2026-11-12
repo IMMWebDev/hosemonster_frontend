@@ -1,4 +1,5 @@
 import CmsLink from '~/components/cms/CmsLink';
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './TextChecklist.module.css';
 
 /**
@@ -22,6 +23,7 @@ import styles from './TextChecklist.module.css';
  * }} props
  */
 export default function TextChecklist({data}) {
+  const trackingRoot = useTrackingRoot();
   const {
     eyebrow,
     heading,
@@ -48,7 +50,10 @@ export default function TextChecklist({data}) {
   const hasAside = items.length > 0 || hasButtons;
 
   return (
-    <section className={`${styles.section} ${backgroundClass}`.trim()}>
+    <section
+      {...trackingRoot}
+      className={`${styles.section} ${backgroundClass}`.trim()}
+    >
       <div className={styles.inner}>
         <div className={styles.copy}>
           {eyebrow ? (
@@ -71,7 +76,8 @@ export default function TextChecklist({data}) {
         {hasAside ? (
           <div className={styles.aside}>
             {items.length > 0 ? (
-              <ul className={styles.checklist}>
+              // role="list": list-style: none strips list semantics in Safari.
+              <ul className={styles.checklist} role="list">
                 {items.map((item, i) => (
                   <li
                     className={styles.item}
@@ -93,10 +99,18 @@ export default function TextChecklist({data}) {
                 style={{'--reveal-i': items.length + 1}}
               >
                 {primaryCTA?.linkText ? (
-                  <CmsLink link={primaryCTA} className="btn btn--primary" />
+                  <CmsLink
+                    link={primaryCTA}
+                    className="btn btn--primary"
+                    trackRole="primary-cta"
+                  />
                 ) : null}
                 {secondaryCTA?.linkText ? (
-                  <CmsLink link={secondaryCTA} className="btn btn--secondary" />
+                  <CmsLink
+                    link={secondaryCTA}
+                    className="btn btn--secondary"
+                    trackRole="secondary-cta"
+                  />
                 ) : null}
               </div>
             ) : null}

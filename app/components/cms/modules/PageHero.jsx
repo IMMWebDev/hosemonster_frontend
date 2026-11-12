@@ -1,5 +1,8 @@
+import {useState} from 'react';
+import Breadcrumbs from '~/components/cms/Breadcrumbs';
 import CmsLink from '~/components/cms/CmsLink';
-import {strapiMedia} from '~/lib/strapi-media';
+import {strapiMedia, warnMissingAlt} from '~/lib/strapi-media';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './PageHero.module.css';
 
 /**
@@ -7,8 +10,12 @@ import styles from './PageHero.module.css';
  * (sprint-04/hifi_smartmonstercollection.html).
  *
  * A compact hero as an inset rounded card: background photo, left-to-right
- * scrim, eyebrow and heading. No body copy and no buttons — this is a page
- * title with a photograph behind it.
+ * scrim, eyebrow, heading, an optional short body and up to two buttons
+ * (sprint-05 hifi_hydrantflowtesting.html; the body from hifi_blog.html).
+ *
+ * The shorter, text-led "compact" card (.compact in the stylesheet) isn't a
+ * choice here any more — no page used it. It lives on as the blog post's
+ * automatic hero (blog/BlogHero.jsx), which applies the class itself.
  *
  * The third hero in the system, and the only inset one. Hero is the tall
  * full-bleed masthead with CTAs and a trust bar; Hero Search is the shop
@@ -21,55 +28,43 @@ import styles from './PageHero.module.css';
  *
  * @param {{
  *   data: {
- *     breadcrumbParent?: object,
- *     breadcrumbLabel?: string,
+ *     breadcrumbs?: {breadcrumbLabel?: string, breadcrumbLinks?: Array<object>} | null,
  *     eyebrow?: string,
  *     heading?: string,
+ *     body?: string,
+ *     primaryCTA?: object,
+ *     secondaryCTA?: object,
  *     backgroundImage?: {url?: string, alternativeText?: string},
+ *     badge?: {url?: string, alternativeText?: string, width?: number, height?: number} | null,
  *     infoColumns?: Array<{id: number, label: string, body?: string}>,
  *   },
  *   baseUrl?: string,
  * }} props
  */
 export default function PageHero({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
+  const trackId = useTrackId();
+  const [badgePaused, setBadgePaused] = useState(false);
   if (!data?.heading) return null;
 
   const {
-    breadcrumbParent,
-    breadcrumbLabel,
+    breadcrumbs,
     eyebrow,
     heading,
+    body,
+    primaryCTA,
+    secondaryCTA,
     infoColumns = [],
   } = data;
   const bgUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
+  const badgeUrl = strapiMedia(data.badge?.url, baseUrl);
+  // The seal's words are content (see its <img> below).
+  if (badgeUrl) warnMissingAlt(data.badge, 'Page Hero badge');
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
-        {/*
-          A real <nav> with an ordered list, not a row of divs: the crumbs are
-          navigation and their order carries meaning. The separator is CSS so it
-          is never read aloud, and the current page is plain text rather than a
-          link to itself.
-        */}
-        {breadcrumbParent?.linkText || breadcrumbLabel ? (
-          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-            <ol className={styles.crumbs}>
-              {breadcrumbParent?.linkText ? (
-                <li>
-                  <CmsLink link={breadcrumbParent} className={styles.crumbLink} />
-                </li>
-              ) : null}
-              {breadcrumbLabel ? (
-                <li>
-                  <span className={styles.crumbCurrent} aria-current="page">
-                    {breadcrumbLabel}
-                  </span>
-                </li>
-              ) : null}
-            </ol>
-          </nav>
-        ) : null}
+        <Breadcrumbs breadcrumbs={breadcrumbs} />
 
         <div className={styles.card}>
           {bgUrl ? (
@@ -117,7 +112,101 @@ export default function PageHero({data, baseUrl}) {
             >
               {heading}
             </h1>
+
+            {body ? (
+              <p className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+                {body}
+              </p>
+            ) : null}
+
+            {primaryCTA?.linkText || secondaryCTA?.linkText ? (
+              <div
+                className={styles.actions}
+                data-reveal
+                style={{'--reveal-i': 3}}
+              >
+                {primaryCTA?.linkText ? (
+                  <CmsLink
+                    link={primaryCTA}
+                    className="btn btn--primary"
+                    trackRole="primary-cta"
+                  />
+                ) : null}
+                {/* Outlined white, not .btn--secondary: that one is white with
+                    navy text, which the design doesn't draw over the scrim.
+                    The same call as Feature Hero. */}
+                {secondaryCTA?.linkText ? (
+                  <CmsLink
+                    link={secondaryCTA}
+                    className="btn btn--secondary-on-orange"
+                    trackRole="secondary-cta"
+                  />
+                ) : null}
+              </div>
+            ) : null}
           </div>
+
+          {badgeUrl ? (
+            /*
+             * The seal (sprint-05 hifi_hmuvideos.html): settles in (the
+             * wrapper), then turns slowly for good (the image) — Feature
+             * Hero's badge. Two elements because both animate `transform`,
+             * and one animation on an element replaces another rather than
+             * adding to it. Plain CSS animations, not data-reveal: the hero
+             * is above the fold, so it plays on load.
+             */
+            <div
+              className={
+                badgePaused
+                  ? `${styles.badge} ${styles.badgePaused}`
+                  : styles.badge
+              }
+            >
+              <div className={styles.badgeIn}>
+                <img
+                  src={badgeUrl}
+                  /* The seal's words are content, so its alt text comes from
+                     the Media Library rather than being blanked. */
+                  alt={data.badge?.alternativeText ?? ''}
+                  width={data.badge?.width ?? undefined}
+                  height={data.badge?.height ?? undefined}
+                  className={styles.badgeImage}
+                  decoding="async"
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {badgeUrl ? (
+            /* The spin never ends, so it gets a pause (WCAG 2.2.2) — the
+               Ticker's toggle: the label stays put and aria-pressed carries
+               the state. Hidden by CSS when reduced motion stills the seal. */
+            <button
+              type="button"
+              className={styles.badgeToggle}
+              aria-pressed={badgePaused}
+              aria-label="Pause badge animation"
+              onClick={() => setBadgePaused((p) => !p)}
+              data-track-id={trackId('badge-pause-toggle')}
+            >
+              <svg
+                viewBox="0 0 16 16"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                {/* What a press will do: pause while it turns, play once
+                    stopped. */}
+                <path d={badgePaused ? 'M5.5 3.5v9l7-4.5z' : 'M6 4v8M10 4v8'} />
+              </svg>
+            </button>
+          ) : null}
         </div>
 
         {infoColumns.length > 0 ? (
@@ -134,7 +223,7 @@ export default function PageHero({data, baseUrl}) {
                 <p
                   className={styles.infoLabel}
                   data-reveal
-                  style={{'--reveal-i': i + 2}}
+                  style={{'--reveal-i': i + 3}}
                 >
                   {column.label}
                 </p>
@@ -142,7 +231,7 @@ export default function PageHero({data, baseUrl}) {
                   <p
                     className={styles.infoBody}
                     data-reveal
-                    style={{'--reveal-i': i + 2}}
+                    style={{'--reveal-i': i + 3}}
                   >
                     {column.body}
                   </p>

@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {strapiMedia} from '~/lib/strapi-media';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './Testimonials.module.css';
 
 /**
@@ -32,6 +33,8 @@ import styles from './Testimonials.module.css';
  */
 export default function Testimonials({data, baseUrl}) {
   const {eyebrow, heading, body, items = []} = data ?? {};
+  const trackingRoot = useTrackingRoot();
+  const trackId = useTrackId();
   const trackRef = useRef(null);
   const [scrollState, setScrollState] = useState({
     overflowing: false,
@@ -122,6 +125,9 @@ export default function Testimonials({data, baseUrl}) {
   function scrollByPage(direction) {
     const el = trackRef.current;
     if (!el) return;
+    // The arrows stay pressable at the ends (aria-disabled, below), so they
+    // have to do nothing there themselves.
+    if (direction < 0 ? scrollState.atStart : scrollState.atEnd) return;
     el.scrollBy({left: pageStep(el) * direction, behavior: 'smooth'});
   }
 
@@ -135,7 +141,7 @@ export default function Testimonials({data, baseUrl}) {
   if (!heading || items.length === 0) return null;
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
         {eyebrow ? (
           <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
@@ -200,12 +206,18 @@ export default function Testimonials({data, baseUrl}) {
 
         {scrollState.overflowing && (
           <div className={styles.controls}>
+            {/*
+              aria-disabled rather than disabled at the ends, as in Step
+              Guide: a disabled button drops focus, so pressing Next onto the
+              last page would throw a keyboard user out of the carousel.
+            */}
             <button
               type="button"
               className={styles.arrow}
               onClick={() => scrollByPage(-1)}
-              disabled={scrollState.atStart}
+              aria-disabled={scrollState.atStart}
               aria-label="Previous testimonial"
+              data-track-id={trackId('prev')}
             >
               <Chevron direction="left" />
             </button>
@@ -221,6 +233,7 @@ export default function Testimonials({data, baseUrl}) {
                   onClick={() => scrollToPage(i)}
                   aria-label={`Go to slide ${i + 1} of ${scrollState.pageCount}`}
                   aria-current={i === scrollState.activeIndex}
+                  data-track-id={trackId(`dot-${i + 1}`)}
                 />
               ))}
             </div>
@@ -229,8 +242,9 @@ export default function Testimonials({data, baseUrl}) {
               type="button"
               className={styles.arrow}
               onClick={() => scrollByPage(1)}
-              disabled={scrollState.atEnd}
+              aria-disabled={scrollState.atEnd}
               aria-label="Next testimonial"
+              data-track-id={trackId('next')}
             >
               <Chevron direction="right" />
             </button>

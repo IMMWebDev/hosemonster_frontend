@@ -1,6 +1,6 @@
 import {useEffect, useId, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
-import {Form, useLocation, useNavigate} from 'react-router';
+import {Form, useLocation} from 'react-router';
 import {useAside} from '~/components/Aside';
 import {
   PredictiveMessage,
@@ -10,7 +10,8 @@ import {
 } from '~/components/search/PredictiveResults';
 import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
 import {usePredictiveSearch} from '~/lib/use-predictive-search';
-import {SEARCH_PATH, searchUrl} from '~/lib/search';
+import {SEARCH_PATH} from '~/lib/search';
+import {useTrackId} from '~/lib/tracking';
 import styles from './SearchBox.module.css';
 
 /** Matches the house `mdTablet` breakpoint (app/styles/layout.css). */
@@ -27,10 +28,10 @@ const MIN_DROPDOWN_HEIGHT = 240;
  *  - Desktop and tablet: a dropdown under the box, opened by typing. It stays
  *    shut on a results page until the visitor changes the text, so arriving
  *    on /search?q=gauge does not throw a dropdown over the results.
- *  - Phone: focusing the box opens the header's full-screen quick-search
- *    sheet, pre-filled with the box's text. A dropdown squeezed between the
- *    keyboard and the page is the pattern Baymard found hardest to use; the
- *    sheet is already built for exactly that screen.
+ *  - Phone: tapping the box, or typing in it, opens the header's full-screen
+ *    quick-search sheet, pre-filled with the box's text. A dropdown squeezed
+ *    between the keyboard and the page is the pattern Baymard found hardest
+ *    to use; the sheet is already built for exactly that screen.
  *
  * The dropdown is portalled to <body>. Both boxes sit in hero panels with
  * `overflow: clip` (for the parallax photo), and every page's modules sit in
@@ -77,8 +78,8 @@ export default function SearchBox({
 
   const {open: openSheet} = useAside();
   const {data, isLoading, search, cancel} = usePredictiveSearch();
-  const navigate = useNavigate();
   const location = useLocation();
+  const trackId = useTrackId();
 
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
@@ -183,23 +184,30 @@ export default function SearchBox({
     suppressFocusRef.current = false;
   }
 
-  function handleFocus(event) {
-    if (suppressFocusRef.current) return;
+  /**
+   * Phone: hand the text to the full-screen sheet, which takes focus itself.
+   * Focus comes back to the SUBMIT button when the sheet closes, not the
+   * input — on a phone, focusing the input can pop the keyboard back up for a
+   * box the visitor just left.
+   */
+  function openPhoneSheet(text) {
+    cancel();
+    setOpen(false);
+    openSheet('search', {term: text, returnFocus: submitRef.current});
+  }
 
-    if (isPhone()) {
-      /*
-       * Hand the text to the full-screen sheet, which takes focus itself.
-       * Focus comes back to the SUBMIT button when the sheet closes, not the
-       * input: an input that already has focus fires no focus event when
-       * tapped, so the next tap would not open the sheet again.
-       */
-      event.target.blur();
-      openSheet('search', {
-        term: event.target.value,
-        returnFocus: submitRef.current,
-      });
-      return;
-    }
+  /*
+   * Focus alone never opens the sheet — only a tap or click (here) or typing
+   * (handleChange) does. It used to open on focus, so tabbing through the page
+   * threw up a modal, and Shift+Tab back from the submit button reopened it
+   * every time (WCAG 3.2.1).
+   */
+  function handleClick(event) {
+    if (isPhone()) openPhoneSheet(event.currentTarget.value);
+  }
+
+  function handleFocus() {
+    if (suppressFocusRef.current || isPhone()) return;
     // Clicking back into a box that was already typed in brings its results
     // back rather than making the visitor type again.
     if (dirty && term && data) setOpen(true);
@@ -209,7 +217,12 @@ export default function SearchBox({
     const next = event.target.value;
     setValue(next);
 
-    if (!next.trim() || isPhone()) {
+    // Phone: the first keystroke moves into the sheet, carried with the text.
+    if (isPhone()) {
+      openPhoneSheet(next);
+      return;
+    }
+    if (!next.trim()) {
       cancel();
       setOpen(false);
       return;
@@ -316,11 +329,17 @@ export default function SearchBox({
            * results are not. The announcer below says when results arrive.
            */
           aria-controls={showDropdown ? dropdownId : undefined}
+          onClick={handleClick}
           onFocus={handleFocus}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
         />
-        <button ref={submitRef} type="submit" className={classNames.button}>
+        <button
+          ref={submitRef}
+          type="submit"
+          className={classNames.button}
+          data-track-id={trackId('search-submit')}
+        >
           {buttonLabel}
         </button>
 
@@ -365,10 +384,6 @@ export default function SearchBox({
                     data={data}
                     term={term}
                     onNavigate={() => setOpen(false)}
-                    onViewAll={() => {
-                      setOpen(false);
-                      navigate(searchUrl(term));
-                    }}
                   />
                 ) : (
                   <PredictiveMessage>Searching…</PredictiveMessage>

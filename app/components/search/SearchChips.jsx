@@ -1,4 +1,5 @@
 import {Link} from 'react-router';
+import {useTrackId} from '~/lib/tracking';
 import styles from './SearchChips.module.css';
 
 /**
@@ -14,20 +15,32 @@ import styles from './SearchChips.module.css';
  *   items: Array<{key: string, label: string, to: string}>,
  *   label?: string,
  *   onNavigate?: () => void,
+ *   trackRole?: string,
  * }} props
+ *
+ * `trackRole` prefixes each chip's analytics role with its 1-based position
+ * ("related-category" → related-category-1, -2…). Give each row in one module
+ * its own prefix, or their chips share ids — see app/lib/tracking.js.
  */
-export default function SearchChips({items, label, onNavigate}) {
+export default function SearchChips({
+  items,
+  label,
+  onNavigate,
+  trackRole = 'chip',
+}) {
+  const trackId = useTrackId();
   if (!items?.length) return null;
 
   return (
     <ul className={styles.list} role="list" aria-label={label}>
-      {items.map((item) => (
+      {items.map((item, i) => (
         <li key={item.key}>
           <Link
             to={item.to}
             prefetch="intent"
             className={styles.chip}
             onClick={onNavigate}
+            data-track-id={trackId(`${trackRole}-${i + 1}`)}
           >
             <span>{item.label}</span>
             <ArrowIcon />

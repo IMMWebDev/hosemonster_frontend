@@ -193,7 +193,8 @@
 /* Visible keyboard focus. Not in the design, but required for accessibility —
  * do not remove without an equivalent replacement. */
 .btn:focus-visible {
-  outline: var(--border-width-thick) solid var(--color-action);
+  /* --color-focus-ring: orange, or white inside a dark section (tokens.css). */
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 

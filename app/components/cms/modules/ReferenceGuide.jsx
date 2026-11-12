@@ -1,5 +1,6 @@
 import CmsLink from '~/components/cms/CmsLink';
-import {strapiMedia} from '~/lib/strapi-media';
+import {strapiMedia, warnMissingAlt} from '~/lib/strapi-media';
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './ReferenceGuide.module.css';
 
 /**
@@ -21,13 +22,14 @@ import styles from './ReferenceGuide.module.css';
  *     background?: 'white' | 'grey',
  *     columns?: Array<{id: number, title: string, description?: string}>,
  *     image?: {url?: string, alternativeText?: string, width?: number, height?: number},
- *     cta?: object,
+ *     primaryCTA?: object,
  *   },
  *   baseUrl?: string,
  * }} props
  */
 export default function ReferenceGuide({data, baseUrl}) {
-  const {eyebrow, heading, body, background, columns = [], image, cta} =
+  const trackingRoot = useTrackingRoot();
+  const {eyebrow, heading, body, background, columns = [], image, primaryCTA} =
     data ?? {};
 
   if (!heading) return null;
@@ -42,9 +44,13 @@ export default function ReferenceGuide({data, baseUrl}) {
     .filter(Boolean);
 
   const imageUrl = strapiMedia(image?.url, baseUrl);
+  if (imageUrl) warnMissingAlt(image, 'Reference Guide image');
 
   return (
-    <section className={`${styles.section} ${backgroundClass}`.trim()}>
+    <section
+      {...trackingRoot}
+      className={`${styles.section} ${backgroundClass}`.trim()}
+    >
       <div className={styles.inner}>
         {eyebrow ? (
           <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
@@ -65,7 +71,8 @@ export default function ReferenceGuide({data, baseUrl}) {
         ) : null}
 
         {columns.length > 0 ? (
-          <ul className={styles.columns}>
+          // role="list": list-style: none strips list semantics in Safari.
+          <ul className={styles.columns} role="list">
             {columns.map((column, i) => (
               <li
                 className={styles.column}
@@ -98,11 +105,12 @@ export default function ReferenceGuide({data, baseUrl}) {
           </figure>
         ) : null}
 
-        {cta?.linkText ? (
+        {primaryCTA?.linkText ? (
           <CmsLink
-            link={cta}
+            link={primaryCTA}
             className={`btn btn--primary ${styles.cta}`}
             dataReveal
+            trackRole="primary-cta"
           />
         ) : null}
       </div>

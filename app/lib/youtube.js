@@ -45,21 +45,24 @@ export function youTubeId(url) {
 }
 
 /**
- * Player URL for the click-to-play iframe.
+ * Player URL for a YouTube iframe.
  *
  * youtube-nocookie.com rather than youtube.com: it does not set tracking
  * cookies until the viewer actually plays something, which keeps a page that
  * merely *contains* a video out of consent-banner territory.
  *
- * `autoplay=1` is correct here — the iframe is only ever mounted by a click, so
- * playback is user-initiated, not an autoplaying page element.
+ * `autoplay` (on by default) is for the click-to-play VideoEmbed: its iframe
+ * is only ever mounted by a click, so playback is user-initiated. A player
+ * that's on the page from the start (the blog Video module) passes
+ * `{autoplay: false}` and shows YouTube's own thumbnail and play button.
  *
  * @param {string} id
+ * @param {{autoplay?: boolean}} [options]
  * @returns {string}
  */
-export function youTubeEmbedUrl(id) {
+export function youTubeEmbedUrl(id, {autoplay = true} = {}) {
   const params = new URLSearchParams({
-    autoplay: '1',
+    ...(autoplay ? {autoplay: '1'} : {}),
     rel: '0', // keep "related videos" to this channel
     modestbranding: '1',
     playsinline: '1', // iOS: play inline instead of hijacking fullscreen

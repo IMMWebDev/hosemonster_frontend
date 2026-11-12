@@ -23,6 +23,10 @@
   overflow: hidden;
   background-color: var(--brand-navy); /* shows before the image loads */
 
+  /* White keyboard focus rings over the scrim — orange is 2.95:1 on navy.
+   * The breadcrumb sits outside this section, on white, and stays orange. */
+  --color-focus-ring: var(--color-text-inverse);
+
   /* Full-bleed. <main> carries a horizontal margin (reset.css), so cancel
    * exactly that and grow by the same amount each side. The token, not 100vw:
    * 100vw includes the scrollbar and overflows on every desktop browser that
@@ -134,6 +138,12 @@
 .badge {
   flex: none;
   width: clamp(190px, 21vw, 260px); /* from the design */
+  /* Lifts it off the photo, as drawn. On this still wrapper, not the
+   * spinning image: a filter is drawn before its element's own transform, so
+   * on the image the drop would turn with the seal. `drop-shadow`, not
+   * box-shadow, so the shadow follows the circle. */
+  filter: drop-shadow(0 7px 14px rgb(0 0 0 / 30%))
+    drop-shadow(0 1px 4px rgb(0 0 0 / 20%));
 }
 
 .badgeIn {
@@ -145,10 +155,6 @@
   display: block;
   width: 100%;
   height: auto;
-  /* Lifts it off the photo, as drawn. `drop-shadow`, not box-shadow, so the
-   * shadow follows the circle rather than the square image box. */
-  filter: drop-shadow(0 7px 14px rgb(0 0 0 / 30%))
-    drop-shadow(0 1px 4px rgb(0 0 0 / 20%));
   /* Starts as the entrance finishes (0.25s delay + 0.9s). */
   animation: badge-spin 22s linear 1.15s infinite;
 }
@@ -183,6 +189,75 @@
   }
 }
 
+/* Stopped by the toggle below. Only the spin: the entrance still finishes. */
+.badgePaused .badgeImage {
+  animation-play-state: paused;
+}
+
+/*
+ * Pause / play for the spin — it runs for as long as the page is open, and
+ * WCAG 2.2.2 wants a way to stop that. Page Hero's toggle (the Ticker's, in
+ * its on-navy dress), at the section's bottom-right: on the content edge the
+ * badge lines up with, 16px up, inside the bottom padding (48–64px above
+ * 699px) the centred badge never reaches. Below 699px the badge drops to the
+ * bottom-left and this sits across from it.
+ */
+.badgeToggle {
+  position: absolute;
+  /* The page's content edge, as the Ticker's toggle — including above the
+   * width cap, where the content stops spreading. */
+  right: calc(
+    max(0px, (100% - var(--container-outer-bleed)) / 2) +
+      var(--container-gutter-bleed)
+  );
+  bottom: var(--space-4);
+  z-index: 3; /* above the scrim and the copy */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: var(--border-width) solid
+    color-mix(in srgb, var(--white) 35%, transparent);
+  border-radius: var(--radius-pill);
+  /* Translucent navy, so it holds where the scrim has cleared: the white icon
+   * is 6.4:1 or better on it even over a white patch of photo. */
+  background: color-mix(in srgb, var(--brand-navy) 80%, transparent);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.badgeToggle svg {
+  display: block;
+}
+
+/* Mouse only, so a tap on a phone doesn't leave it filled. */
+@media (hover: hover) {
+  .badgeToggle:hover {
+    background: var(--color-surface);
+    color: var(--brand-navy);
+  }
+}
+
+/* White ring (the section's --color-focus-ring). The navy shadow fills the
+ * gap inside it, so the ring has a dark edge even over a bright photo. */
+.badgeToggle:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--brand-navy);
+}
+
+/* Nothing moves, so there is nothing to pause. */
+@media (prefers-reduced-motion: reduce) {
+  .badgeToggle {
+    display: none;
+  }
+}
+
 .eyebrow {
   font-family: var(--font-body);
   font-size: var(--text-eyebrow);
@@ -191,16 +266,11 @@
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   /*
-   * Orange, even on navy.
-   *
-   * §09 says orange on navy measures 2.95:1 and names the exceptions as "the
-   * footer eyebrow and required asterisks" — which is the newsletter band, and
-   * that one IS white. Every SECTION eyebrow in every sprint-04 comp is
-   * #EB3F21 regardless of ground, including ones on solid navy. The design has
-   * accepted the ratio here; do not white these out again without the designer
-   * changing the comps. Newsletter.module.css is the deliberate exception.
+   * The lighter orange made for navy grounds. The brand orange measures
+   * 2.95:1 on the scrim's solid navy and fails even as large text; this keeps
+   * the eyebrow orange, as the comps draw it, at 4.6:1.
    */
-  color: var(--color-text-accent);
+  color: var(--color-text-accent-on-dark);
   margin: 0 0 var(--space-5); /* 20px in the design */
 }
 

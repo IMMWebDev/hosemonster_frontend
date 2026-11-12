@@ -1,28 +1,41 @@
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './TextHighlights.module.css';
 
 /**
  * Text & Highlights module — Smart Monster collection hifi
  * (sprint-04/hifi_smartmonstercollection.html, "It fits what you already own").
  *
- * A two-column band: an intro lockup on the left (heading, paragraph, a
- * red-dotted list) beside a grid of short labelled notes on the right, each
- * sitting under a rule.
+ * A two-column band: an intro lockup on the left (eyebrow, heading, paragraph,
+ * a bold takeaway line, a red-dotted list) beside a grid of short labelled
+ * notes on the right, each sitting under a rule.
  *
  * Sibling of Text & Media — same left-hand lockup, proof points instead of a
- * picture. Both halves are optional: with no highlights the intro runs the full
- * width, with no bullets it is just heading and copy.
+ * picture. Everything but the heading is optional: with no highlights the
+ * intro runs the full width (sprint-05 hifi_hydrantflowtesting.html, "Your
+ * result gives the hydrant a class"), with no bullets it is just heading and
+ * copy.
  *
  * @param {{
  *   data: {
+ *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
+ *     takeaway?: string,
  *     bullets?: Array<{id: number, label: string}>,
  *     highlights?: Array<{id: number, label: string, body?: string}>,
  *   },
  * }} props
  */
 export default function TextHighlights({data}) {
-  const {heading, body, bullets = [], highlights = []} = data ?? {};
+  const trackingRoot = useTrackingRoot();
+  const {
+    eyebrow,
+    heading,
+    body,
+    takeaway,
+    bullets = [],
+    highlights = [],
+  } = data ?? {};
 
   if (!heading) return null;
 
@@ -37,9 +50,15 @@ export default function TextHighlights({data}) {
     .filter(Boolean);
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
         <div className={styles.copy}>
+          {eyebrow ? (
+            <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+              {eyebrow}
+            </p>
+          ) : null}
+
           <h2 className={styles.heading} data-reveal style={{'--reveal-i': 0}}>
             {heading}
           </h2>
@@ -50,6 +69,12 @@ export default function TextHighlights({data}) {
                 <p key={`para-${i}`}>{para}</p>
               ))}
             </div>
+          ) : null}
+
+          {takeaway ? (
+            <p className={styles.takeaway} data-reveal style={{'--reveal-i': 2}}>
+              {takeaway}
+            </p>
           ) : null}
 
           {bullets.length > 0 ? (

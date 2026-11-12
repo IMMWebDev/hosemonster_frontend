@@ -1,5 +1,6 @@
 import CmsLink from '~/components/cms/CmsLink';
 import {strapiMedia} from '~/lib/strapi-media';
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './CtaBar.module.css';
 
 /**
@@ -19,7 +20,7 @@ import styles from './CtaBar.module.css';
  *     heading?: string,
  *     body?: string,
  *     bullets?: Array<{id: number, label: string}>,
- *     cta?: object,
+ *     primaryCTA?: object,
  *     secondaryCTA?: object,
  *     background?: 'navy' | 'red',
  *     backgroundImage?: {url?: string},
@@ -28,12 +29,13 @@ import styles from './CtaBar.module.css';
  * }} props
  */
 export default function CtaBar({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
   const {
     eyebrow,
     heading,
     body,
     bullets = [],
-    cta,
+    primaryCTA,
     secondaryCTA,
     background,
   } = data ?? {};
@@ -70,7 +72,7 @@ export default function CtaBar({data, baseUrl}) {
   const secondaryClass = 'btn btn--secondary-on-orange';
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
         <div className={`${styles.bar} ${backgroundClass}`.trim()} data-reveal>
           {backgroundUrl ? (
@@ -106,7 +108,8 @@ export default function CtaBar({data, baseUrl}) {
               <h2 className={styles.heading}>{heading}</h2>
               {body ? <p className={styles.body}>{body}</p> : null}
               {items.length > 0 ? (
-                <ul className={styles.bullets}>
+                // role="list": list-style: none strips list semantics in Safari.
+                <ul className={styles.bullets} role="list">
                   {items.map((item, i) => (
                     <li className={styles.bullet} key={item.id ?? i}>
                       {item.label}
@@ -116,13 +119,21 @@ export default function CtaBar({data, baseUrl}) {
               ) : null}
             </div>
 
-            {cta?.linkText || secondaryCTA?.linkText ? (
+            {primaryCTA?.linkText || secondaryCTA?.linkText ? (
               <div className={styles.action}>
-                {cta?.linkText ? (
-                  <CmsLink link={cta} className={ctaClass} />
+                {primaryCTA?.linkText ? (
+                  <CmsLink
+                    link={primaryCTA}
+                    className={ctaClass}
+                    trackRole="primary-cta"
+                  />
                 ) : null}
                 {secondaryCTA?.linkText ? (
-                  <CmsLink link={secondaryCTA} className={secondaryClass} />
+                  <CmsLink
+                    link={secondaryCTA}
+                    className={secondaryClass}
+                    trackRole="secondary-cta"
+                  />
                 ) : null}
               </div>
             ) : null}

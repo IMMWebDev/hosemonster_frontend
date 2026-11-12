@@ -75,6 +75,9 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--brand-navy);
+  /* The button's focus ring goes white on the navy banner: orange on navy is
+   * 2.95:1, and a focus indicator needs 3:1. */
+  --color-focus-ring: var(--color-text-inverse);
 }
 
 .bannerImage {
@@ -188,12 +191,21 @@
  * opacity — not a swap of `background`. Gradients are not an animatable
  * property, so changing background-image on hover snaps instantly instead of
  * sweeping. Cross-fading two layers is the only way to actually animate it.
+ *
+ * Its orange is the darker hover orange, not the brand orange: the 15px
+ * white title sits on the solid part, and white on #eb3f21 is 3.99:1 where
+ * 4.5:1 is needed. On #c62f14 it is 5.5:1. Featured cards show this layer
+ * permanently, so it covers them too.
  */
 .cardWashHover {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: var(--category-wash-featured);
+  background: linear-gradient(
+    90deg,
+    var(--color-action-hover) 45%,
+    transparent 73%
+  );
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--duration-slow) var(--ease-default);
@@ -248,6 +260,23 @@
 
 .featured .cardWashHover {
   opacity: 1;
+}
+
+/*
+ * A card with nowhere to go: no red wash or lift on hover, the default
+ * cursor. A featured one keeps its permanent red — that's the content, not a
+ * hover.
+ */
+.static {
+  cursor: default;
+}
+
+.static:not(.featured):hover {
+  box-shadow: none;
+}
+
+.static:not(.featured):hover .cardWashHover {
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

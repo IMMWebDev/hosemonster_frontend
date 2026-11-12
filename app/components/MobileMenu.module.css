@@ -68,8 +68,11 @@
   text-decoration: none;
 }
 
+/* data-active marks the whole section (CmsLink's markSection); aria-current
+ * is the exact page only, since that is what a screen reader announces. */
 a.link:hover,
-a.link[aria-current='page'] {
+a.link[aria-current='page'],
+a.link[data-active] {
   color: var(--color-action);
   text-decoration: none;
 }
@@ -186,7 +189,8 @@ a.subLink:hover {
   text-underline-offset: 3px;
 }
 
-a.subLink[aria-current='page'] {
+a.subLink[aria-current='page'],
+a.subLink[data-active] {
   font-weight: var(--weight-bold);
   text-decoration: underline;
   text-decoration-thickness: var(--underline-thickness);
@@ -208,6 +212,9 @@ a.subLink[aria-current='page'] {
   background: var(--color-surface-inverse);
   box-shadow: none;
   color: var(--color-text-inverse);
+  /* The buttons' focus ring goes white here: orange on navy is 2.95:1, and a
+   * focus indicator needs 3:1. */
+  --color-focus-ring: var(--color-text-inverse);
 }
 
 .actions {

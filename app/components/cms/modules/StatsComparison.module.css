@@ -1,0 +1,301 @@
+/*
+ * Stats & Comparison module — sprint-04 hifi_smartmonsterfeature.html,
+ * "Business case".
+ *
+ * Eyebrow and heading, a row of big orange stats each under an orange rule,
+ * then a before/after table behind a toggle.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed always, the same rule the other tinted bands use. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+/*
+ * Styleguide Eyebrow — orange. The comp draws this one grey, the only grey
+ * section eyebrow in the sprint-04 comps; kept on the house style.
+ */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 9px; /* the house eyebrow-to-heading gap */
+}
+
+/* Styleguide H2. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* ---- stats ---- */
+
+/* Any number of stats; they wrap when they stop fitting. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--space-12); /* 48px in the design */
+  margin: var(--space-10) 0 0; /* 40px under the heading, as drawn */
+  padding: 0;
+  list-style: none;
+}
+
+.stat {
+  margin: 0; /* reset.css spaces every <li> */
+  padding-left: var(--space-6); /* 24px in the design */
+  border-left: 3px solid var(--color-action);
+}
+
+/*
+ * The figure. The comp draws it 32 → 48px; H1 (26 → 40px) is the largest
+ * role in the styleguide, so it gets H1's clamp. Orange is fine as text at
+ * this size.
+ */
+.value {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+/* The comp's 13px tracked caps: Detail size, bold, tracked like an eyebrow.
+ * Navy — §09 keeps orange off text this small. */
+.label {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-3); /* 12px in the design */
+}
+
+/* Styleguide Body. */
+.description {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+/* ---- comparison ---- */
+
+.comparison {
+  margin-top: var(--space-10); /* 40px under the stats, as drawn */
+  text-align: center;
+}
+
+/*
+ * Pricing's toggle, to the letter — the tertiary pill. `display: inline-flex`
+ * on a <summary> drops the disclosure triangle in every engine, and
+ * `list-style: none` covers the rest.
+ */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--button-height);
+  padding: 0 28px;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  color: var(--color-text);
+  cursor: pointer;
+  list-style: none;
+  transition: border-color var(--duration-control) var(--ease-default);
+}
+
+.toggle::-webkit-details-marker {
+  display: none;
+}
+
+.toggle:hover {
+  border-color: var(--color-border-strong);
+}
+
+.toggle:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* Both labels are in the markup and CSS picks one, so the right one shows
+ * before hydration too. */
+.toggleClose,
+.comparison[open] .toggleOpen {
+  display: none;
+}
+
+.comparison[open] .toggleClose {
+  display: inline;
+}
+
+.caret {
+  flex: none;
+  color: var(--color-text-muted);
+  transition: transform var(--duration-control) var(--ease-default);
+}
+
+.comparison[open] .caret {
+  transform: rotate(180deg);
+}
+
+/* What animates. Clips the table while it grows; the gap above it is on
+ * .tableWrap so it collapses too. */
+.panel {
+  overflow: hidden;
+}
+
+/* Scrolls sideways rather than squashing, if a long header ever needs it. */
+.tableWrap {
+  margin-top: var(--space-5); /* 20px in the design */
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow-x: auto;
+  text-align: left;
+}
+
+/* The wrapper takes focus so the keyboard can scroll it (StatsComparison.jsx).
+ * Inset, because .panel clips anything drawn outside it. */
+.tableWrap:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: calc(var(--border-width-thick) * -1);
+}
+
+/* Equal columns, as drawn. */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: var(--font-body);
+}
+
+.table th,
+.table td {
+  padding: var(--space-4) var(--space-6); /* 16 / 24 in the design */
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+  vertical-align: top;
+}
+
+/* Every other body row tinted, starting with the first, as drawn. */
+.table tbody tr:nth-child(odd) {
+  background: var(--color-surface-alt);
+}
+
+/* Header row — UI label, bold navy. */
+.table thead th {
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+/* The row names — navy, regular. */
+.table tbody th {
+  font-weight: var(--weight-regular);
+  color: var(--color-text);
+}
+
+/* The value columns: right-aligned, muted, each behind a thin rule. */
+.table thead th:not(:first-child),
+.table td:not(:first-child) {
+  border-left: var(--border-width) solid var(--color-border);
+  text-align: right;
+}
+
+.table td {
+  color: var(--color-text-muted);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * The hifi is desktop-only.
+ */
+
+/* tablet — three stats still fit across at a narrower minimum, rather than
+ * wrapping to two and leaving the third alone on a row. */
+@media (max-width: 1099px) {
+  .stats {
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: var(--space-8);
+    margin-top: var(--space-8);
+  }
+
+  .comparison {
+    margin-top: var(--space-8);
+  }
+}
+
+/* mdTablet — one stat per row. */
+@media (max-width: 699px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* mobile — the toggle goes full width like the other buttons, and the table
+ * tightens its padding so three columns fit a phone without scrolling. */
+@media (max-width: 499px) {
+  .stat {
+    padding-left: var(--space-5);
+  }
+
+  .toggle {
+    width: 100%;
+  }
+
+  .table th,
+  .table td {
+    padding: var(--space-3);
+  }
+
+  .table thead th {
+    font-size: var(--text-body-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret,
+  .toggle {
+    transition: none;
+  }
+}

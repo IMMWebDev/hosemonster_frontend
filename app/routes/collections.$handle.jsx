@@ -7,45 +7,65 @@ import {
   sortFromSearchParams,
   filtersFromSearchParams,
 } from '~/lib/collection-filters';
+import {
+  absoluteUrl,
+  canonicalLink,
+  metaDescription,
+  shareImage,
+  siteOrigin,
+  socialTags,
+  withBrand,
+} from '~/lib/seo';
 
 /**
  * @type {Route.MetaFunction}
  */
-export const meta = ({data, location}) => {
+export const meta = ({data}) => {
+  if (!data?.collection) return [{title: 'Hose Monster'}];
   /*
    * CMS first, Shopify second. A collection page's title is editorial, so the
-   * Strapi `seo` component wins when the handle has a CMS entry; a collection
-   * with no entry still gets a sensible title from Shopify rather than nothing.
+   * Strapi `seo` component wins; Shopify's title and description fill in where
+   * it's empty.
    */
-  const seo = data?.cmsPage?.seo;
-  const title = seo?.metaTitle || `${data?.collection?.title ?? ''} | Hose Monster`;
+  const seo = data.cmsPage?.seo ?? {};
+  const {page = 1} = data.pagination ?? {};
+  const baseTitle = withBrand(seo.metaTitle || data.collection.title);
+  // Page 2 onward says so, so paginated pages don't share one title:
+  // "Accessories – Page 2 | Hose Monster".
+  const title = page > 1 ? pagedTitle(baseTitle, page) : baseTitle;
+  const description =
+    metaDescription(seo.metaDescription) ||
+    metaDescription(data.collection.description);
 
-  const tags = [{title}, {property: 'og:title', content: title}];
-  if (seo?.metaDescription) {
-    tags.push({name: 'description', content: seo.metaDescription});
-    tags.push({property: 'og:description', content: seo.metaDescription});
-  }
-  if (seo?.preventIndexing) {
+  const tags = [{title}];
+  if (description) tags.push({name: 'description', content: description});
+  const canonical = canonicalLink(data.canonicalUrl);
+  if (canonical) tags.push(canonical);
+  tags.push(
+    ...socialTags({
+      title,
+      description,
+      url: data.canonicalUrl,
+      image: shareImage(seo.metaImage, data.strapiBaseUrl),
+    }),
+  );
+  if (seo.preventIndexing) {
     tags.push({name: 'robots', content: 'noindex, nofollow'});
   }
-
-  /*
-   * Page 2 must canonicalise to ITSELF, not to page 1.
-   *
-   * Hydrogen strips query parameters from the canonical URL by default, which
-   * would point every paginated page back at page 1 — the one thing Google's
-   * pagination guidance explicitly says not to do, because it tells the crawler
-   * the other pages are duplicates and their products need not be indexed.
-   * Sort and filter params are deliberately NOT carried: those are the same
-   * products in a different order, which is what canonical is for.
-   */
-  const page = new URLSearchParams(location?.search ?? '').get('page');
-  if (page && page !== '1') {
-    tags.push({rel: 'canonical', href: `${location.pathname}?page=${page}`});
-  }
-
   return tags;
 };
+
+/**
+ * " – Page N" before the brand when the title ends with it, else at the end.
+ *
+ * @param {string} title
+ * @param {number} page
+ */
+function pagedTitle(title, page) {
+  const marker = ` – Page ${page}`;
+  const branded = title.match(/^(.*?)(\s*\|\s*Hose\s?Monster)$/i);
+  return branded ? `${branded[1]}${marker}${branded[2]}` : `${title}${marker}`;
+}
 
 /**
  * @param {Route.LoaderArgs} args
@@ -82,6 +102,17 @@ async function loadCriticalData({context, params, request, url}) {
    * hard-coding a page size the CMS claims to control.
    */
   const cms = await context.strapi.getCollectionPage(handle);
+
+  /*
+   * No collection page in Strapi, no page here. The product grid is a CMS
+   * module, so without an entry this rendered an empty <main> — no heading,
+   * no products — at a 200, and the sitemap listed it. Products in such a
+   * collection already live at /products/{handle} (lib/product-urls.js), and
+   * the collections sitemap leaves these out too.
+   */
+  if (!cms.page) {
+    throw new Response(`Collection ${handle} has no page`, {status: 404});
+  }
 
   const feed = (cms.modules ?? []).find(
     (m) => m.__component === 'module.product-feed',
@@ -188,6 +219,18 @@ async function loadCriticalData({context, params, request, url}) {
       to: start + pageProducts.length,
     },
     activeSort: sort.value,
+    /*
+     * The canonical. Page 2 must canonicalise to ITSELF, not to page 1: it
+     * lists different products, and pointing it at page 1 tells crawlers
+     * they're duplicates. Sort and filter params are dropped — the same
+     * products in a different order is what canonical is for. An editor's
+     * Canonical URL applies to page 1.
+     */
+    canonicalUrl:
+      page > 1
+        ? absoluteUrl(`/collections/${handle}?page=${page}`, siteOrigin(request))
+        : (absoluteUrl(cms.page.seo?.canonicalURL, siteOrigin(request)) ??
+          absoluteUrl(`/collections/${handle}`, siteOrigin(request))),
     cmsPage: cms.page,
     cmsModules: cms.modules,
     products,

@@ -133,8 +133,10 @@
   cursor: pointer;
 }
 
+/* The dark orange: the brand orange is 4:1 on white, short of the 4.5:1 a
+ * 12px label needs. */
 .clear:hover:not(:disabled) {
-  color: var(--color-action);
+  color: var(--color-text-link);
 }
 
 /* Dimmed rather than removed, so the rail keeps its shape before any filter is
@@ -207,6 +209,9 @@
  * to be sized and bordered at all — a native checkbox ignores width, height and
  * border on most platforms. reset.css also gives bare `input` vertical margins
  * and a radius, both of which have to go or the box sits off the text baseline.
+ * The unchecked border is the muted ink, not the #e8e8e8 card stroke: that grey
+ * is 1.2:1 on white, so the empty box all but vanished. Muted is 5:1, past the
+ * 3:1 a control's outline needs.
  */
 .checkbox {
   appearance: none;
@@ -214,7 +219,7 @@
   width: 20px;
   height: 20px;
   margin: 0;
-  border: var(--border-width-thick) solid var(--color-border);
+  border: var(--border-width-thick) solid var(--color-text-muted);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   cursor: pointer;
@@ -240,10 +245,11 @@
   flex: 1 1 auto;
 }
 
-/* Paler than the label — the count is supporting information, not a choice.
- * §01 Faint is the named ink for precisely this: "counts, chevrons". */
+/* Muted, the same ink as the label: the brackets already mark it as an aside.
+ * §01 names Faint for counts, but Faint is 2.1:1 on white and these are real
+ * numbers people read, so they need body text's 4.5:1. */
 .count {
-  color: var(--color-text-faint);
+  color: var(--color-text-muted);
 }
 
 /* ---- results ---- */
@@ -253,6 +259,12 @@
   font-size: var(--text-body-sm);
   color: var(--color-text-soft);
   margin: 0 0 var(--space-4);
+}
+
+/* Focus lands here after the last filter is cleared; a ring would read as a
+ * stray box around a line nobody can interact with. */
+.showing:focus {
+  outline: none;
 }
 
 /* Three up. The comp draws two, but at this rail width two cards makes each
@@ -274,13 +286,18 @@
   background: var(--color-surface);
   overflow: hidden;
   transition:
-    border-color var(--duration-fast) var(--ease-default),
-    box-shadow var(--duration-fast) var(--ease-default);
+    border-color var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default),
+    translate var(--duration-control) var(--ease-default);
 }
 
 .card:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-dropdown);
+  /* Red, as every card's hover on the site. */
+  border-color: var(--color-action);
+  box-shadow: var(--shadow-card-hover);
+  /* `translate`, not `transform`: motion.css ends every reveal on
+   * `transform: none` at higher specificity, which would cancel the lift. */
+  translate: 0 var(--card-lift);
 }
 
 /*
@@ -342,8 +359,11 @@
   text-decoration: none;
 }
 
-.cardTitleLink:hover {
-  color: var(--color-action);
+/* Hover in the dark orange (5.5:1 on white); the brand orange is 4:1, too
+ * faint for a 15px title. Two classes to outrank reset.css's
+ * a:hover:not(.btn) at (0,2,1), which would paint the brand orange. */
+.cardTitle .cardTitleLink:hover {
+  color: var(--color-text-link);
 }
 
 /* Styleguide Body: the meta description, between the name and the price as
@@ -431,6 +451,10 @@
 @media (prefers-reduced-motion: reduce) {
   .card {
     transition: none;
+  }
+
+  .card:hover {
+    translate: none;
   }
 }
 
@@ -570,7 +594,8 @@ a.pagerStep:hover {
  * -----------------------------------------------------------------------------
  * "Applied filters echo as removable chips." Measured from the §07 swatch:
  * 44px min height, 999px radius (§06 reserves the pill for buttons and chips),
- * 2px border, 15px/700 in body ink, the × in Faint.
+ * 2px border, 15px/700 in body ink, the × in Faint (drawn in muted here, see
+ * .chipIcon).
  */
 
 .chips {
@@ -627,11 +652,14 @@ a.pagerStep:hover {
   outline-offset: 2px;
 }
 
+/* Muted, not Faint: the × is the only sign the chip removes something, so it
+ * needs an icon's 3:1 (Faint is 2.1:1, muted 5:1). Still a step paler than the
+ * chip label. */
 .chipIcon {
   flex: 0 0 auto;
   width: 12px;
   height: 12px;
-  color: var(--color-text-faint);
+  color: var(--color-text-muted);
   transition: color var(--duration-control) var(--ease-default);
 }
 

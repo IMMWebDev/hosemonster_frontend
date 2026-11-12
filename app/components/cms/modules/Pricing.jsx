@@ -1,4 +1,6 @@
+import {useId} from 'react';
 import CmsLink from '~/components/cms/CmsLink';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './Pricing.module.css';
 
 /**
@@ -23,7 +25,7 @@ import styles from './Pricing.module.css';
  *       label: string,
  *       prices?: Array<{id: number, value: string, unit?: string}>,
  *       features?: Array<{id: number, label: string}>,
- *       cta?: object,
+ *       primaryCTA?: object,
  *     }>,
  *     comparisonHeading?: string,
  *     comparisonToggleLabel?: string,
@@ -37,6 +39,10 @@ import styles from './Pricing.module.css';
  * }} props
  */
 export default function Pricing({data}) {
+  const trackingRoot = useTrackingRoot();
+  // Names the comparison table after the section, so a screen reader listing
+  // tables hears more than "table".
+  const headingId = useId();
   const {
     eyebrow,
     heading,
@@ -61,7 +67,10 @@ export default function Pricing({data}) {
   const showComparison = plans.length > 0 && comparisonRows.length > 0;
 
   return (
-    <section className={`${styles.section} ${backgroundClass}`.trim()}>
+    <section
+      {...trackingRoot}
+      className={`${styles.section} ${backgroundClass}`.trim()}
+    >
       <div className={styles.inner}>
         {eyebrow ? (
           <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
@@ -69,7 +78,12 @@ export default function Pricing({data}) {
           </p>
         ) : null}
 
-        <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
+        <h2
+          id={headingId}
+          className={styles.heading}
+          data-reveal
+          style={{'--reveal-i': 1}}
+        >
           {heading}
         </h2>
 
@@ -94,6 +108,7 @@ export default function Pricing({data}) {
             plans={plans}
             rows={comparisonRows}
             heading={comparisonHeading}
+            labelledBy={headingId}
             openLabel={comparisonToggleLabel}
             closeLabel={comparisonToggleCloseLabel}
           />
@@ -107,7 +122,7 @@ export default function Pricing({data}) {
  * @param {{plan: object, index?: number}} props
  */
 function Plan({plan, index = 0}) {
-  const {label, prices = [], features = [], cta} = plan;
+  const {label, prices = [], features = [], primaryCTA} = plan;
 
   /*
    * One price with no unit is a headline ("7-day trial", "$549/year") and the
@@ -120,7 +135,8 @@ function Plan({plan, index = 0}) {
 
   return (
     <div className={styles.plan} data-reveal style={{'--reveal-i': index + 3}}>
-      <p className={styles.planLabel}>{label}</p>
+      {/* A heading, so screen reader users can jump plan to plan. */}
+      <h3 className={styles.planLabel}>{label}</h3>
 
       {prices.length > 0 ? (
         <div className={isHeadline ? styles.headlinePrice : styles.prices}>
@@ -150,10 +166,11 @@ function Plan({plan, index = 0}) {
         </ul>
       ) : null}
 
-      {cta?.linkText ? (
+      {primaryCTA?.linkText ? (
         <CmsLink
-          link={cta}
+          link={primaryCTA}
           className={`btn btn--secondary ${styles.planCta}`}
+          trackRole={`card-${index + 1}-primary-cta`}
         />
       ) : null}
     </div>
@@ -165,11 +182,14 @@ function Plan({plan, index = 0}) {
  *   plans: Array<object>,
  *   rows: Array<object>,
  *   heading?: string,
+ *   labelledBy?: string,
  *   openLabel?: string,
  *   closeLabel?: string,
  * }} props
  */
-function Comparison({plans, rows, heading, openLabel, closeLabel}) {
+function Comparison({plans, rows, heading, labelledBy, openLabel, closeLabel}) {
+  const trackId = useTrackId();
+
   /*
    * A real <table>. The comp builds it from divs, but this is a feature matrix:
    * a screen reader user needs "Unlimited, Revisions to work orders, infinity"
@@ -178,7 +198,10 @@ function Comparison({plans, rows, heading, openLabel, closeLabel}) {
    */
   return (
     <details className={styles.comparison}>
-      <summary className={styles.comparisonToggle}>
+      <summary
+        className={styles.comparisonToggle}
+        data-track-id={trackId('details-toggle')}
+      >
         {/*
           Defaults, not hardcoded copy: Strapi applies a field default on CREATE
           only, so an entry made before these fields existed returns null and
@@ -195,8 +218,20 @@ function Comparison({plans, rows, heading, openLabel, closeLabel}) {
         </span>
       </summary>
 
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
+      {/*
+        The table scrolls sideways on phones, and nothing inside it can take
+        focus, so the wrapper must be focusable or a keyboard user can't reach
+        the hidden columns (WCAG 2.1.1). The lint rule has no exception for
+        scroll containers, hence the override — same as Testimonials' track.
+      */}
+      <div
+        className={styles.tableWrap}
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex={0}
+        role="region"
+        aria-label={heading || 'Compare plans'}
+      >
+        <table className={styles.table} aria-labelledby={labelledBy}>
           <thead>
             <tr>
               <th scope="col">{heading || 'Compare plans'}</th>

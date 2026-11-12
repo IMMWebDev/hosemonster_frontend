@@ -1,0 +1,297 @@
+/*
+ * Numbered Link Cards module — sprint-05 hifi_hmuhub.html, "How a flow test
+ * runs".
+ *
+ * Full-bleed navy band on a faint photo, the brand flame ghosted in the top
+ * right, and a row of white numbered cards with divided link lists.
+ */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--brand-navy);
+  /* White keyboard focus rings on the navy band — orange is 2.95:1 here.
+   * The white cards set it back to orange (see .card). */
+  --color-focus-ring: var(--color-text-inverse);
+  /* Zero — reset.css gives a bare <section> `padding: 2rem 0`. */
+  padding-block: 0;
+  /* Full-bleed: cancel <main>'s margin, as Numbered Benefits does. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* Stack: photo 0, scrim 1, flame 2, content 3. */
+.backgroundImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35; /* from the design */
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    160deg,
+    rgb(29 58 84 / 92%) 0%,
+    rgb(15 31 44 / 96%) 100%
+  ); /* from the design */
+  pointer-events: none;
+}
+
+/* The site's flame (Options › Watermark), ghosted off the top-right corner.
+ * Position, size and opacity from the design. */
+.watermark {
+  position: absolute;
+  z-index: 2;
+  top: -40px;
+  right: -80px;
+  width: clamp(280px, 32vw, 520px);
+  height: auto;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  /* Roomier than the house 64px — the comp gives this band 72–112px. */
+  padding: clamp(72px, 8vw, 112px) var(--container-gutter-bleed);
+}
+
+/* Styleguide Eyebrow, in the light orange for dark grounds — the brand orange
+ * is under 3:1 on this scrim. See CtaBanner.module.css. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent-on-dark);
+  margin: 0 0 var(--space-4); /* 16px, from the design */
+}
+
+/* Styleguide H2, reversed out. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Styleguide Body large, on navy. */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-on-navy);
+  max-width: 72ch; /* from the design */
+  margin: var(--space-4) 0 0;
+}
+
+/* The comp's auto-fit row: four across on desktop, wrapping at 280px. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-4); /* 16px, from the design */
+  margin: var(--space-10) 0 0; /* 40px under the copy, from the design */
+  padding: 0;
+  list-style: none;
+}
+
+/* The grid cell. It carries the scroll-in reveal, so the card inside can own
+ * its hover transition without the reveal's overriding it. */
+.item {
+  display: flex;
+  margin: 0; /* reset.css spaces every <li> */
+}
+
+/* White card with the orange top edge. It lifts on hover, as the comp draws
+ * it; the rows inside are the links and only react to their own hover. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3); /* 12px, from the design */
+  flex: 1 1 auto; /* fills the cell, so a row of cards stays even */
+  padding: var(--space-7); /* 28px, from the design */
+  border-top: 6px solid var(--color-action);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  /* A light ground inside the navy band: the ring goes back to orange. */
+  --color-focus-ring: var(--color-action);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 28%); /* from the design */
+  transition:
+    translate var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default);
+}
+
+/* From the design: up 6px, a deeper shadow. */
+.card:hover {
+  translate: 0 -6px;
+  box-shadow: 0 30px 64px rgb(0 0 0 / 40%);
+}
+
+/* The big orange numeral. Orange on white is legal at this size (§09). */
+.number {
+  font-family: var(--font-display);
+  font-size: 4rem; /* 64px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--color-action);
+}
+
+/* Every property set: a bare h3 is the orange eyebrow in reset.css. Two
+ * lines reserved so the labels under the titles line up across the row. */
+.title {
+  margin: 0;
+  min-height: 2.5em;
+  font-family: var(--font-display);
+  font-size: 1.0625rem; /* 17px, from the design */
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.title sup,
+.rowText sup {
+  font-size: 0.55em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.links {
+  margin-top: var(--space-3); /* with the card gap, the comp's 24px */
+}
+
+/*
+ * "Products". The comp's 12px / 0.1em caps sit under the guide's smallest
+ * size and tracking is the eyebrow's alone (§03), so it's Styleguide
+ * "Detail", bold caps, untracked — the same call as Link Cards' badge.
+ */
+.label {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+/* ---- the divided list ---- */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  margin: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/*
+ * The whole row is the link: navy bold text, the chevron pinned right, a
+ * long name wrapping in its own row. 44px tall at least — a full tap target.
+ */
+.rowLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding-block: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/*
+ * Hover: the text turns the dark orange (5.5:1 on white — the brand orange
+ * would fail at this size) and the chevron nudges right, the site's arrow
+ * link motion. Two classes to outrank reset.css's a:hover:not(.btn).
+ */
+.row .rowLink:hover {
+  color: var(--color-text-link);
+}
+
+.rowLink:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.chevron {
+  flex: none;
+  color: var(--color-action);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.rowLink:hover .chevron {
+  transform: translateX(3px);
+}
+
+/* ---- CTA ---- */
+
+.actions {
+  margin-top: var(--space-7); /* 28px under the cards, from the design */
+}
+
+/* The comp's hover on navy: the button turns white with navy text, rather
+ * than the darker orange it uses on white. */
+.actions .cta:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-surface);
+  color: var(--brand-navy);
+}
+
+/* One card per row from here, so there's nothing to line the labels up
+ * with — drop the reserved second title line. */
+@media (max-width: 699px) {
+  .title {
+    min-height: 0;
+  }
+}
+
+/* Phones: a long label wraps rather than running past the edge. */
+@media (max-width: 499px) {
+  .card {
+    padding: var(--space-6) var(--space-5);
+  }
+
+  .cta {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chevron {
+    transition: none;
+  }
+
+  .card:hover {
+    translate: none;
+  }
+}

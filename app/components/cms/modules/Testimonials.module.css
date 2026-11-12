@@ -254,13 +254,18 @@
   display: block;
 }
 
-.arrow:hover:not(:disabled) {
+/* aria-disabled, not :disabled — the arrows keep focus at the ends
+ * (Testimonials.jsx). */
+.arrow:hover:not([aria-disabled='true']) {
   background: var(--brand-navy);
   color: var(--color-text-inverse);
 }
 
-.arrow:disabled {
-  opacity: 0.35;
+/* Faded through the border and chevron, not opacity: focus stays on the
+ * arrow at the ends, and opacity would fade its focus ring too. */
+.arrow[aria-disabled='true'] {
+  border-color: rgb(29 58 84 / 35%); /* --brand-navy at 35% */
+  color: rgb(29 58 84 / 35%);
   cursor: not-allowed;
 }
 
@@ -269,28 +274,54 @@
   outline-offset: 2px;
 }
 
+/*
+ * Each dot is a 24px button with the 9px disc drawn inside it, so it's a
+ * fair-sized target for a finger. The buttons sit edge to edge rather than
+ * overlapping, which spreads the discs a little; the negative margin keeps
+ * the outer discs as far from the arrows as before. Wraps rather than
+ * overflowing a phone if a long list makes many dots.
+ */
 .dots {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 6px;
+  min-width: 0;
+  margin-inline: -7.5px; /* (24px button - 9px disc) / 2 */
 }
 
 .dot {
-  width: 9px;
-  height: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border: var(--border-width) solid var(--color-action);
-  border-radius: var(--radius-pill);
+  border: 0;
   background: transparent;
   cursor: pointer;
+}
+
+.dot::before {
+  content: '';
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border: var(--border-width) solid var(--color-action);
+  border-radius: var(--radius-pill);
   transition: background-color var(--duration-fast) var(--ease-default);
 }
 
-.dotActive {
+.dotActive::before {
   background: var(--color-action);
 }
 
+/* The ring goes round the disc, as before, not the larger button. */
 .dot:focus-visible {
+  outline: none;
+}
+
+.dot:focus-visible::before {
   outline: var(--border-width-thick) solid var(--color-action);
   outline-offset: 2px;
 }

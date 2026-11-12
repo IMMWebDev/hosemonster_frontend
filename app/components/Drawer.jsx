@@ -2,6 +2,7 @@ import {createContext, useContext, useEffect, useId, useRef} from 'react';
 import {useLocation} from 'react-router';
 import {useAside} from '~/components/Aside';
 import UiIcon from '~/components/icons/UiIcon';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './Drawer.module.css';
 
 /**
@@ -38,6 +39,9 @@ export default function Drawer({type, id, label, children}) {
   // Whether the history entry pushed on open (see below) is still ours.
   const pushedRef = useRef(false);
   const location = useLocation();
+  // data-track-module from whichever scope wraps the drawer (mobile-menu,
+  // cart-drawer), so its dialog is the scope's root element.
+  const trackingRoot = useTrackingRoot();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -115,6 +119,7 @@ export default function Drawer({type, id, label, children}) {
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events */}
       <dialog
         ref={dialogRef}
+        {...trackingRoot}
         id={id}
         className={styles.drawer}
         aria-label={label}
@@ -191,6 +196,7 @@ export function useDrawer() {
 Drawer.Head = function DrawerHead({title, meta, brand}) {
   const {dismiss} = useDrawer();
   const titleId = useId();
+  const trackId = useTrackId();
   return (
     <div className={styles.head}>
       <div className={styles.titles}>
@@ -206,7 +212,12 @@ Drawer.Head = function DrawerHead({title, meta, brand}) {
           </p>
         ) : null}
       </div>
-      <button type="button" className={styles.close} onClick={dismiss}>
+      <button
+        type="button"
+        className={styles.close}
+        onClick={dismiss}
+        data-track-id={trackId('close')}
+      >
         <span className={styles.closeLabel}>Close</span>
         <UiIcon name="close" className={styles.closeIcon} />
       </button>

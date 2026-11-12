@@ -44,7 +44,8 @@
   /* Brand ramp — two colours carry the identity. Everything else is ink,
    * surface or border (Styleguide §01). */
   --brand-orange: #eb3f21; /* CTAs, eyebrows, accents, hover borders, active states */
-  --brand-orange-hover: #c62f14; /* Hover FILL for orange buttons. Never a text colour. */
+  --brand-orange-hover: #c62f14; /* Hover FILL for orange buttons; also small-copy links via --color-text-link */
+  --brand-orange-light: #ff7a5c; /* Orange TEXT on navy grounds — 4.6:1 on #1d3a54, where the brand orange is 2.95:1 */
   --brand-navy: #1d3a54; /* Headings, dark sections, outline buttons, hero scrims */
   --deep-navy-ink: #0b1721; /* The only navy that clears 4.5:1 on orange */
 
@@ -106,12 +107,18 @@
       rgba(0, 0, 0, 0.15) 100%
     ),
     linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-navy) 100%);
+  /* On the darker orange: white card text over it is 5.5:1 (3.99:1 on the
+   * brand orange). */
   --feature-card-bg-hover: linear-gradient(
       180deg,
-      rgba(235, 63, 33, 0) 73%,
+      rgba(198, 47, 20, 0) 73%,
       rgba(0, 0, 0, 0.16) 100%
     ),
-    linear-gradient(90deg, var(--color-action) 0%, var(--color-action) 100%);
+    linear-gradient(
+      90deg,
+      var(--color-action-hover) 0%,
+      var(--color-action-hover) 100%
+    );
 
   /* Newsletter card scrim — the comp's deep navy (#12232F) solid at the left
    * edge, easing out by three-quarters so the copy sits on navy and the right
@@ -157,8 +164,8 @@
   );
   --category-wash-featured: linear-gradient(
     90deg,
-    var(--color-action) 45%,
-    rgba(235, 63, 33, 0) 73%
+    var(--color-action-hover) 45%,
+    rgba(198, 47, 20, 0) 73%
   );
 
   /* Guided Discovery card wash. Two stacked gradients over a 50%-opacity photo:
@@ -199,9 +206,23 @@
   /*
    * Eyebrows, emphasis. §09: orange is a LIGHT colour and only clears AA as
    * large text — 19px at weight 700. Never set this on anything smaller, and
-   * never on navy (2.95:1, fails at every size — use --color-text-inverse).
+   * never on navy (2.95:1, fails at every size — use
+   * --color-text-accent-on-dark below).
    */
   --color-text-accent: var(--brand-orange);
+  /*
+   * The accent on navy grounds (eyebrows over a hero scrim, a navy band): a
+   * lighter orange that keeps the brand colour and clears AA there — 4.6:1 on
+   * #1d3a54, so it holds even below large-text size.
+   */
+  --color-text-accent-on-dark: var(--brand-orange-light);
+  /*
+   * Inline links in small copy (note bodies) — the sprint-05 hifis' bold
+   * #c62f14. The darker orange is the one that holds up at body size: 5.5:1
+   * on white, 5.0:1 on Light Surface, so it clears AA where the brand orange
+   * cannot. Not for navy grounds.
+   */
+  --color-text-link: var(--brand-orange-hover);
   /* Text sitting ON an orange fill. The only navy that clears 4.5:1 there. */
   --color-text-on-orange: var(--deep-navy-ink);
 
@@ -232,6 +253,12 @@
    *   secondary-on-orange  transparent, white border and text
    */
   --color-action: var(--brand-orange);
+  /*
+   * Keyboard focus ring. Orange on light grounds; a dark section (navy band,
+   * hero scrim) sets it to --color-text-inverse on its root, since orange on
+   * navy is 2.95:1 and a focus indicator needs 3:1.
+   */
+  --color-focus-ring: var(--color-action);
   --color-action-text: var(--white);
   /* §01 names the hover fill outright now. It used to be a color-mix that
    * resolved to #c83629 — close, but the designer's value is #c62f14. The
@@ -243,6 +270,14 @@
   --color-action-secondary-text: var(--brand-navy);
   --color-action-tertiary-border: var(--neutral-100);
   --color-action-tertiary-text: var(--brand-navy);
+
+  /*
+   * Status — not in the styleguide palette. Added for the bundle builder's
+   * completed steps, at the client's request, so "done" reads at a glance
+   * instead of relying on the check alone. 4.5:1 against white, so a white
+   * check on it (or the green itself as text) clears AA.
+   */
+  --color-success: #198754;
 
   /* ==========================================================================
    * 3. TYPOGRAPHY
@@ -327,6 +362,9 @@
 
   /* §03: "Cap measure around 64ch and set text-wrap: pretty to avoid orphans." */
   --measure: 64ch;
+  /* Note callouts (utilities.note) run a little wider: they sit in a full-width
+   * box, and 64ch broke their one- or two-sentence copy too early. */
+  --measure-note: 80ch;
 
   /* ==========================================================================
    * 4. SPACING

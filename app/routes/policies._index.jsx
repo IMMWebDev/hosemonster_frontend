@@ -1,5 +1,8 @@
 import {useLoaderData, Link} from 'react-router';
 
+/** @type {Route.MetaFunction} */
+export const meta = () => [{title: 'Policies | Hose Monster'}];
+
 /**
  * @param {Route.LoaderArgs}
  */

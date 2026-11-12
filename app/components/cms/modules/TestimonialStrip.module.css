@@ -1,0 +1,161 @@
+/*
+ * Testimonial Strip module — sprint-04 hifi_smartmonsterfeature.html,
+ * "Testimonial strip".
+ *
+ * Slim full-bleed orange band: quote mark, quote, attribution. Everything on
+ * it is white and at least 19px / 700 — the size §09 needs before white text
+ * is legal on orange — which is why the quote can't drop to body size.
+ */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--color-action);
+
+  /* Zero — reset.css gives a bare <section> `padding: 2rem 0`, which would
+   * stack outside .inner's padding. */
+  padding-block: 0;
+
+  /* Full-bleed: cancel <main>'s margin exactly, as CTA Banner does. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* Positive stack: photo 0, wash 1, content 2. No parallax — the band is too
+ * slim for the drift to read. */
+.backgroundImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35; /* from the design */
+}
+
+/* Solid orange behind the quote, clearing to the photo on the right. The
+ * brand orange (#EB3F21) at 90%, from the design. */
+.wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgb(235 63 33 / 90%) 0%,
+    rgb(102 102 102 / 0%) 100%
+  );
+  pointer-events: none;
+}
+
+/* Mark, quote, attribution in one row. A grid rather than the comp's wrapping
+ * flex row, so each breakpoint can place the attribution deliberately. */
+.inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'mark quote author';
+  align-items: center;
+  column-gap: var(--space-6); /* 24px in the design */
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin: 0 auto; /* the UA's figure margins off */
+  padding: var(--space-8) var(--container-gutter-bleed); /* 32px, as drawn */
+  color: var(--color-text-inverse);
+}
+
+/* The display face's own curly quote, drawn large. */
+.mark {
+  grid-area: mark;
+  align-self: start;
+  font-family: var(--font-display);
+  font-size: 3.5rem; /* 56px in the design */
+  font-weight: var(--weight-bold);
+  line-height: 0.9;
+}
+
+/*
+ * 20px Gopher Bold, from the design. Not a styleguide role — there is no pull
+ * quote style — but it can't come down to Body: white on orange is only legal
+ * at 19px / 700 and up (§09).
+ */
+.quote {
+  grid-area: quote;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.quote p {
+  margin: 0;
+}
+
+/* 19px / 700, the eyebrow's size without its caps and tracking. */
+.author {
+  grid-area: author;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  text-align: right;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * The hifi is desktop-only; its row just wraps. Here the attribution moves
+ * under the quote instead, aligned with it rather than hanging off the right.
+ */
+
+/* tablet — mark beside the quote, attribution under the quote. */
+@media (max-width: 1099px) {
+  .inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'mark quote'
+      '. author';
+    row-gap: var(--space-3);
+  }
+
+  .author {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* mobile — one column: a smaller mark above the quote, everything flush left.
+ * The wash goes solid, since the copy now runs the full width of the photo. */
+@media (max-width: 499px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'mark'
+      'quote'
+      'author';
+    row-gap: var(--space-2);
+  }
+
+  .mark {
+    font-size: 2.75rem;
+    line-height: 0.6;
+    padding-top: var(--space-3);
+  }
+
+  /* Same size and weight as the quote, so it needs the extra air to read as
+   * the attribution rather than the quote's last line. */
+  .author {
+    margin-top: var(--space-3);
+  }
+
+  .wash {
+    background: rgb(235 63 33 / 90%);
+  }
+}

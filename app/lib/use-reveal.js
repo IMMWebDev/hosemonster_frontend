@@ -15,6 +15,41 @@ import {useLocation} from 'react-router';
  * tree without remounting PageLayout, so a fresh page's elements would
  * otherwise never be picked up — they would sit at opacity 0 permanently.
  */
+/**
+ * Mark an element whose entrance has finished, so motion.css hands its
+ * `transition` back to the module (a card's hover can then animate). Timed
+ * from the computed transition — the longest duration + delay — rather than
+ * transitionend, which never fires for a variant that doesn't move, under
+ * reduced motion, or for an element that is already in place.
+ *
+ * @param {Element} el
+ */
+function settle(el) {
+  const style = getComputedStyle(el);
+  const seconds = (value) =>
+    value.split(',').map((v) => Number.parseFloat(v) || 0);
+  const durations = seconds(style.transitionDuration);
+  const delays = seconds(style.transitionDelay);
+  const longest = Math.max(
+    0,
+    ...durations.map((d, i) => d + delays[i % delays.length]),
+  );
+  window.setTimeout(
+    () => el.setAttribute('data-reveal-done', ''),
+    longest * 1000 + 50,
+  );
+}
+
+/**
+ * Show an element: start its entrance, then hand its transitions back.
+ *
+ * @param {Element} el
+ */
+function reveal(el) {
+  el.setAttribute('data-reveal-in', '');
+  settle(el);
+}
+
 export function useReveal() {
   const {pathname} = useLocation();
 
@@ -27,7 +62,7 @@ export function useReveal() {
     // No IntersectionObserver (very old browsers, some test runners): show
     // everything at once rather than leaving the page blank.
     if (typeof IntersectionObserver === 'undefined') {
-      nodes.forEach((el) => el.setAttribute('data-reveal-in', ''));
+      nodes.forEach(reveal);
       return undefined;
     }
 
@@ -35,7 +70,7 @@ export function useReveal() {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
-          entry.target.setAttribute('data-reveal-in', '');
+          reveal(entry.target);
           observer.unobserve(entry.target);
         });
       },

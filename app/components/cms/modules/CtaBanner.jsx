@@ -1,5 +1,6 @@
 import CmsLink from '~/components/cms/CmsLink';
 import {strapiMedia} from '~/lib/strapi-media';
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './CtaBanner.module.css';
 
 /**
@@ -14,22 +15,23 @@ import styles from './CtaBanner.module.css';
  *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
- *     primaryCta?: object,
- *     secondaryCta?: object,
+ *     primaryCTA?: object,
+ *     secondaryCTA?: object,
  *     backgroundImage?: {url?: string},
  *   },
  *   baseUrl?: string,
  * }} props
  */
 export default function CtaBanner({data, baseUrl}) {
-  const {eyebrow, heading, body, primaryCta, secondaryCta} = data ?? {};
+  const trackingRoot = useTrackingRoot();
+  const {eyebrow, heading, body, primaryCTA, secondaryCTA} = data ?? {};
 
   if (!heading) return null;
 
   const backgroundUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       {backgroundUrl ? (
         <img
           src={backgroundUrl}
@@ -58,13 +60,21 @@ export default function CtaBanner({data, baseUrl}) {
           </p>
         ) : null}
 
-        {(primaryCta?.linkText || secondaryCta?.linkText) && (
+        {(primaryCTA?.linkText || secondaryCTA?.linkText) && (
           <div className={styles.actions}>
-            {primaryCta?.linkText ? (
-              <CmsLink link={primaryCta} className="btn btn--primary" />
+            {primaryCTA?.linkText ? (
+              <CmsLink
+                link={primaryCTA}
+                className="btn btn--primary"
+                trackRole="primary-cta"
+              />
             ) : null}
-            {secondaryCta?.linkText ? (
-              <CmsLink link={secondaryCta} className="btn btn--secondary" />
+            {secondaryCTA?.linkText ? (
+              <CmsLink
+                link={secondaryCTA}
+                className="btn btn--secondary"
+                trackRole="secondary-cta"
+              />
             ) : null}
           </div>
         )}

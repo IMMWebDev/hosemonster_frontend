@@ -14,6 +14,10 @@
  * `module.featured-product` spotlights one product with an Add to cart, so it
  * needs the variants and stock too, and shares the builder's fragment.
  *
+ * `module.numbered-link-cards` lists links under each card, and a link can be
+ * a product (utilities.list-link's productRef): only its name and URL are
+ * read, so those refs ride along with the cards' and use the card fragment.
+ *
  * A Product Cards module can instead name a COLLECTION: its first N products,
  * in the chosen order, land in the same map under `collectionSourceFor(...)`
  * `.key` as a list.
@@ -22,6 +26,7 @@
 const PRODUCT_CARD_MODULE = 'module.product-cards';
 const BUNDLE_BUILDER_MODULE = 'module.bundle-builder';
 const FEATURED_PRODUCT_MODULE = 'module.featured-product';
+const NUMBERED_LINK_CARDS_MODULE = 'module.numbered-link-cards';
 
 /** Featured products per page. One is the design; this is headroom. */
 const MAX_FEATURED_REFS = 6;
@@ -251,14 +256,22 @@ export function productRefFor(item) {
 export function collectProductRefs(modules) {
   const refs = [];
 
+  const add = (item) => {
+    const ref = productRefFor(item);
+    if (ref && !refs.includes(ref)) refs.push(ref);
+  };
+
   for (const module of modules ?? []) {
+    if (module?.__component === NUMBERED_LINK_CARDS_MODULE) {
+      for (const card of module.cards ?? []) {
+        for (const link of card?.links ?? []) add(link);
+      }
+      continue;
+    }
     if (module?.__component !== PRODUCT_CARD_MODULE) continue;
     // Filled from a collection: its hand-picked items aren't shown.
     if (collectionSourceFor(module)) continue;
-    for (const item of module.items ?? []) {
-      const ref = productRefFor(item);
-      if (ref && !refs.includes(ref)) refs.push(ref);
-    }
+    for (const item of module.items ?? []) add(item);
   }
 
   return refs.slice(0, MAX_REFS);

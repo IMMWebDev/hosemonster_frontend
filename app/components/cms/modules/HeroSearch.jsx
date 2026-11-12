@@ -1,6 +1,7 @@
 import SearchBox from '~/components/search/SearchBox';
 import {SEARCH_PLACEHOLDER} from '~/lib/search';
 import {strapiMedia} from '~/lib/strapi-media';
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './HeroSearch.module.css';
 
 /**
@@ -31,6 +32,7 @@ import styles from './HeroSearch.module.css';
  * }} props
  */
 export default function HeroSearch({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
   if (!data?.heading) return null;
 
   const {eyebrow, heading, body, searchPlaceholder, searchButtonLabel} = data;
@@ -46,7 +48,7 @@ export default function HeroSearch({data, baseUrl}) {
   const buttonLabel = searchButtonLabel || 'Go';
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.panel}>
         {bgUrl ? (
           /*

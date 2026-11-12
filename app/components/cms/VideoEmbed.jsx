@@ -1,4 +1,5 @@
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
+import {useTrackId} from '~/lib/tracking';
 import {youTubeEmbedUrl, youTubeThumbnail} from '~/lib/youtube';
 
 /**
@@ -44,11 +45,21 @@ export default function VideoEmbed({
   imageProps,
 }) {
   const [playing, setPlaying] = useState(false);
+  const frameRef = useRef(/** @type {HTMLIFrameElement | null} */ (null));
+  const trackId = useTrackId();
   const poster = posterUrl || youTubeThumbnail(videoId);
+
+  // The Play button unmounts as the player mounts, which would drop focus to
+  // the top of the page. Hand it to the player instead, so a keyboard user
+  // can pause the video that just started.
+  useEffect(() => {
+    if (playing) frameRef.current?.focus();
+  }, [playing]);
 
   if (playing) {
     return (
       <iframe
+        ref={frameRef}
         className={frameClassName}
         src={youTubeEmbedUrl(videoId)}
         title={videoTitle ? `Video: ${videoTitle}` : 'Video'}
@@ -74,6 +85,7 @@ export default function VideoEmbed({
         type="button"
         className={buttonClassName}
         onClick={() => setPlaying(true)}
+        data-track-id={trackId('play-video')}
         aria-label={videoTitle ? `Play video: ${videoTitle}` : 'Play video'}
       >
         <span className={iconClassName} aria-hidden="true">

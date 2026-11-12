@@ -2,15 +2,20 @@ import {getSitemapIndex} from '@shopify/hydrogen';
 
 /**
  * Sitemap index. `getSitemapIndex` builds the Shopify sitemap index
- * (products, collections, Shopify pages, blogs). We then inject the CMS
- * sitemap (`/sitemap-pages.xml`, the Strapi pages) so search engines find
- * everything from a single entry point.
+ * (products, collections, Shopify pages). We then inject the CMS sitemap
+ * (`/sitemap-pages.xml`, the Strapi pages) so search engines find everything
+ * from a single entry point.
+ *
+ * Shopify blogs and articles are left out: the blog lives in Strapi, and the
+ * Hydrogen starter's /blogs routes are gone, so Shopify's auto-created "News"
+ * blog would list a URL that 404s.
  * @param {Route.LoaderArgs}
  */
 export async function loader({request, context: {storefront}}) {
   const response = await getSitemapIndex({
     storefront,
     request,
+    types: ['products', 'pages', 'collections', 'metaObjects'],
   });
 
   const origin = new URL(request.url).origin;

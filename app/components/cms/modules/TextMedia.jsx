@@ -1,15 +1,17 @@
 import CmsLink from '~/components/cms/CmsLink';
 import VideoEmbed from '~/components/cms/VideoEmbed';
+import {useTrackingRoot} from '~/lib/tracking';
 import {youTubeId} from '~/lib/youtube';
-import {strapiMedia} from '~/lib/strapi-media';
+import {strapiMedia, warnMissingAlt} from '~/lib/strapi-media';
 import styles from './TextMedia.module.css';
 
 /**
  * Text & Media module — Figma "Homepage" → Hifi → Main → Section (7:1581).
  *
- * A text lockup (eyebrow, heading, body, bullets, up to two CTAs) beside an
- * image or video. Page-agnostic: `mediaSide` flips the visual order so several
- * of these can alternate down a page without a second module.
+ * A text lockup (eyebrow, heading, body, bullets, up to two CTAs, a footnote)
+ * beside an image or video. Page-agnostic: `mediaSide` flips which side the
+ * media sits on, and with it on the left the eyebrow and heading move up to
+ * span both columns (sprint-04 hifi_smartmonsterfeature.html, "Watch it work").
  *
  * @param {{
  *   data: {
@@ -19,15 +21,17 @@ import styles from './TextMedia.module.css';
  *     bullets?: Array<{id: number, label: string}>,
  *     primaryCTA?: object,
  *     secondaryCTA?: object,
+ *     footnote?: string,
  *     image?: {url?: string, alternativeText?: string},
  *     videoUrl?: string,
  *     mediaSide?: 'left' | 'right',
- *     background?: 'white' | 'grey',
+ *     background?: 'white' | 'grey' | 'navy',
  *   },
  *   baseUrl?: string,
  * }} props
  */
 export default function TextMedia({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
   const {
     eyebrow,
     heading,
@@ -35,7 +39,9 @@ export default function TextMedia({data, baseUrl}) {
     bullets = [],
     primaryCTA,
     secondaryCTA,
+    footnote,
     videoUrl,
+    imageStyle,
     mediaSide = 'right',
     background,
   } = data ?? {};
@@ -71,88 +77,132 @@ export default function TextMedia({data, baseUrl}) {
 
   const videoId = youTubeId(videoUrl);
   const hasMedia = Boolean(videoId || imageUrl);
+  // A video's poster sits behind a labelled Play button; a plain image is
+  // content and needs its own alt text.
+  if (imageUrl && !videoId) warnMissingAlt(data.image, 'Text & Media image');
 
   /*
-   * Only "grey" gets a class. Strapi applies an enum default on CREATE only, so
-   * a Text & Media authored before this field existed returns null rather than
-   * "white" — treating anything that is not "grey" as white covers both.
+   * Only "grey" and "navy" get a class. Strapi applies an enum default on
+   * CREATE only, so a Text & Media authored before this field existed returns
+   * null rather than "white" — treating anything else as white covers both.
    */
-  const backgroundClass = background === 'grey' ? styles.grey : '';
+  const backgroundClass =
+    {grey: styles.grey, navy: styles.navy}[background] ?? '';
+
+  /*
+   * mediaSide="left" is the Smart Monster layout: the eyebrow and heading run
+   * across the top, then the media and the rest of the copy sit side by side
+   * under them. "right" keeps the original lockup, heading inside the copy
+   * column. Either way the DOM follows the visual order, so the tablet stack
+   * and screen readers read it the way it looks: heading, then media first
+   * when it's on the left.
+   */
+  const mediaLeft = mediaSide === 'left';
+
+  const lockup = (
+    <>
+      {eyebrow ? (
+        <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
+          {eyebrow}
+        </p>
+      ) : null}
+      <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
+        {heading}
+      </h2>
+    </>
+  );
+
+  const copy = (
+    <div className={styles.copy}>
+      {mediaLeft ? null : lockup}
+      {body ? (
+        <div className={styles.body} data-reveal style={{'--reveal-i': 2}}>
+          {paragraphs.map((para, i) => (
+            <p key={`para-${i}`}>{para}</p>
+          ))}
+        </div>
+      ) : null}
+
+      {bullets.length > 0 && (
+        <ul className={styles.bullets}>
+          {bullets.map((item, i) => (
+            <li className={styles.bullet} key={item.id ?? i}>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {(primaryCTA?.linkText || secondaryCTA?.linkText) && (
+        <div className={styles.actions}>
+          {primaryCTA?.linkText ? (
+            <CmsLink
+              link={primaryCTA}
+              className="btn btn--primary"
+              trackRole="primary-cta"
+            />
+          ) : null}
+          {secondaryCTA?.linkText ? (
+            <CmsLink
+              link={secondaryCTA}
+              className="btn btn--secondary"
+              trackRole="secondary-cta"
+            />
+          ) : null}
+        </div>
+      )}
+
+      {footnote ? <p className={styles.footnote}>{footnote}</p> : null}
+    </div>
+  );
+
+  /*
+   * "fit" (images only): the whole image at its own proportions in a
+   * bordered white frame — a chart can't lose its axes to a 16:9 crop, and a
+   * parallax drift would slide its labels around. Null is "photo".
+   */
+  const isFit = imageStyle === 'fit' && !videoId;
+
+  const media = hasMedia ? (
+    <div
+      className={isFit ? `${styles.media} ${styles.fit}` : styles.media}
+      data-reveal={mediaLeft ? 'left' : 'right'}
+    >
+      {videoId ? (
+        <VideoEmbed
+          videoId={videoId}
+          posterUrl={imageUrl}
+          posterAlt={imageAlt}
+          videoTitle={heading}
+          className={styles.videoWrap}
+          imageClassName={styles.mediaImage}
+          buttonClassName={styles.playButton}
+          iconClassName={styles.playIcon}
+          frameClassName={styles.videoFrame}
+          imageProps={{'data-parallax': 'slow'}}
+        />
+      ) : (
+        <img
+          src={imageUrl}
+          alt={imageAlt}
+          className={styles.mediaImage}
+          data-parallax={isFit ? undefined : 'slow'}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+    </div>
+  ) : null;
 
   return (
-    <section className={`${styles.section} ${backgroundClass}`.trim()}>
-      <div
-        className={`${styles.inner} ${mediaSide === 'left' ? styles.mediaLeft : ''}`}
-      >
-        <div className={styles.copy}>
-          {eyebrow ? (
-            <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
-              {eyebrow}
-            </p>
-          ) : null}
-          <h2 className={styles.heading} data-reveal style={{'--reveal-i': 1}}>
-            {heading}
-          </h2>
-          {body ? (
-            <div className={styles.body} data-reveal style={{'--reveal-i': 2}}>
-              {paragraphs.map((para, i) => (
-                <p key={`para-${i}`}>{para}</p>
-              ))}
-            </div>
-          ) : null}
-
-          {bullets.length > 0 && (
-            <ul className={styles.bullets}>
-              {bullets.map((item, i) => (
-                <li className={styles.bullet} key={item.id ?? i}>
-                  {item.label}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {(primaryCTA?.linkText || secondaryCTA?.linkText) && (
-            <div className={styles.actions}>
-              {primaryCTA?.linkText ? (
-                <CmsLink link={primaryCTA} className="btn btn--primary" />
-              ) : null}
-              {secondaryCTA?.linkText ? (
-                <CmsLink link={secondaryCTA} className="btn btn--secondary" />
-              ) : null}
-            </div>
-          )}
-        </div>
-
-        {hasMedia ? (
-          <div
-            className={styles.media}
-            data-reveal={mediaSide === 'left' ? 'left' : 'right'}
-          >
-            {videoId ? (
-              <VideoEmbed
-                videoId={videoId}
-                posterUrl={imageUrl}
-                posterAlt={imageAlt}
-                videoTitle={heading}
-                className={styles.videoWrap}
-                imageClassName={styles.mediaImage}
-                buttonClassName={styles.playButton}
-                iconClassName={styles.playIcon}
-                frameClassName={styles.videoFrame}
-                imageProps={{'data-parallax': 'slow'}}
-              />
-            ) : (
-              <img
-                src={imageUrl}
-                alt={imageAlt}
-                className={styles.mediaImage}
-                data-parallax="slow"
-                loading="lazy"
-                decoding="async"
-              />
-            )}
-          </div>
-        ) : null}
+    <section
+      {...trackingRoot}
+      className={`${styles.section} ${backgroundClass}`.trim()}
+    >
+      {mediaLeft ? <div className={styles.header}>{lockup}</div> : null}
+      <div className={styles.inner}>
+        {mediaLeft ? media : copy}
+        {mediaLeft ? copy : media}
       </div>
     </section>
   );

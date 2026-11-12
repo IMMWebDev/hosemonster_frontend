@@ -22,6 +22,7 @@ import {
   rowFor,
   rowLabel,
 } from '~/lib/bundle-builder';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './BundleBuilder.module.css';
 
 /**
@@ -57,6 +58,8 @@ import styles from './BundleBuilder.module.css';
  * }} props
  */
 export default function BundleBuilder({data, products = {}}) {
+  const trackingRoot = useTrackingRoot();
+  const trackId = useTrackId();
   const builder = data?.builder;
   const model = useMemo(() => buildModel(builder), [builder]);
   const [searchParams] = useSearchParams();
@@ -164,7 +167,7 @@ export default function BundleBuilder({data, products = {}}) {
   const override = (entryKey, variantId) => act({type: 'override', entryKey, variantId});
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
         {data.heading ? (
           <div className={styles.intro}>
@@ -192,6 +195,7 @@ export default function BundleBuilder({data, products = {}}) {
                     aria-current={i === step ? 'step' : undefined}
                     disabled={!reachable}
                     onClick={() => goTo(i)}
+                    data-track-id={trackId(i === stepCount ? 'step-review' : `step-${i + 1}`)}
                   >
                     <span className={styles.progressNumber} aria-hidden="true">
                       {done && i !== step ? <CheckIcon /> : i + 1}
@@ -257,6 +261,7 @@ export default function BundleBuilder({data, products = {}}) {
                   type="button"
                   className={`btn btn--tertiary ${styles.navBack}`}
                   onClick={() => goTo(step - 1)}
+                  data-track-id={trackId('prev-step')}
                 >
                   Back
                 </button>
@@ -278,6 +283,7 @@ export default function BundleBuilder({data, products = {}}) {
                   className={`btn btn--primary ${styles.navNext}`}
                   disabled={Boolean(blocker) || !stepComplete(step)}
                   onClick={() => goTo(step + 1)}
+                  data-track-id={trackId('next-step')}
                 >
                   {step === stepCount - 1 ? (
                     'Review bundle'
@@ -327,6 +333,7 @@ export default function BundleBuilder({data, products = {}}) {
               className="btn btn--primary"
               onClick={() => goTo(stepCount)}
               disabled={furthest < stepCount && !bundle.complete}
+              data-track-id={trackId('mobile-review')}
             >
               Review
             </button>
@@ -452,6 +459,7 @@ function choicesLeft(bundle) {
  */
 function Question({q, qIndex, model, state, products, act}) {
   const fieldsetRef = useRef(null);
+  const trackId = useTrackId();
   if (q.questionType === 'pumpRating') {
     return <PumpRating q={q} model={model} state={state} act={act} />;
   }
@@ -489,7 +497,7 @@ function Question({q, qIndex, model, state, products, act}) {
         ) : null}
       </legend>
 
-      <Info text={q.infoBubble} />
+      <Info text={q.infoBubble} trackRole={`details-toggle-${keyRole(q.key)}`} />
 
       <div
         className={
@@ -518,6 +526,7 @@ function Question({q, qIndex, model, state, products, act}) {
               selected={selected}
               availability={availability[c]}
               onChange={onChange}
+              trackRole={`choice-${keyRole(q.key)}-${c + 1}`}
             />
           ) : (
             <ChoiceCard
@@ -530,6 +539,7 @@ function Question({q, qIndex, model, state, products, act}) {
               res={preview?.res ?? null}
               changes={selected ? [] : (preview?.changes ?? [])}
               onChange={onChange}
+              trackRole={`choice-${keyRole(q.key)}-${c + 1}`}
             />
           );
         })}
@@ -554,6 +564,7 @@ function Question({q, qIndex, model, state, products, act}) {
               onChange={(variantId) =>
                 act({type: 'override', entryKey: item.entryKey, variantId})
               }
+              trackRole={`option-${keyRole(item.entryKey)}`}
             />
           ))}
         </div>
@@ -569,6 +580,7 @@ function Question({q, qIndex, model, state, products, act}) {
             // question rather than dropping it to the top of the page.
             fieldsetRef.current?.focus();
           }}
+          data-track-id={trackId(`clear-${keyRole(q.key)}`)}
         >
           Clear selection
         </button>
@@ -576,7 +588,11 @@ function Question({q, qIndex, model, state, products, act}) {
 
       {q.helpLink ? (
         <p className={styles.helpLink}>
-          <CmsLink link={q.helpLink} className={styles.link} />
+          <CmsLink
+            link={q.helpLink}
+            className={styles.link}
+            trackRole={`help-${keyRole(q.key)}`}
+          />
         </p>
       ) : null}
     </fieldset>
@@ -588,6 +604,7 @@ function Question({q, qIndex, model, state, products, act}) {
  */
 function PumpRating({q, model, state, act}) {
   const id = useId();
+  const trackId = useTrackId();
   const row = rowFor(model, state.gpm);
   const max = model.rows[model.rows.length - 1];
   const overLabel =
@@ -600,11 +617,12 @@ function PumpRating({q, model, state, act}) {
         <span className={styles.questionTitle}>{q.title}</span>
         {q.badge ? <span className={styles.badge}>{q.badge}</span> : null}
       </label>
-      <Info text={q.infoBubble} />
+      <Info text={q.infoBubble} trackRole={`details-toggle-${keyRole(q.key)}`} />
 
       <select
         id={id}
         className={styles.select}
+        data-track-id={trackId('pump-rating')}
         value={state.gpm ?? ''}
         onChange={(e) => {
           const v = e.target.value;
@@ -649,7 +667,11 @@ function PumpRating({q, model, state, act}) {
         <div className={styles.overMax}>
           {model.overMaxMessage ? <p>{model.overMaxMessage}</p> : null}
           {model.overMaxLink ? (
-            <CmsLink link={model.overMaxLink} className="btn btn--secondary" />
+            <CmsLink
+              link={model.overMaxLink}
+              className="btn btn--secondary"
+              trackRole="over-max-cta"
+            />
           ) : null}
         </div>
       ) : null}
@@ -663,13 +685,14 @@ function PumpRating({q, model, state, act}) {
  * is keyboard- and screen-reader-friendly out of the box, and on a phone opens
  * in place rather than as a hover tooltip nobody can reach.
  *
- * @param {{text?: string}} props
+ * @param {{text?: string, trackRole?: string}} props
  */
-function Info({text}) {
+function Info({text, trackRole}) {
+  const trackId = useTrackId();
   if (!text) return null;
   return (
     <details className={styles.info}>
-      <summary className={styles.infoToggle}>
+      <summary className={styles.infoToggle} data-track-id={trackId(trackRole)}>
         <InfoIcon />
         <span>Why this matters</span>
       </summary>
@@ -683,9 +706,11 @@ function Info({text}) {
  *   name: string, multiple: boolean, choice: object, selected: boolean,
  *   availability: {available: boolean, reason: string},
  *   res: ReturnType<typeof resolveChoice> | null, onChange: () => void,
+ *   trackRole?: string,
  * }} props
  */
-function ChoiceCard({name, multiple, choice, selected, availability, res, changes = [], onChange}) {
+function ChoiceCard({name, multiple, choice, selected, availability, res, changes = [], onChange, trackRole}) {
+  const trackId = useTrackId();
   const disabled = !availability.available;
   const first = res?.items?.[0];
   const image = first?.variant?.image ?? first?.product?.featuredImage;
@@ -712,6 +737,7 @@ function ChoiceCard({name, multiple, choice, selected, availability, res, change
         checked={selected}
         disabled={disabled}
         onChange={onChange}
+        data-track-id={trackId(trackRole)}
       />
       <span className={styles.cardMedia} aria-hidden="true">
         {image?.url ? (
@@ -768,9 +794,10 @@ function ChoiceCard({name, multiple, choice, selected, availability, res, change
 }
 
 /**
- * @param {{name: string, choice: object, selected: boolean, availability: object, onChange: () => void}} props
+ * @param {{name: string, choice: object, selected: boolean, availability: object, onChange: () => void, trackRole?: string}} props
  */
-function VariantChip({name, choice, selected, availability, onChange}) {
+function VariantChip({name, choice, selected, availability, onChange, trackRole}) {
+  const trackId = useTrackId();
   const disabled = !availability.available;
   return (
     <label
@@ -785,6 +812,7 @@ function VariantChip({name, choice, selected, availability, onChange}) {
         checked={selected}
         disabled={disabled}
         onChange={onChange}
+        data-track-id={trackId(trackRole)}
       />
       <span>{choice.label}</span>
     </label>
@@ -821,6 +849,7 @@ function Summary({
   onReview,
   onRestart,
 }) {
+  const trackId = useTrackId();
   const {row, items, subtotal, currencyCode, unavailable, missing, toChoose, complete} =
     bundle;
   const addable = items.filter((i) => !i.pendingOption && i.variant.availableForSale);
@@ -834,6 +863,10 @@ function Summary({
     ...missing.map((q) => q.title),
     ...toChoose.map((i) => `${i.pendingOption} for ${i.displayTitle ?? i.product.title}`),
   ];
+
+  // One level under the summary's own title: h5 under the compact view's h4,
+  // h4 on the review step, where that h4 gives way to the step's h3.
+  const GroupTitle = full ? 'h4' : 'h5';
 
   // Entry keys start with the step index ("2.0:1:0").
   /** @type {Array<{step: number, title: string, items: object[]}>} */
@@ -881,7 +914,12 @@ function Summary({
             <h4 className={styles.summaryTitle}>Your bundle</h4>
           )}
           {onRestart ? (
-            <button type="button" className={styles.restart} onClick={onRestart}>
+            <button
+              type="button"
+              className={styles.restart}
+              onClick={onRestart}
+              data-track-id={trackId('reset')}
+            >
               <RestartIcon />
               Start over
             </button>
@@ -895,12 +933,15 @@ function Summary({
           {groups.map((group) => (
             <div key={group.step} className={styles.group}>
               <div className={styles.groupHead}>
-                <h5 className={styles.groupTitle}>{group.title}</h5>
+                <GroupTitle className={styles.groupTitle}>
+                  {group.title}
+                </GroupTitle>
                 {group.step !== currentStep ? (
                   <button
                     type="button"
                     className={styles.editLink}
                     onClick={() => onEdit(group.step)}
+                    data-track-id={trackId(`edit-step-${group.step + 1}`)}
                   >
                     Edit<span className="sr-only"> {group.title}</span>
                   </button>
@@ -975,6 +1016,7 @@ function Summary({
                 className={`btn btn--primary ${styles.addButton}`}
                 disabled={!complete || lines.length === 0 || fetcher.state !== 'idle'}
                 onClick={onAdd}
+                data-track-id={trackId('add-to-cart')}
               >
                 {fetcher.state !== 'idle' ? 'Adding…' : 'Add bundle to cart'}
               </button>
@@ -990,7 +1032,12 @@ function Summary({
       </CartForm>
 
       {!full && complete && onReview ? (
-        <button type="button" className={styles.textButton} onClick={onReview}>
+        <button
+          type="button"
+          className={styles.textButton}
+          onClick={onReview}
+          data-track-id={trackId('review')}
+        >
           Review the full bundle
         </button>
       ) : null}
@@ -1002,9 +1049,9 @@ function Summary({
  * One product option to choose — a gauge's PSI range, whether the tach comes
  * calibrated. Starts on "Choose …": nothing is picked for the visitor.
  *
- * @param {{item: object, onChange: (variantId: string) => void}} props
+ * @param {{item: object, onChange: (variantId: string) => void, trackRole?: string}} props
  */
-function OptionPicker({item, onChange}) {
+function OptionPicker({item, onChange, trackRole}) {
   const id = useId();
   const names = item.freeOptions.map(cleanName).join(', ');
   return (
@@ -1017,15 +1064,17 @@ function OptionPicker({item, onChange}) {
         item={item}
         className={styles.select}
         onChange={onChange}
+        trackRole={trackRole}
       />
     </div>
   );
 }
 
 /**
- * @param {{id: string, item: object, className: string, onChange: (variantId: string) => void}} props
+ * @param {{id: string, item: object, className: string, onChange: (variantId: string) => void, trackRole?: string}} props
  */
-function VariantSelect({id, item, className, onChange}) {
+function VariantSelect({id, item, className, onChange, trackRole}) {
+  const trackId = useTrackId();
   const names = item.freeOptions.map((n) => cleanName(n).toLowerCase());
   const label = (v) =>
     v.selectedOptions
@@ -1036,6 +1085,7 @@ function VariantSelect({id, item, className, onChange}) {
     <select
       id={id}
       className={className}
+      data-track-id={trackId(trackRole)}
       value={item.choosable ? '' : item.variant.id}
       onChange={(e) => onChange(e.target.value)}
     >
@@ -1088,6 +1138,7 @@ function SummaryItem({item, full, onOverride}) {
               item={item}
               className={styles.itemSelect}
               onChange={(variantId) => onOverride(item.entryKey, variantId)}
+              trackRole={`review-option-${keyRole(item.entryKey)}`}
             />
           </span>
         ) : null}
@@ -1120,6 +1171,20 @@ function SummaryItem({item, full, onOverride}) {
 /* -------------------------------------------------------------------------- */
 /* Small pieces                                                                 */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * A model key as the 1-based part of a tracking role: question "1.0" → "2-1"
+ * (step 2, question 1); item "1.0:2:0" → "2-1-3-1" (…, choice 3, product 1).
+ * Positions, not labels, so editors renaming a choice don't break a tag.
+ *
+ * @param {string} key
+ */
+function keyRole(key) {
+  return String(key)
+    .split(/[.:]/)
+    .map((n) => Number(n) + 1)
+    .join('-');
+}
 
 /**
  * One unit's price. For an item not settled yet (it waits on the thread), the

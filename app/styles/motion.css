@@ -84,6 +84,16 @@
 html.js [data-reveal] {
   opacity: 0;
   transform: translate3d(0, var(--reveal-distance), 0);
+}
+
+/*
+ * The entrance's own timing — only until it has played. use-reveal.js sets
+ * data-reveal-done once the entrance has finished, and from then on the
+ * element's own `transition` applies again. Without the hand-back, a card that
+ * reveals itself could never animate its hover (border, shadow, lift): this
+ * rule outranks any module's and lists only opacity, transform and filter.
+ */
+html.js [data-reveal]:not([data-reveal-done]) {
   transition:
     opacity var(--reveal-fade-duration) var(--reveal-fade-ease),
     transform var(--spring-duration) var(--spring),
@@ -113,6 +123,9 @@ html.js [data-reveal='fade'] {
 /* Firm spring: a scale that overshoots looks like a bug, not momentum. */
 html.js [data-reveal='zoom'] {
   transform: scale3d(1.05, 1.05, 1);
+}
+
+html.js [data-reveal='zoom']:not([data-reveal-done]) {
   transition-duration: var(--reveal-fade-duration), var(--spring-firm-duration),
     var(--spring-firm-duration);
   transition-timing-function: var(--reveal-fade-ease), var(--spring-firm),

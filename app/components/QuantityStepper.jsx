@@ -1,4 +1,5 @@
 import {useId} from 'react';
+import {useTrackId} from '~/lib/tracking';
 import styles from './QuantityStepper.module.css';
 
 /**
@@ -13,6 +14,10 @@ import styles from './QuantityStepper.module.css';
  * Two sizes: the product page's 56px control, and a 44px `compact` one for a
  * cart line, where it sits beside the price.
  *
+ * `trackRole` prefixes the buttons' tracking roles — {trackRole}-decrease and
+ * {trackRole}-increase — so a cart line can tell its stepper apart
+ * ("line-2-quantity"). See app/lib/tracking.js.
+ *
  * @param {{
  *   value: number | '',
  *   onChange: (value: number | '') => void,
@@ -22,6 +27,7 @@ import styles from './QuantityStepper.module.css';
  *   max?: number,
  *   size?: 'default' | 'compact',
  *   label?: string,
+ *   trackRole?: string,
  * }} props
  */
 export default function QuantityStepper({
@@ -33,8 +39,10 @@ export default function QuantityStepper({
   max = 999,
   size = 'default',
   label = 'Quantity',
+  trackRole = 'quantity',
 }) {
   const id = useId();
+  const trackId = useTrackId();
   const n = clamp(Number(value) || min, min, max);
 
   const settle = (next) => {
@@ -52,6 +60,7 @@ export default function QuantityStepper({
         type="button"
         className={styles.button}
         aria-label={`Decrease ${label.toLowerCase()}`}
+        data-track-id={trackId(`${trackRole}-decrease`)}
         disabled={disabled || n <= min}
         onClick={() => settle(n - 1)}
       >
@@ -85,6 +94,7 @@ export default function QuantityStepper({
         type="button"
         className={styles.button}
         aria-label={`Increase ${label.toLowerCase()}`}
+        data-track-id={trackId(`${trackRole}-increase`)}
         disabled={disabled || n >= max}
         onClick={() => settle(n + 1)}
       >

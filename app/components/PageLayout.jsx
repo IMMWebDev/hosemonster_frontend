@@ -2,6 +2,7 @@ import {useMatches} from 'react-router';
 import {Aside} from '~/components/Aside';
 import CartDrawer from '~/components/cart/CartDrawer';
 import {useReveal} from '~/lib/use-reveal';
+import {useHashScroll} from '~/lib/use-hash-scroll';
 import PageWatermark from '~/components/cms/PageWatermark';
 import {strapiMedia} from '~/lib/strapi-media';
 import {Footer} from '~/components/Footer';
@@ -28,8 +29,23 @@ export function PageLayout({
   const includeNewsletter = useIncludeNewsletter();
   // Drives every module's scroll-reveal. See app/styles/motion.css.
   useReveal();
+  // Lands /page#module-id URLs on that module once the page has settled.
+  useHashScroll();
   return (
     <Aside.Provider>
+      {/*
+        The first thing Tab reaches on every page (WCAG 2.4.1): without it a
+        keyboard user tabs through the utility bar, logo and whole nav before
+        reaching the content. Hidden until focused — app/styles/app.css.
+      */}
+      <a
+        href="#main"
+        className="skip-link"
+        onClick={skipToMain}
+        data-track-id="layout__skip-link"
+      >
+        Skip to main content
+      </a>
       <CartDrawer />
       <QuickSearch />
       <MobileMenu cmsHeader={cmsHeader} strapiBaseUrl={strapiBaseUrl} />
@@ -51,7 +67,11 @@ export function PageLayout({
       <PageWatermark
         imageUrl={strapiMedia(cmsOptions?.watermark?.url, strapiBaseUrl)}
       >
-        <main>{children}</main>
+        {/* tabIndex -1 so the skip link can move focus here; the next Tab
+            then goes to the page's first control. */}
+        <main id="main" tabIndex={-1}>
+          {children}
+        </main>
       </PageWatermark>
       {includeNewsletter && cmsOptions?.newsletter ? (
         <Newsletter
@@ -67,6 +87,24 @@ export function PageLayout({
       />
     </Aside.Provider>
   );
+}
+
+/**
+ * Moves focus to <main> directly instead of letting the browser follow the
+ * #main fragment. That leaves no #main in the address for useHashScroll to aim
+ * at, and doesn't scroll the top of the page under the sticky header. Without
+ * JavaScript the plain fragment link still works.
+ *
+ * @param {import('react').MouseEvent<HTMLAnchorElement>} event
+ */
+function skipToMain(event) {
+  const main = document.getElementById('main');
+  if (!main) return;
+  event.preventDefault();
+  // The usual case — the skip link is the first Tab stop, so the content
+  // already starts on screen — needs no scroll at all.
+  const {top} = main.getBoundingClientRect();
+  main.focus({preventScroll: top >= 0 && top < window.innerHeight});
 }
 
 /**

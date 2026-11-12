@@ -10,6 +10,7 @@ import {sharpImageProps} from '~/lib/image';
 import {useProductPath} from '~/lib/product-urls';
 import {CONTACT_PATH} from '~/lib/search';
 import {splitDescription} from '~/lib/product-description';
+import {TrackingScope, useTrackId} from '~/lib/tracking';
 import styles from './ProductPage.module.css';
 
 /**
@@ -40,23 +41,27 @@ export function ProductPage({product, selectedVariant, productOptions, category,
     [product.descriptionHtml],
   );
 
+  // One scope for the whole page: the controls are all in the child
+  // components below, which read "product" from it.
   return (
-    <div className={styles.page}>
-      <div className={styles.inner}>
-        <Breadcrumbs product={product} category={category} />
-        <div className={styles.top}>
-          <Gallery product={product} selectedVariant={selectedVariant} />
-          <BuyBox
-            product={product}
-            selectedVariant={selectedVariant}
-            productOptions={productOptions}
-            intro={sections.intro}
-          />
+    <TrackingScope id="product">
+      <div className={styles.page} data-track-module="product">
+        <div className={styles.inner}>
+          <Breadcrumbs product={product} category={category} />
+          <div className={styles.top}>
+            <Gallery product={product} selectedVariant={selectedVariant} />
+            <BuyBox
+              product={product}
+              selectedVariant={selectedVariant}
+              productOptions={productOptions}
+              intro={sections.intro}
+            />
+          </div>
         </div>
+        <Details sections={sections} />
+        <Related recommended={recommended} />
       </div>
-      <Details sections={sections} />
-      <Related recommended={recommended} />
-    </div>
+    </TrackingScope>
   );
 }
 
@@ -76,23 +81,28 @@ export function ProductPage({product, selectedVariant, productOptions, category,
  */
 function Breadcrumbs({product, category}) {
   const categoryIsParent = Boolean(category?.linkable);
+  const trackId = useTrackId();
   return (
     <nav className={styles.breadcrumb} aria-label="Breadcrumb">
       <ol className={styles.crumbs}>
         <li>
-          <Link to="/" className={styles.crumbLink}>
+          <Link to="/" className={styles.crumbLink} data-track-id={trackId('breadcrumb-1')}>
             Home
           </Link>
         </li>
         <li data-parent={categoryIsParent ? undefined : ''}>
-          <Link to="/shop" className={styles.crumbLink}>
+          <Link to="/shop" className={styles.crumbLink} data-track-id={trackId('breadcrumb-2')}>
             Shop
           </Link>
         </li>
         {category ? (
           <li data-parent={categoryIsParent ? '' : undefined}>
             {category.linkable ? (
-              <Link to={`/collections/${category.handle}`} className={styles.crumbLink}>
+              <Link
+                to={`/collections/${category.handle}`}
+                className={styles.crumbLink}
+                data-track-id={trackId('breadcrumb-3')}
+              >
                 {category.title}
               </Link>
             ) : (
@@ -149,6 +159,7 @@ function Gallery({product, selectedVariant}) {
   const indexOf = (image) =>
     image ? images.findIndex((i) => i.id === image.id || i.url === image.url) : -1;
   const [active, setActive] = useState(() => Math.max(0, indexOf(variantImage)));
+  const trackId = useTrackId();
 
   useEffect(() => {
     const i = indexOf(variantImage);
@@ -187,6 +198,7 @@ function Gallery({product, selectedVariant}) {
                 className={styles.thumb}
                 aria-current={i === active ? 'true' : undefined}
                 aria-label={`Show image ${i + 1} of ${images.length}`}
+                data-track-id={trackId(`image-${i + 1}`)}
                 onClick={() => setActive(i)}
               >
                 <Image
@@ -234,6 +246,7 @@ function BuyBox({product, selectedVariant, productOptions, intro = ''}) {
   const {open} = useAside();
   const phone = useRouteLoaderData('root')?.cmsFooter?.phone ?? null;
   const [quantity, setQuantity] = useState(1);
+  const trackId = useTrackId();
 
   const available = Boolean(selectedVariant?.availableForSale);
   // Some option of the product can be bought online, if not this one.
@@ -318,7 +331,7 @@ function BuyBox({product, selectedVariant, productOptions, intro = ''}) {
         {available ? (
           <>
             <div className={styles.purchase}>
-              <QuantityStepper value={quantity} onChange={setQuantity} />
+              <QuantityStepper value={quantity} onChange={setQuantity} trackRole="quantity" />
               <CartForm
                 route="/cart"
                 // Keyed so the cart can find this add's errors (CartNotices).
@@ -339,6 +352,7 @@ function BuyBox({product, selectedVariant, productOptions, intro = ''}) {
                     type="submit"
                     className={`btn btn--primary ${styles.addButton}`}
                     disabled={fetcher.state !== 'idle'}
+                    data-track-id={trackId('add-to-cart')}
                     onClick={() => open('cart')}
                   >
                     {fetcher.state !== 'idle' ? 'Adding…' : 'Add to cart'}
@@ -348,7 +362,7 @@ function BuyBox({product, selectedVariant, productOptions, intro = ''}) {
             </div>
             <p className={styles.help}>
               Questions about this product?{' '}
-              <Link to={CONTACT_PATH} className={styles.link}>
+              <Link to={CONTACT_PATH} className={styles.link} data-track-id={trackId('contact')}>
                 Talk to our team
               </Link>
               {phone ? (
@@ -370,12 +384,21 @@ function BuyBox({product, selectedVariant, productOptions, intro = ''}) {
                 ? `Choose another ${driver === 'options' ? 'option' : driver}, or contact our team to order this one.`
                 : 'Contact our team to order it — we’ll confirm pricing and availability.'}
             </p>
-            <Link to={CONTACT_PATH} className={`btn btn--secondary ${styles.orderButton}`}>
+            <Link
+              to={CONTACT_PATH}
+              className={`btn btn--secondary ${styles.orderButton}`}
+              data-track-id={trackId('contact-to-order')}
+            >
               Contact us to order
             </Link>
             {phone ? (
               <p className={styles.orderPhone}>
-                Or call <PhoneLink phone={phone} className={styles.link} />
+                Or call{' '}
+                <PhoneLink
+                  phone={phone}
+                  className={styles.link}
+                  trackRole="order-phone"
+                />
               </p>
             ) : null}
           </div>
@@ -399,6 +422,7 @@ function BuyBox({product, selectedVariant, productOptions, intro = ''}) {
  */
 function OptionChips({option, markUnavailable, onSelect}) {
   const pathFor = useProductPath();
+  const trackId = useTrackId();
   const selected = option.optionValues.find((v) => v.selected);
   const isOut = (v) => markUnavailable && v.exists && !v.available;
   const anyOut = option.optionValues.some(isOut);
@@ -420,6 +444,7 @@ function OptionChips({option, markUnavailable, onSelect}) {
               replace
               className={styles.chip}
               aria-current={value.selected ? 'true' : undefined}
+              data-track-id={trackId(`variant-${optionLabel(option.name)}-${value.name}`)}
             >
               {value.name}
             </Link>
@@ -432,6 +457,7 @@ function OptionChips({option, markUnavailable, onSelect}) {
               data-unavailable={isOut(value) ? '' : undefined}
               disabled={!value.exists}
               aria-label={isOut(value) ? `${value.name}, not available online` : undefined}
+              data-track-id={trackId(`variant-${optionLabel(option.name)}-${value.name}`)}
               onClick={() => {
                 if (!value.selected) onSelect(value.variantUriQuery);
               }}
@@ -470,6 +496,7 @@ function OptionChips({option, markUnavailable, onSelect}) {
 function Details({sections}) {
   const rows = useMemo(() => withIds(sections.sections), [sections.sections]);
   const [open, setOpen] = useState(() => new Set());
+  const trackId = useTrackId();
   const toggle = (id) =>
     setOpen((current) => {
       const next = new Set(current);
@@ -512,6 +539,7 @@ function Details({sections}) {
                     className={styles.blockToggle}
                     aria-expanded={isOpen}
                     aria-controls={`${row.id}-body`}
+                    data-track-id={trackId(`details-${row.id}`)}
                     onClick={() => toggle(row.id)}
                   >
                     <span>{row.title}</span>

@@ -1,0 +1,304 @@
+/*
+ * Text & Table module — sprint-05 hifi_useshub.html, "What NFPA 25 requires".
+ *
+ * Heading with a link opposite, intro paragraphs side by side, an always-open
+ * table with a navy header row, then a note set off by an orange edge.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed always, the same rule the other tinted bands use. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+/* ---- head: heading left, link opposite ---- */
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-8); /* 12 / 32 in the design */
+}
+
+.headCopy {
+  min-width: 0;
+}
+
+/* Styleguide Eyebrow. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 9px; /* the house eyebrow-to-heading gap */
+}
+
+/* Styleguide H2. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/*
+ * The house "view all" link (Product Cards): Styleguide "UI label", navy. The
+ * comp draws it in #c62f14 at 14.5px, but that's the orange buttons' hover
+ * fill — tokens.css: "Never a text colour" — and §09 needs 19px / 700 before
+ * orange text is legal anyway.
+ */
+.headerLink {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Both sprint-05 comps end the link with an orange chevron — a mark, not
+ * text, so the orange is allowed at this size. The icon points down, so it's
+ * turned to point right; it nudges forward on hover. */
+.headerLinkIcon {
+  flex: none;
+  color: var(--color-action);
+  transform: rotate(-90deg);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.headerLink:hover .headerLinkIcon {
+  transform: translateX(3px) rotate(-90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headerLinkIcon {
+    transition: none;
+  }
+}
+
+/* ---- intro paragraphs ---- */
+
+/* Side by side while each can keep ~360px; otherwise stacked. */
+.body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+  gap: var(--space-4) var(--space-12); /* 48px between columns */
+  margin-top: var(--space-6); /* 24px in the design */
+}
+
+/* One column of paragraphs: Left Body or Right Body. */
+.bodyColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4); /* 16px in the design */
+}
+
+/* Styleguide "Body large". */
+.body p {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  text-wrap: pretty;
+  margin: 0;
+}
+
+/* ---- table ---- */
+
+.tableWrap {
+  margin-top: var(--space-8); /* 32px in the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  /* Clips the navy header to the rounded corners; scrolls sideways rather
+   * than squashing if a long header ever needs it. */
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-family: var(--font-body);
+}
+
+.table th,
+.table td {
+  padding: var(--space-4) var(--space-6); /* 16 / 24 in the design */
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+  vertical-align: top;
+}
+
+/*
+ * Header row — navy band, white labels. Styleguide "Detail" size, bold caps,
+ * untracked: the comp's 13px / 0.06em is under the guide's smallest size, and
+ * §03 keeps letter spacing for the eyebrow.
+ */
+.table thead th,
+.table thead td {
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+}
+
+/* Row names — bold navy. */
+.table tbody th {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.table td {
+  color: var(--color-text-body);
+}
+
+.table tbody tr + tr {
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+/* Every second row tinted, as drawn. */
+.table tbody tr:nth-child(even) {
+  background: var(--color-surface-alt);
+}
+
+/* ---- note ---- */
+
+.note {
+  margin-top: var(--space-6); /* 24px in the design */
+  padding: var(--space-6);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-left: 4px solid var(--color-action);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* Bold navy lead line. */
+.noteHeading {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Styleguide "Detail" — muted small print. */
+.noteBody {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.noteHeading + .noteBody {
+  margin-top: var(--space-1);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * The hifi is desktop-only.
+ */
+
+/* tablet — the cells tighten so three columns keep their room. */
+@media (max-width: 1099px) {
+  .table th,
+  .table td {
+    padding: var(--space-4);
+  }
+}
+
+/*
+ * mdTablet — one card per row: the row name as its title, each value under a
+ * small caption naming its column (data-label). The header row is kept for
+ * screen readers but taken off screen; the ARIA roles in TextTable.jsx keep
+ * the table semantics that `display: block` would otherwise cost.
+ */
+@media (max-width: 699px) {
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table tbody tr {
+    padding: var(--space-5);
+  }
+
+  .table tbody th,
+  .table td {
+    padding: 0;
+  }
+
+  .table td {
+    margin-top: var(--space-3);
+  }
+
+  /* The column's name above its value. Empty alt text (after the slash) so a
+   * screen reader, which already gets the header through the roles, doesn't
+   * hear it twice; the first declaration is the fallback where that syntax
+   * isn't supported. */
+  .table td::before {
+    content: attr(data-label);
+    content: attr(data-label) / '';
+    display: block;
+    font-size: var(--text-detail);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-body-sm);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+}
+
+/* mobile — slimmer padding. */
+@media (max-width: 499px) {
+  .table tbody tr,
+  .note {
+    padding: var(--space-5) var(--space-4);
+  }
+}

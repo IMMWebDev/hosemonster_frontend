@@ -1,5 +1,6 @@
 import CmsLink from '~/components/cms/CmsLink';
 import {strapiMedia} from '~/lib/strapi-media';
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './Hero.module.css';
 
 /**
@@ -27,6 +28,7 @@ import styles from './Hero.module.css';
  * }} props
  */
 export default function Hero({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
   if (!data?.heading) return null;
 
   const {
@@ -41,7 +43,7 @@ export default function Hero({data, baseUrl}) {
   const bgUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
 
   return (
-    <section className={styles.hero}>
+    <section {...trackingRoot} className={styles.hero}>
       {bgUrl ? (
         <div className={styles.background} data-parallax>
           <img
@@ -99,10 +101,18 @@ export default function Hero({data, baseUrl}) {
           {(primaryCTA?.linkText || secondaryCTA?.linkText) && (
             <div className={styles.actions}>
               {primaryCTA?.linkText ? (
-                <CmsLink link={primaryCTA} className="btn btn--primary" />
+                <CmsLink
+                  link={primaryCTA}
+                  className="btn btn--primary"
+                  trackRole="primary-cta"
+                />
               ) : null}
               {secondaryCTA?.linkText ? (
-                <CmsLink link={secondaryCTA} className="btn btn--secondary" />
+                <CmsLink
+                  link={secondaryCTA}
+                  className="btn btn--secondary"
+                  trackRole="secondary-cta"
+                />
               ) : null}
             </div>
           )}

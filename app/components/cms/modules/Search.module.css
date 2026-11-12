@@ -103,8 +103,8 @@
   max-width: 720px; /* Hero Search's copy column */
 }
 
-/* Orange on navy, as every section eyebrow in the comps — see the note on
- * Hero Search's .eyebrow before changing it. */
+/* The lighter orange made for navy grounds, as Hero Search: the brand orange
+ * is 2.95:1 on this navy, this one 4.6:1. */
 .eyebrow {
   font-family: var(--font-body);
   font-size: var(--text-eyebrow);
@@ -112,7 +112,7 @@
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-text-accent);
+  color: var(--color-text-accent-on-dark);
   margin: 0;
 }
 
@@ -312,8 +312,9 @@
 }
 
 /* UI label, as a filter heading: it names a group of chips, it does not
- * compete with the heading. Every property stated — .groupTitle is an <h3>,
- * and the bare-h3 eyebrow styles (tracked, uppercase, orange) would leak in. */
+ * compete with the heading. Every property stated — .groupTitle is an <h2> or
+ * an <h3>, and the bare-heading styles (display face, uppercase, orange
+ * eyebrow) would leak in. */
 .relatedLabel,
 .groupTitle {
   font-family: var(--font-body);
