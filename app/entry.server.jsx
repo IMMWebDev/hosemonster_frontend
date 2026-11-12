@@ -61,6 +61,13 @@ export default async function handleRequest(
       'https://www.bugherd.com',
       'wss://*.bugherd.com',
       /*
+       * BugHerd's sidebar updates live over Pusher: a websocket to
+       * ws-{cluster}.pusher.com, falling back to sockjs.pusher.com polling.
+       * Blocked, it retries forever and fills the console with CSP errors.
+       */
+      'wss://*.pusher.com',
+      'https://*.pusher.com',
+      /*
        * BugHerd's sidebar bundles Bugsnag for its OWN crash reporting. Blocking
        * it does not break BugHerd, but it logs two CSP errors on every page
        * load — noise that would bury real errors during exactly the QA sessions
