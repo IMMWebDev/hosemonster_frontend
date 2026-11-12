@@ -1,4 +1,7 @@
 import {useRef} from 'react';
+import {JsonLd} from '~/components/JsonLd';
+import {faqJsonLd} from '~/lib/seo';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './Faq.module.css';
 
 /**
@@ -23,6 +26,7 @@ import styles from './Faq.module.css';
  * }} props
  */
 export default function Faq({data}) {
+  const trackingRoot = useTrackingRoot();
   const {eyebrow, heading, background, items = []} = data ?? {};
 
   if (!heading) return null;
@@ -35,7 +39,12 @@ export default function Faq({data}) {
   const backgroundClass = background === 'grey' ? styles.grey : '';
 
   return (
-    <section className={`${styles.section} ${backgroundClass}`.trim()}>
+    <section
+      {...trackingRoot}
+      className={`${styles.section} ${backgroundClass}`.trim()}
+    >
+      {/* The questions and answers as FAQPage structured data. */}
+      <JsonLd data={faqJsonLd(items)} />
       <div className={styles.inner}>
         <div className={styles.lockup}>
           {eyebrow ? (
@@ -70,6 +79,7 @@ const EASING = 'ease-in-out';
  */
 function Item({item, open = false, index = 0}) {
   const {question, answer} = item;
+  const trackId = useTrackId();
 
   const detailsRef = useRef(null);
   const panelRef = useRef(null);
@@ -147,7 +157,11 @@ function Item({item, open = false, index = 0}) {
     >
       {/* Enter and Space on a <summary> both arrive as a click, so this one
           handler covers pointer and keyboard. */}
-      <summary className={styles.summary} onClick={handleToggleClick}>
+      <summary
+        className={styles.summary}
+        onClick={handleToggleClick}
+        data-track-id={trackId(`question-${index + 1}`)}
+      >
         <span className={styles.question}>{question}</span>
         {/* Decorative: <details> already announces its own expanded state, so
             an icon label here would say it a second time. */}

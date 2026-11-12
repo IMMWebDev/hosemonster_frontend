@@ -178,11 +178,9 @@ a.contactLine:hover {
 
 /* Colour and underline both come from the global a:hover. */
 .columnLink:hover {
-  /* ⚠ Open item A: §09 forbids orange text below 19px/700 and these links
-   * are 18px — but the spec supplies no replacement hover colour. Left orange
-   * pending a decision. The footer ground is white, so this is legible;
-   * the same treatment on a navy ground would not be. */
-  color: var(--color-action);
+  /* The darker link orange: these links are below 19px bold, where the brand
+   * orange is 3.99:1 on white and fails; #c62f14 is 5.5:1. */
+  color: var(--color-text-link);
 }
 
 /*

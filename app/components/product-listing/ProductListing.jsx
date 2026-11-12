@@ -1,4 +1,4 @@
-import {useId, useState} from 'react';
+import {forwardRef, useCallback, useId, useRef, useState} from 'react';
 import {Link} from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
 import {
@@ -11,6 +11,8 @@ import {
 } from '~/lib/collection-filters';
 import {useProductPath} from '~/lib/product-urls';
 import {sharpImageProps} from '~/lib/image';
+import {useTrackId} from '~/lib/tracking';
+import {useIsomorphicLayoutEffect} from '~/lib/use-isomorphic-layout-effect';
 import styles from './ProductListing.module.css';
 
 /**
@@ -29,6 +31,39 @@ import styles from './ProductListing.module.css';
  */
 
 /**
+ * Moves focus once a filter change has rendered.
+ *
+ * Removing a chip or pressing a Clear button navigates, and by the time the
+ * new results render the pressed control has often gone (a chip, the
+ * empty-state button) or been disabled (the rail's Clear all) — which drops
+ * keyboard and screen-reader users to <body>. Call the returned function in
+ * the click handler with a getter for where focus should land; it runs once
+ * the URL has changed and the new controls exist.
+ *
+ * @param {URLSearchParams} searchParams
+ * @returns {(getTarget: () => HTMLElement | null | undefined) => void}
+ */
+export function useFocusAfterChange(searchParams) {
+  const pendingRef = useRef(
+    /** @type {null | (() => HTMLElement | null | undefined)} */ (null),
+  );
+  const key = searchParams.toString();
+
+  // A layout effect, so focus moves in the same commit that removed the
+  // control rather than a frame later.
+  useIsomorphicLayoutEffect(() => {
+    const getTarget = pendingRef.current;
+    if (!getTarget) return;
+    pendingRef.current = null;
+    getTarget()?.focus();
+  }, [key]);
+
+  return useCallback((getTarget) => {
+    pendingRef.current = getTarget;
+  }, []);
+}
+
+/**
  * A real <select>, not a custom dropdown. It is a single-choice control that
  * reloads the page — the native one is keyboard accessible, works before
  * hydration, and on mobile opens the platform picker.
@@ -41,6 +76,7 @@ import styles from './ProductListing.module.css';
  */
 export function SortSelect({options, value, onChange}) {
   const id = useId();
+  const trackId = useTrackId();
 
   return (
     <div className={styles.sort}>
@@ -52,6 +88,7 @@ export function SortSelect({options, value, onChange}) {
         className={styles.sortSelect}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        data-track-id={trackId('sort')}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -98,20 +135,35 @@ export function ListingLayout({rail, children}) {
  * }} props
  */
 export function FilterRail({facets, searchParams, onChange}) {
+  const trackId = useTrackId();
   const hasActiveFilters = searchParams.getAll(FILTER_PARAM).length > 0;
+  const railRef = useRef(/** @type {HTMLDivElement | null} */ (null));
+  const focusAfterChange = useFocusAfterChange(searchParams);
 
   return (
-    <div className={styles.rail} role="region" aria-label="Filters">
+    <div
+      ref={railRef}
+      className={styles.rail}
+      role="region"
+      aria-label="Filters"
+    >
       <div className={styles.railHead}>
         <h3 className={styles.railTitle}>Filters</h3>
         {/* Always present, not only when something is active, so the rail
             does not reflow on the first click. Disabled rather than hidden
-            when there is nothing to clear. */}
+            when there is nothing to clear — and a disabled button loses
+            focus, so it hands focus on to the first filter group. */}
         <button
           type="button"
           className={styles.clear}
-          onClick={() => onChange(clearFilters(searchParams))}
+          onClick={() => {
+            focusAfterChange(() =>
+              railRef.current?.querySelector(`.${styles.facetToggle}`),
+            );
+            onChange(clearFilters(searchParams));
+          }}
           disabled={!hasActiveFilters}
+          data-track-id={trackId('clear-filters')}
         >
           Clear all
         </button>
@@ -144,15 +196,19 @@ export function FilterRail({facets, searchParams, onChange}) {
 function Facet({facet, searchParams, onChange}) {
   const [open, setOpen] = useState(true);
   const panelId = useId();
+  const toggleId = useId();
+  const trackId = useTrackId();
 
   return (
     <div className={styles.facet}>
       <button
         type="button"
+        id={toggleId}
         className={styles.facetToggle}
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((o) => !o)}
+        data-track-id={trackId(`facet-${facet.label}-toggle`)}
       >
         <span>{facet.label}</span>
         <span className={styles.caret} aria-hidden="true">
@@ -160,7 +216,14 @@ function Facet({facet, searchParams, onChange}) {
         </span>
       </button>
 
-      <div id={panelId} hidden={!open}>
+      {/* A group named by the toggle, so each checkbox is read with its
+          facet — "Availability, In stock (12)" — not just "In stock (12)". */}
+      <div
+        id={panelId}
+        role="group"
+        aria-labelledby={toggleId}
+        hidden={!open}
+      >
         <ul className={styles.facetValues}>
           {facet.values.map((value) => (
             <li key={value.id}>
@@ -175,6 +238,11 @@ function Facet({facet, searchParams, onChange}) {
                   onChange={() =>
                     onChange(toggleFilter(searchParams, value.input))
                   }
+                  /* Shopify's facet and value names, not CMS copy:
+                     filter-availability-in-stock. */
+                  data-track-id={trackId(
+                    `filter-${facet.label}-${value.label}`,
+                  )}
                 />
                 <span className={styles.optionLabel}>{value.label}</span>
                 {/* Counts are Shopify's, for the current selection — not a
@@ -196,26 +264,53 @@ function Facet({facet, searchParams, onChange}) {
  * grid and scrolled out of sight. The chips restate every active filter right where the results are,
  * each with one-tap removal. Renders nothing when no filter is on.
  *
+ * A chip takes itself away when pressed, so focus moves on: to the next chip,
+ * the previous one when it was the last, or — with none left — to
+ * `summaryRef`, the results count.
+ *
  * @param {{
  *   facets: Array<object>,
  *   searchParams: URLSearchParams,
  *   onChange: (next: URLSearchParams) => void,
+ *   summaryRef?: import('react').RefObject<HTMLElement>,
  * }} props
  */
-export function ActiveFilters({facets, searchParams, onChange}) {
+export function ActiveFilters({facets, searchParams, onChange, summaryRef}) {
+  const trackId = useTrackId();
+  const focusAfterChange = useFocusAfterChange(searchParams);
+  // The chip buttons by filter, to find the neighbour once the list re-renders.
+  const chipRefs = useRef(/** @type {Map<string, HTMLElement>} */ (new Map()));
   const chips = activeFilterLabels(facets, searchParams);
   if (chips.length === 0) return null;
+
+  /** @param {string | undefined} raw */
+  const focusChipOrSummary = (raw) =>
+    focusAfterChange(() => {
+      const chip = raw ? chipRefs.current.get(raw) : null;
+      return chip?.isConnected ? chip : summaryRef?.current;
+    });
 
   return (
     <div className={styles.chips}>
       <ul className={styles.chipList} role="list" aria-label="Active filters">
-        {chips.map((chip) => (
+        {chips.map((chip, index) => (
           <li key={chip.raw}>
             <button
+              ref={(el) => {
+                if (el) chipRefs.current.set(chip.raw, el);
+                else chipRefs.current.delete(chip.raw);
+              }}
               type="button"
               className={styles.chip}
-              onClick={() => onChange(removeFilter(searchParams, chip.raw))}
+              onClick={() => {
+                const neighbour = chips[index + 1] ?? chips[index - 1];
+                focusChipOrSummary(neighbour?.raw);
+                onChange(removeFilter(searchParams, chip.raw));
+              }}
               aria-label={`Remove filter: ${chip.label}`}
+              /* chip.label is "Facet: Value", so this slugs to the same
+                 pair as the rail's checkbox: remove-filter-availability-in-stock. */
+              data-track-id={trackId(`remove-filter-${chip.label}`)}
             >
               <span>{chip.label}</span>
               <svg
@@ -238,7 +333,11 @@ export function ActiveFilters({facets, searchParams, onChange}) {
         <button
           type="button"
           className={styles.clear}
-          onClick={() => onChange(clearFilters(searchParams))}
+          onClick={() => {
+            focusChipOrSummary(undefined);
+            onChange(clearFilters(searchParams));
+          }}
+          data-track-id={trackId('clear-filters-chips')}
         >
           Clear all
         </button>
@@ -254,23 +353,35 @@ export function ActiveFilters({facets, searchParams, onChange}) {
  * `total` is the count across ALL pages, not this page's slice — reading the
  * slice announced "Showing 12 products" while the listing held 24.
  *
- * @param {{
- *   total: number,
- *   pagination?: {pageCount: number, from: number, to: number},
- *   emptyText?: string,
- * }} props
+ * Focusable from script (tabIndex -1, never in the Tab order): focus lands
+ * here when the filter control that had it removes itself.
  */
-export function ResultsSummary({total, pagination, emptyText}) {
-  return (
-    <p className={styles.showing} aria-live="polite">
-      {total === 0
-        ? (emptyText ?? 'No products match these filters')
-        : pagination && pagination.pageCount > 1
-          ? `Showing ${pagination.from}–${pagination.to} of ${total} products`
-          : `Showing ${total} product${total === 1 ? '' : 's'}`}
-    </p>
-  );
-}
+export const ResultsSummary = forwardRef(
+  /**
+   * @param {{
+   *   total: number,
+   *   pagination?: {pageCount: number, from: number, to: number},
+   *   emptyText?: string,
+   * }} props
+   * @param {import('react').ForwardedRef<HTMLParagraphElement>} ref
+   */
+  function ResultsSummary({total, pagination, emptyText}, ref) {
+    return (
+      <p
+        ref={ref}
+        className={styles.showing}
+        aria-live="polite"
+        tabIndex={-1}
+      >
+        {total === 0
+          ? (emptyText ?? 'No products match these filters')
+          : pagination && pagination.pageCount > 1
+            ? `Showing ${pagination.from}–${pagination.to} of ${total} products`
+            : `Showing ${total} product${total === 1 ? '' : 's'}`}
+      </p>
+    );
+  },
+);
 
 /**
  * @param {{
@@ -306,13 +417,31 @@ export function ProductCard({product, href: hrefOverride, loading}) {
   const href = hrefOverride ?? pathFor(product.handle);
   // The meta description, written short and per product in the admin.
   const blurb = product.seo?.description?.trim() || '';
+  // Three links to the same page — title, image, button — told apart by role.
+  const trackId = useTrackId();
+  const trackRole = `product-${product.handle}`;
 
   return (
     <div className={styles.card}>
-      <Link to={href} prefetch="intent" className={styles.cardMedia}>
+      {/*
+        The image is a click target for the mouse and touch only — out of the
+        Tab order and hidden from screen readers, with an empty alt. Otherwise
+        every card was three stops and read its name twice; the title and the
+        button already reach the same page.
+      */}
+      <Link
+        to={href}
+        prefetch="intent"
+        className={styles.cardMedia}
+        tabIndex={-1}
+        aria-hidden="true"
+        data-track-id={trackId(`${trackRole}-image`)}
+      >
         {image ? (
           <Image
-            data={image}
+            /* altText cleared: Hydrogen's Image swaps an empty alt for it,
+               and the title beside it already names the product. */
+            data={{...image, altText: null}}
             /* The 4:3 frame goes in `style`, NOT the aspectRatio prop: the
                prop also tells Shopify's CDN to crop the file to 4:3, which
                cut the top and bottom off square photos — no object-fit can
@@ -322,7 +451,7 @@ export function ProductCard({product, href: hrefOverride, loading}) {
             sizes="(min-width: 1100px) 350px, (min-width: 700px) 45vw, 90vw"
             className={styles.cardImage}
             loading={loading}
-            alt={image.altText || product.title}
+            alt=""
             // Small uploads served whole and untouched — see lib/image.js.
             {...sharpImageProps(image)}
           />
@@ -331,7 +460,12 @@ export function ProductCard({product, href: hrefOverride, loading}) {
 
       <div className={styles.cardBody}>
         <h3 className={styles.cardTitle}>
-          <Link to={href} prefetch="intent" className={styles.cardTitleLink}>
+          <Link
+            to={href}
+            prefetch="intent"
+            className={styles.cardTitleLink}
+            data-track-id={trackId(trackRole)}
+          >
             {product.title}
           </Link>
         </h3>
@@ -355,8 +489,14 @@ export function ProductCard({product, href: hrefOverride, loading}) {
             — one has sixty. A button that works on some cards and not others
             is worse than a consistent link.
           */}
-          <Link to={href} prefetch="intent" className={`btn btn--secondary ${styles.cardCta}`}>
-            View product
+          <Link
+            to={href}
+            prefetch="intent"
+            className={`btn btn--secondary ${styles.cardCta}`}
+            data-track-id={trackId(`${trackRole}-view`)}
+          >
+            {/* Named, so a links list isn't twelve identical "View product"s. */}
+            View product<span className="sr-only"> {product.title}</span>
           </Link>
         </div>
       </div>
@@ -383,6 +523,7 @@ export function ProductCard({product, href: hrefOverride, loading}) {
  * }} props
  */
 export function Pager({pagination, searchParams, anchor}) {
+  const trackId = useTrackId();
   if (!pagination || pagination.pageCount <= 1) return null;
 
   const {page, pageCount} = pagination;
@@ -407,7 +548,12 @@ export function Pager({pagination, searchParams, anchor}) {
   return (
     <nav className={styles.pager} aria-label="Pagination">
       {page > 1 ? (
-        <Link className={styles.pagerStep} to={hrefFor(page - 1)} rel="prev">
+        <Link
+          className={styles.pagerStep}
+          to={hrefFor(page - 1)}
+          rel="prev"
+          data-track-id={trackId('prev-page')}
+        >
           <span aria-hidden="true">‹</span> Prev
         </Link>
       ) : (
@@ -436,6 +582,7 @@ export function Pager({pagination, searchParams, anchor}) {
                 className={styles.pagerPage}
                 to={hrefFor(n)}
                 aria-label={`Page ${n}`}
+                data-track-id={trackId(`page-${n}`)}
               >
                 {n}
               </Link>
@@ -445,7 +592,12 @@ export function Pager({pagination, searchParams, anchor}) {
       </ol>
 
       {page < pageCount ? (
-        <Link className={styles.pagerStep} to={hrefFor(page + 1)} rel="next">
+        <Link
+          className={styles.pagerStep}
+          to={hrefFor(page + 1)}
+          rel="next"
+          data-track-id={trackId('next-page')}
+        >
           Next <span aria-hidden="true">›</span>
         </Link>
       ) : (

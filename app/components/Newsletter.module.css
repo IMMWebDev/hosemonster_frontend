@@ -30,6 +30,8 @@
   overflow: hidden;
   border-radius: var(--radius-md); /* 8px in the design */
   background-color: #12232f; /* the comp's deep navy; shows before the photo */
+  /* White keyboard focus rings on the dark card — orange fades on navy. */
+  --color-focus-ring: var(--color-text-inverse);
 }
 
 /* Positive stack: image 0, wash 1, content 2. The photo is at full strength
@@ -73,10 +75,10 @@
 }
 
 /*
- * Orange on navy, as the comp now draws it. §09 measures it at 2.95:1; the
- * design has accepted that for every section eyebrow on a dark ground (Hero,
- * Hero Search, CTA Banner, CTA Bar), and this band was the last one kept
- * white. At 19px / 700 it's large text.
+ * The light orange for dark grounds, as the Hero, Hero Search, CTA Banner and
+ * CTA Bar eyebrows use. The comp draws the brand
+ * orange, which is 2.95:1 on brand navy (§09); the light one clears AA on any
+ * navy (6.3:1 on this card's #12232f).
  */
 .eyebrow {
   font-family: var(--font-body);
@@ -85,7 +87,7 @@
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-text-accent);
+  color: var(--color-text-accent-on-dark);
   margin: 0 0 var(--space-3); /* 12px in the design */
 }
 
@@ -179,14 +181,20 @@
   border-radius: var(--radius-pill);
 }
 
+/* Muted ink at full strength, as Text Form's placeholder: 5:1 on the white
+ * field. Navy at 60% was 3.6:1, under AA for 13px text. */
 .formColumn :global(.hs-input::placeholder) {
-  color: var(--brand-navy);
-  opacity: 0.6;
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
+/* White ring (from .card). On desktop the form sits past the wash, on the
+ * bare photo, so the navy shadow fills the gap inside the ring and gives it
+ * a dark edge whatever the photo does there — as the hero badges do. */
 .formColumn :global(.hs-input:focus-visible) {
-  outline: var(--border-width-thick) solid var(--color-action);
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--brand-navy);
 }
 
 .formColumn :global(.hs-button) {
@@ -212,9 +220,11 @@
   background: var(--color-action-hover);
 }
 
+/* Same white ring and navy edge as the field above. */
 .formColumn :global(.hs-button:focus-visible) {
-  outline: var(--border-width-thick) solid var(--color-surface);
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--brand-navy);
 }
 
 /*

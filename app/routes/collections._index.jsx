@@ -3,6 +3,16 @@ import {getPaginationVariables, Image} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 
 /**
+ * The Hydrogen starter's list of every Shopify collection — including the
+ * ones with no page, which 404 — so it stays out of the index.
+ * @type {Route.MetaFunction}
+ */
+export const meta = () => [
+  {title: 'Collections | Hose Monster'},
+  {name: 'robots', content: 'noindex'},
+];
+
+/**
  * @param {Route.LoaderArgs} args
  */
 export async function loader(args) {

@@ -1,0 +1,483 @@
+/*
+ * Photo viewer — the full-screen swipe carousel a blog post's photos open in.
+ * See PhotoViewer.jsx for the reasoning. No comp exists; it's assembled from
+ * the house modal (Drawer, QuickSearch), Testimonials' scroll-snap track and
+ * the styleguide's navy, white and orange.
+ *
+ * The photo floats on Deep Navy Ink, nearly opaque, with white controls: Close
+ * and a "3 / 7" counter in a bar along the top, an arrow either side, and the
+ * caption under the photo. On a phone the photo goes edge to edge and the
+ * arrows tuck under it — swiping is the gesture there.
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * DIALOG
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * The whole screen. A modal <dialog> renders in the top layer, so no z-index
+ * is involved; the UA's border, padding, margin and size caps go.
+ *
+ * The navy is on the dialog itself rather than its ::backdrop: the dialog
+ * covers the backdrop entirely, and ::backdrop did not inherit custom
+ * properties until recently (the Drawer's note), whereas the dialog can use
+ * the token. A click on the dark space therefore lands on the dialog or a
+ * slide, which is what PhotoViewer.jsx closes on.
+ *
+ * Fades in and out over the drawer's duration. `display` and `overlay` are
+ * transitioned discretely so closing animates too (as QuickSearch); browsers
+ * without discrete transitions just skip the fade-out.
+ */
+.dialog {
+  /* Room the photo leaves for the top bar (counter, Close): the header's
+   * 64px, so the bar sits where the site's own header does. */
+  --viewer-top: var(--header-height);
+  /* What sits under a caption: a margin above the screen's edge here, the
+   * arrow strip on a phone. */
+  --viewer-floor: var(--space-4);
+  /* The caption room a captioned photo keeps clear under it: three lines,
+   * which at the caption's reading width holds ~190 characters — most
+   * captions whole. A longer one scrolls (see .caption). */
+  --viewer-caption-lines: 3;
+  --viewer-caption: calc(
+    var(--viewer-caption-lines) * var(--text-detail) * var(--leading-body-sm)
+  );
+  /* Room under the photo when it has no caption: the same as over it, so
+   * it sits in the middle. A captioned slide raises it (.slide[data-caption]). */
+  --viewer-bottom: var(--viewer-top);
+  /* The 44px touch-target minimum, a step up because it floats on a
+   * photo-sized field with nothing else around it. */
+  --viewer-arrow: 48px;
+  /* Each side: the gutter, an arrow, and a gap so the arrow never sits on
+   * the photo. */
+  --viewer-side: calc(
+    var(--container-gutter) + var(--viewer-arrow) + var(--space-4)
+  );
+
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--deep-navy-ink) 96%, transparent);
+  color: var(--color-text-inverse);
+
+  opacity: 0;
+  transition:
+    opacity var(--duration-slide) var(--ease-default),
+    overlay var(--duration-slide) allow-discrete,
+    display var(--duration-slide) allow-discrete;
+}
+
+.dialog[open] {
+  opacity: 1;
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+  }
+}
+
+/* The dialog paints the dark; the UA's dimmed backdrop would only show at
+ * the edges during the fade. */
+.dialog::backdrop {
+  background: transparent;
+}
+
+/*
+ * No page scroll behind the viewer — the drawer's and search sheet's rule.
+ * `scrollbar-gutter: stable` keeps the scrollbar's space, so on systems that
+ * draw one the page doesn't shift sideways as it opens.
+ */
+:global(html):has(.dialog[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* Everything the dialog holds; focused on open so the arrow keys work at
+ * once. The bars and arrows float over the track. */
+.frame {
+  position: relative;
+  height: 100%;
+  outline: none;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * TRACK — Testimonials' scroll-snap carousel, one photo per screen
+ * -----------------------------------------------------------------------------
+ */
+
+/*
+ * The full screen, under the bars, so a swipe works anywhere — not only on
+ * the photo. `mandatory` + `scroll-snap-stop: always` (below): a flick moves
+ * one photo and always settles on one, never between two. `contain` keeps a
+ * swipe past the last photo from turning into the browser's own Back.
+ */
+.track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  /* Swipe, the arrows and the keys move it; a bar under the photos would
+   * only be noise. */
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * One screen wide. The padding is the room for the bars and the arrows, and
+ * part of the dark space a click closes on.
+ */
+.slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--viewer-top) var(--viewer-side) var(--viewer-bottom);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/*
+ * A captioned photo keeps the caption's room clear under it — set per slide,
+ * so the photos without one don't give up that height for nothing. Never
+ * less than the top bar, so the photo doesn't ride up off centre.
+ */
+.slide[data-caption] {
+  --viewer-bottom: max(
+    var(--viewer-top),
+    calc(var(--space-3) + var(--viewer-caption) + var(--viewer-floor))
+  );
+}
+
+/*
+ * The photo's box: as wide as the slide allows, no wider than the photo was
+ * uploaded (an 800px original isn't blown up to fill a 1440px screen, but a
+ * 2400px one fills it — the srcset sends a file to match), and no taller
+ * than the room between the bars — the height cap turned into a width
+ * through the photo's proportions. --photo-w and --photo-ratio are set per
+ * slide from the original's dimensions; the fallbacks are a 16:9 photo that
+ * fills what it can.
+ */
+.photo {
+  position: relative;
+  width: min(
+    100%,
+    var(--photo-w, 100%),
+    calc(
+      (100dvh - var(--viewer-top) - var(--viewer-bottom)) *
+        var(--photo-ratio, 1.7778)
+    )
+  );
+  margin: 0;
+}
+
+/* `contain` only as a safety net, for a file whose real shape doesn't match
+ * its recorded size; normally the box already is the photo's shape. */
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--photo-ratio, 1.7778);
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  user-select: none;
+}
+
+/*
+ * Under the photo, centred, at a readable width whatever the photo's — a tall
+ * narrow photo would otherwise squeeze it into a column. On-navy ink, the
+ * body copy colour for dark grounds.
+ *
+ * Never cut off: it may use all the room that's actually free under the
+ * photo — plenty under a landscape photo on a phone, at least the three
+ * reserved lines under one held to the screen's height — and scrolls inside
+ * that if it's longer still. The sum: half the slack left beside the photo
+ * in the slide's content box, plus the room under it, less what sits under
+ * the caption and the gap above it. 100% is the photo's own height (the
+ * figure is the caption's containing block).
+ */
+.caption {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: min(var(--measure), calc(100vw - 2 * var(--container-gutter)));
+  max-height: calc(
+    (100dvh - var(--viewer-top) - var(--viewer-bottom) - 100%) / 2 +
+      var(--viewer-bottom) - var(--viewer-floor) - var(--space-3)
+  );
+  margin-top: var(--space-3);
+  translate: -50% 0;
+  overflow-y: auto;
+  /* A vertical swipe that scrolls the caption to its end stops there. */
+  overscroll-behavior-y: contain;
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  text-align: center;
+  color: var(--color-text-on-navy);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * TOP BAR — counter and Close
+ * -----------------------------------------------------------------------------
+ */
+
+/* Over the track; clicks fall through it to the slide (and close) except on
+ * the button. */
+.bar {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: var(--viewer-top);
+  padding-inline: var(--container-gutter);
+  pointer-events: none;
+}
+
+/* Styleguide UI text, white, with figures that don't shift as they count. */
+.counter {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-inverse);
+}
+
+/* The drawer's and search sheet's close button — a word and an ×, 44px tall —
+ * in white, with a faint white wash for hover. */
+.close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  margin-right: calc(-1 * var(--space-2));
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.close:hover {
+  background: color-mix(in srgb, var(--color-surface) 12%, transparent);
+}
+
+.closeIcon {
+  flex: 0 0 auto;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * ARROWS
+ * -----------------------------------------------------------------------------
+ */
+
+/* A wrapper only so phones can line the two up under the photo; on wider
+ * screens it drops out and each arrow sits at its own side. */
+.pager {
+  display: contents;
+}
+
+/*
+ * Round, like Testimonials' arrows, but drawn for a dark ground: a navy disc
+ * with a faint white ring, so it reads over a photo as well as the dark
+ * space. Hover turns it white with a navy chevron.
+ */
+.arrow {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--viewer-arrow);
+  height: var(--viewer-arrow);
+  padding: 0; /* the icon centres itself; padding would bias it */
+  border: var(--border-width-thick) solid
+    color-mix(in srgb, var(--color-surface) 35%, transparent);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--deep-navy-ink) 60%, transparent);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  translate: 0 -50%;
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.prev {
+  left: var(--container-gutter);
+}
+
+.next {
+  right: var(--container-gutter);
+}
+
+.arrow:hover:not([aria-disabled='true']) {
+  border-color: var(--color-surface);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/*
+ * First photo / last photo: there's nowhere to go, and it says so. No
+ * wraparound — the counter would jump from 7 to 1.
+ *
+ * The ring and the chevron fade, not the button: opacity on the button would
+ * fade its focus outline with it, and a keyboard user pressing Next lands on
+ * the last photo with focus still on Next — exactly when the ring must show.
+ */
+.arrow[aria-disabled='true'] {
+  border-color: color-mix(in srgb, var(--color-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--color-text-inverse) 30%, transparent);
+  cursor: default;
+}
+
+/* UiIcon's chevron points down; StepGuide's pager turns it the same way. */
+.arrowIcon {
+  display: block;
+}
+
+.prev .arrowIcon {
+  transform: rotate(90deg);
+}
+
+.next .arrowIcon {
+  transform: rotate(-90deg);
+}
+
+/* A caption long enough to scroll is a Tab stop of its own in Chrome (a
+ * keyboard user can scroll it), so it gets the ring too. */
+.close:focus-visible,
+.arrow:focus-visible,
+.caption:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ */
+
+/* mdTablet — the close button drops its word, as the drawer's does. */
+@media (max-width: 699px) {
+  /* Visually hidden, not removed: it's the button's accessible name. */
+  .closeLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .close {
+    width: 44px;
+    justify-content: center;
+    padding: 0;
+  }
+}
+
+/*
+ * Short screens — a phone on its side. The bars would take a third of the
+ * height, so the top bar thins to the 44px Close button and a little air
+ * (and the room under an uncaptioned photo with it), and a caption keeps two
+ * lines clear rather than three — it scrolls past that. Before the mobile
+ * block, so a phone held upright still gets its own floor below.
+ */
+@media (max-height: 499px) {
+  .dialog {
+    --viewer-top: calc(44px + var(--space-2)); /* Close's touch target */
+    --viewer-caption-lines: 2;
+  }
+}
+
+/*
+ * mobile — the photo goes edge to edge (side arrows would leave it a third
+ * of the screen), square-cornered against the screen's edges. The arrows tuck
+ * into a strip along the bottom, side by side as Testimonials' controls; the
+ * room under the photo starts at that strip, and a caption sits above it.
+ */
+@media (max-width: 499px) {
+  .dialog {
+    --viewer-side: 0px;
+    --viewer-floor: calc(var(--header-height) + env(safe-area-inset-bottom));
+    --viewer-bottom: var(--viewer-floor);
+  }
+
+  .image {
+    border-radius: 0;
+  }
+
+  .pager {
+    position: absolute;
+    bottom: 0;
+    inset-inline: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-5);
+    /* The floor the caption sits on: the strip plus the home indicator's
+     * inset, which border-box would otherwise take out of the strip. */
+    height: var(--viewer-floor);
+    padding-bottom: env(safe-area-inset-bottom);
+    /* Swipes pass through to the track; a tap here that misses an arrow is
+     * kept from closing the viewer in PhotoViewer.jsx (handleClick). */
+    pointer-events: none;
+  }
+
+  .arrow {
+    position: static;
+    --viewer-arrow: 44px; /* the touch-target minimum; space is tight here */
+    width: var(--viewer-arrow);
+    height: var(--viewer-arrow);
+    translate: none;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .arrow,
+  .close {
+    transition: none;
+  }
+
+  .track {
+    scroll-behavior: auto;
+  }
+}

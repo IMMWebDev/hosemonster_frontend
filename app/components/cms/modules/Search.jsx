@@ -1,3 +1,4 @@
+import {useRef} from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router';
 import {strapiMedia} from '~/lib/strapi-media';
 import SearchChips from '~/components/search/SearchChips';
@@ -10,6 +11,7 @@ import {
   ResultsSummary,
   ProductGrid,
   Pager,
+  useFocusAfterChange,
 } from '~/components/product-listing/ProductListing';
 import {
   FILTER_PARAM,
@@ -23,10 +25,10 @@ import {
   urlWithTrackingParams,
 } from '~/lib/search';
 import {useProductPath} from '~/lib/product-urls';
+// RESULTS_ANCHOR: the anchor the pager scrolls to — see the results
+// <section>. Lives in tracking.js so no Tracking ID can claim it.
+import {RESULTS_ANCHOR, useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './Search.module.css';
-
-/** Anchor the pager scrolls to — see the results <section>. */
-const RESULTS_ANCHOR = 'results';
 
 /**
  * Search module — the /search page's results, placed on the Strapi Page whose
@@ -75,6 +77,11 @@ export default function Search({data, search, baseUrl}) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const pathFor = useProductPath();
+  const trackingRoot = useTrackingRoot();
+  const trackId = useTrackId();
+  // Where focus goes when the control that had it clears the last filter.
+  const summaryRef = useRef(null);
+  const focusAfterChange = useFocusAfterChange(searchParams);
 
   if (!search) return null;
 
@@ -118,7 +125,7 @@ export default function Search({data, search, baseUrl}) {
     Boolean(term) && !error && !showListing && relatedCount === 0;
 
   return (
-    <div className={styles.page}>
+    <div {...trackingRoot} className={styles.page}>
       {/*
         The panel — Hero Search's layout. Only the copy and the box live on the
         photo; the category and page chips sit on white below it, where they
@@ -215,9 +222,14 @@ export default function Search({data, search, baseUrl}) {
                 Always mounted, so it can take part in the reveal: it used to
                 mount only with a term, and a search made FROM /search (query
                 string only, no pathname change) never had useReveal see it.
+
+                A status region for the same reason: focus stays in the box
+                after a search, so this line is how a screen reader hears what
+                the new search found — with or without a product grid.
               */}
               <p
                 className={styles.resultsFor}
+                role="status"
                 data-reveal
                 style={{'--reveal-i': 4}}
               >
@@ -247,6 +259,7 @@ export default function Search({data, search, baseUrl}) {
               <RelatedGroup label="Categories">
                 <SearchChips
                   label="Matching categories"
+                  trackRole="related-category"
                   items={collections.map((c) => ({
                     key: c.id,
                     label: c.title,
@@ -264,6 +277,8 @@ export default function Search({data, search, baseUrl}) {
               <RelatedGroup label="Pages">
                 <SearchChips
                   label="Matching pages"
+                  /* Not "page-": the pager's links are page-1, page-2… */
+                  trackRole="related-page"
                   items={pages.map((p) => ({
                     key: p.id,
                     label: p.title,
@@ -277,6 +292,7 @@ export default function Search({data, search, baseUrl}) {
               <RelatedGroup label="Articles">
                 <SearchChips
                   label="Matching articles"
+                  trackRole="related-article"
                   items={articles.map((a) => ({
                     key: a.id,
                     label: a.title,
@@ -332,15 +348,34 @@ export default function Search({data, search, baseUrl}) {
                 facets={facets}
                 searchParams={searchParams}
                 onChange={go}
+                summaryRef={summaryRef}
               />
 
-              <ResultsSummary total={productTotal} pagination={pagination} />
+              {/*
+                Keyed by the total so a new count remounts it, and a live
+                region added with its text already in place stays quiet. The
+                status line under the search box announces that count, so
+                without the key a filter change was read out twice. A page
+                change keeps the same total, so this line still announces
+                "Showing 13–24 of 55".
+              */}
+              <ResultsSummary
+                key={productTotal}
+                ref={summaryRef}
+                total={productTotal}
+                pagination={pagination}
+              />
 
               {productTotal === 0 ? (
                 <button
                   type="button"
                   className="btn btn--secondary"
-                  onClick={() => go(clearFilters(searchParams))}
+                  onClick={() => {
+                    // This button goes once the products are back.
+                    focusAfterChange(() => summaryRef.current);
+                    go(clearFilters(searchParams));
+                  }}
+                  data-track-id={trackId('clear-filters-empty')}
                 >
                   Clear filters
                 </button>
@@ -422,6 +457,7 @@ function RelatedGroup({label, children}) {
  * }} props
  */
 function Suggestions({nothingFound, categories, showHelp}) {
+  const trackId = useTrackId();
   const hasAnything = categories.length > 0;
 
   /*
@@ -448,9 +484,13 @@ function Suggestions({nothingFound, categories, showHelp}) {
         {hasAnything ? (
           <div className={styles.suggestionGrid}>
             {categories.length > 0 ? (
-              <SuggestionGroup title="Shop by category">
+              <SuggestionGroup
+                title="Shop by category"
+                level={nothingFound ? 'h3' : 'h2'}
+              >
                 <SearchChips
                   label="Categories"
+                  trackRole="suggested-category"
                   items={categories.map((c) => ({
                     key: c.id,
                     label: c.title,
@@ -465,7 +505,11 @@ function Suggestions({nothingFound, categories, showHelp}) {
         {showHelp ? (
           <p className={styles.help}>
             Can’t find what you need?{' '}
-            <Link to={CONTACT_PATH} className={styles.helpLink}>
+            <Link
+              to={CONTACT_PATH}
+              className={styles.helpLink}
+              data-track-id={trackId('contact')}
+            >
               Contact us
             </Link>
           </p>
@@ -476,12 +520,15 @@ function Suggestions({nothingFound, categories, showHelp}) {
 }
 
 /**
- * @param {{title: string, children: React.ReactNode}} props
+ * An h3 under "Try another search"; otherwise an h2, so the empty page's
+ * outline doesn't jump from the h1 straight to an h3.
+ *
+ * @param {{title: string, level: 'h2' | 'h3', children: React.ReactNode}} props
  */
-function SuggestionGroup({title, children}) {
+function SuggestionGroup({title, level: Heading, children}) {
   return (
     <div className={styles.suggestionGroup}>
-      <h3 className={styles.groupTitle}>{title}</h3>
+      <Heading className={styles.groupTitle}>{title}</Heading>
       {children}
     </div>
   );

@@ -1,3 +1,4 @@
+import {useRef} from 'react';
 import {useNavigate, useSearchParams} from 'react-router';
 import {
   FILTER_PARAM,
@@ -14,11 +15,12 @@ import {
   ResultsSummary,
   ProductGrid,
   Pager,
+  useFocusAfterChange,
 } from '~/components/product-listing/ProductListing';
+// FEED_ANCHOR: the anchor the pager scrolls to — see the <section> and
+// Pager's hrefFor(). Lives in tracking.js so no Tracking ID can claim it.
+import {FEED_ANCHOR, useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './ProductFeed.module.css';
-
-/** Anchor the pager scrolls to. See the <section> and Pager's hrefFor(). */
-const FEED_ANCHOR = 'products';
 
 /**
  * Product Feed module — Figma "Smart Monster Collection" hifi
@@ -43,9 +45,14 @@ const FEED_ANCHOR = 'products';
  * }} props
  */
 export default function ProductFeed({data, collection, activeSort, pagination}) {
+  const trackingRoot = useTrackingRoot();
+  const trackId = useTrackId();
   const {heading, showFilters = true, showSort = true} = data ?? {};
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  // Where focus goes when the control that had it clears the last filter.
+  const summaryRef = useRef(null);
+  const focusAfterChange = useFocusAfterChange(searchParams);
 
   /*
    * Only meaningful on a Collections entry — the Shopify handle is what says
@@ -75,7 +82,7 @@ export default function ProductFeed({data, collection, activeSort, pagination}) 
      * somebody pastes. Assumes one Product Feed per page, which is what a
      * collection page is for.
      */
-    <section className={styles.section} id={FEED_ANCHOR}>
+    <section {...trackingRoot} className={styles.section} id={FEED_ANCHOR}>
       <div className={styles.inner}>
         <div className={styles.head}>
           {heading ? <h2 className={styles.heading}>{heading}</h2> : null}
@@ -104,16 +111,26 @@ export default function ProductFeed({data, collection, activeSort, pagination}) 
             facets={facets}
             searchParams={searchParams}
             onChange={go}
+            summaryRef={summaryRef}
           />
 
-          <ResultsSummary total={total} pagination={pagination} />
+          <ResultsSummary
+            ref={summaryRef}
+            total={total}
+            pagination={pagination}
+          />
 
           {count === 0 ? (
             hasActiveFilters ? (
               <button
                 type="button"
                 className="btn btn--secondary"
-                onClick={() => go(clearFilters(searchParams))}
+                onClick={() => {
+                  // This button goes once the products are back.
+                  focusAfterChange(() => summaryRef.current);
+                  go(clearFilters(searchParams));
+                }}
+                data-track-id={trackId('clear-filters-empty')}
               >
                 Clear filters
               </button>

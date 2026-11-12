@@ -1,5 +1,7 @@
 import CmsLink from '~/components/cms/CmsLink';
+import {linkDestination} from '~/lib/cms-links';
 import {strapiMedia} from '~/lib/strapi-media';
+import {useTrackingRoot} from '~/lib/tracking';
 import styles from './CategoryGrid.module.css';
 
 /**
@@ -28,6 +30,7 @@ import styles from './CategoryGrid.module.css';
  * }} props
  */
 export default function CategoryGrid({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
   const {
     eyebrow,
     heading,
@@ -43,7 +46,7 @@ export default function CategoryGrid({data, baseUrl}) {
   const hasBanner = Boolean(bannerHeading || bannerBody || bannerCta?.linkText);
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
         {eyebrow ? (
           <p className={styles.eyebrow} data-reveal style={{'--reveal-i': 0}}>
@@ -78,7 +81,11 @@ export default function CategoryGrid({data, baseUrl}) {
 
             {bannerCta?.linkText ? (
               <div className={styles.bannerAction}>
-                <CmsLink link={bannerCta} className="btn btn--primary" />
+                <CmsLink
+                  link={bannerCta}
+                  className="btn btn--primary"
+                  trackRole="banner-cta"
+                />
               </div>
             ) : null}
           </div>
@@ -111,6 +118,13 @@ function CategoryCard({item, baseUrl, index = 0}) {
   const {title, link, featured} = item;
   const imageUrl = strapiMedia(item.image?.url, baseUrl);
 
+  /*
+   * Does this card actually go anywhere? Not `if (link)`: Strapi keeps a link
+   * component the moment an editor types its text, even with no destination.
+   * The same check as Card Grid; a "#" placeholder counts as a destination.
+   */
+  const hasDestination = Boolean(linkDestination(link));
+
   const inner = (
     <>
       {imageUrl ? (
@@ -133,10 +147,15 @@ function CategoryCard({item, baseUrl, index = 0}) {
   const className = `${styles.card} ${featured ? styles.featured : ''}`;
 
   // With nothing to link to, render a plain container rather than a dead anchor
-  // that reads as interactive and cannot be tabbed out of usefully.
-  if (!link) {
+  // that reads as interactive and cannot be tabbed out of usefully — and no
+  // hover (.static), which would promise a click that does nothing.
+  if (!hasDestination) {
     return (
-      <div className={className} data-reveal style={{'--reveal-i': index + 3}}>
+      <div
+        className={`${className} ${styles.static}`}
+        data-reveal
+        style={{'--reveal-i': index + 3}}
+      >
         {inner}
       </div>
     );
@@ -151,6 +170,7 @@ function CategoryCard({item, baseUrl, index = 0}) {
       className={className}
       dataReveal
       style={{'--reveal-i': index + 3}}
+      trackRole={`card-${index + 1}`}
     >
       {inner}
     </CmsLink>

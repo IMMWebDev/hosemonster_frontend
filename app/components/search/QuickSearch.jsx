@@ -10,6 +10,7 @@ import {
 } from '~/components/search/PredictiveResults';
 import {usePredictiveSearch} from '~/lib/use-predictive-search';
 import {SEARCH_PATH, SEARCH_PLACEHOLDER, searchUrl} from '~/lib/search';
+import {TrackingScope} from '~/lib/tracking';
 import styles from './QuickSearch.module.css';
 
 /** The dialog's id — the header's search button points at it. */
@@ -61,15 +62,19 @@ export default function QuickSearch() {
   /*
    * Where focus goes when the visitor dismisses the sheet. Normally the
    * dialog's own restore handles it (back to the header's search button). A
-   * page box on a phone blurs itself before handing over, so it passes a
-   * target in the payload instead; without one, focus fell to <body> and a
-   * screen-reader user was sent back to the top of the page.
+   * page box on a phone passes a target in the payload instead — its submit
+   * button, so focus doesn't land back in the field it handed over from.
    */
   const returnFocusRef = useRef(null);
   const dismissedRef = useRef(false);
 
-  const {data: results, isLoading, search, cancel, reset} =
-    usePredictiveSearch();
+  const {
+    data: results,
+    isLoading,
+    search,
+    cancel,
+    reset,
+  } = usePredictiveSearch();
   const browse = useFetcher({key: 'quick-search-browse'});
   const navigate = useNavigate();
   const location = useLocation();
@@ -145,21 +150,17 @@ export default function QuickSearch() {
   }, [location.key]);
 
   /*
-   * ⌘K / Ctrl+K from anywhere, and "/" when not already typing — the two
-   * shortcuts people bring from other sites. The old SearchForm bound ⌘K to
-   * focus an input that only existed on /search.
+   * ⌘K / Ctrl+K from anywhere — the shortcut people bring from other sites.
+   * The old SearchForm bound ⌘K to focus an input that only existed on
+   * /search.
+   *
+   * No bare "/" shortcut: a single-character key fires for speech-input and
+   * switch users who never meant it, and opened a modal over the page
+   * (WCAG 2.1.4). ⌘K needs a modifier, so it can't be hit by accident.
    */
   useEffect(() => {
     function onKeyDown(event) {
-      const isShortcut =
-        (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
-      const isSlash =
-        event.key === '/' &&
-        !event.metaKey &&
-        !event.ctrlKey &&
-        !isTypingTarget(event.target);
-
-      if (isShortcut || isSlash) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         open('search');
       }
@@ -241,115 +242,125 @@ export default function QuickSearch() {
      * child. A modal dialog is an interactive container; the rule predates
      * <dialog> being usable.
      */
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-    <dialog
-      ref={dialogRef}
-      id={QUICK_SEARCH_ID}
-      className={styles.dialog}
-      aria-label="Search"
-      // Escape closes a modal dialog natively; this keeps the context in step.
-      onClose={() => {
-        if (isOpen) close();
-      }}
-      onClick={handleDialogClick}
-      onKeyDown={handleKeyDown}
-    >
-      <div className={styles.panel}>
-        <div className={styles.bar}>
-          <div className={styles.barInner}>
-            <form
-              role="search"
-              action={SEARCH_PATH}
-              method="get"
-              className={styles.form}
-              onSubmit={handleSubmit}
-            >
-              <svg
-                className={styles.formIcon}
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                aria-hidden="true"
+    // Site chrome, so it names its own analytics scope — see app/lib/tracking.js.
+    // Its own buttons carry literal ids; the results inside read the scope.
+    <TrackingScope id="quick-search">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+      <dialog
+        ref={dialogRef}
+        id={QUICK_SEARCH_ID}
+        className={styles.dialog}
+        data-track-module="quick-search"
+        aria-label="Search"
+        // Escape closes a modal dialog natively; this keeps the context in step.
+        onClose={() => {
+          if (isOpen) close();
+        }}
+        onClick={handleDialogClick}
+        onKeyDown={handleKeyDown}
+      >
+        <div className={styles.panel}>
+          <div className={styles.bar}>
+            <div className={styles.barInner}>
+              <form
+                role="search"
+                action={SEARCH_PATH}
+                method="get"
+                className={styles.form}
+                onSubmit={handleSubmit}
               >
-                <circle cx="7" cy="7" r="4.75" />
-                <path d="M10.5 10.5 14 14" />
-              </svg>
-              <input
-                ref={inputRef}
-                type="search"
-                name="q"
-                value={value}
-                onChange={handleChange}
-                placeholder={SEARCH_PLACEHOLDER}
-                aria-label="Search"
-                aria-controls={resultsId}
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                enterKeyHint="search"
-                className={styles.input}
-              />
-              {value ? (
-                <button
-                  type="button"
-                  className={styles.clear}
-                  onClick={clearInput}
-                  aria-label="Clear search"
+                <svg
+                  className={styles.formIcon}
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  aria-hidden="true"
                 >
-                  <CloseIcon />
+                  <circle cx="7" cy="7" r="4.75" />
+                  <path d="M10.5 10.5 14 14" />
+                </svg>
+                <input
+                  ref={inputRef}
+                  type="search"
+                  name="q"
+                  value={value}
+                  onChange={handleChange}
+                  placeholder={SEARCH_PLACEHOLDER}
+                  aria-label="Search"
+                  aria-controls={resultsId}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="search"
+                  className={styles.input}
+                />
+                {value ? (
+                  <button
+                    type="button"
+                    className={styles.clear}
+                    onClick={clearInput}
+                    aria-label="Clear search"
+                    data-track-id="quick-search__search-clear"
+                  >
+                    <CloseIcon />
+                  </button>
+                ) : null}
+                <button
+                  type="submit"
+                  className={styles.submit}
+                  data-track-id="quick-search__search-submit"
+                >
+                  Search
                 </button>
-              ) : null}
-              <button type="submit" className={styles.submit}>
-                Search
+              </form>
+
+              <button
+                type="button"
+                className={styles.close}
+                onClick={dismiss}
+                aria-label="Close search"
+                data-track-id="quick-search__close"
+              >
+                <span className={styles.closeLabel}>Close</span>
+                <CloseIcon />
               </button>
-            </form>
-
-            <button
-              type="button"
-              className={styles.close}
-              onClick={dismiss}
-              aria-label="Close search"
-            >
-              <span className={styles.closeLabel}>Close</span>
-              <CloseIcon />
-            </button>
+            </div>
           </div>
-        </div>
 
-        <div
-          id={resultsId}
-          className={styles.body}
-          data-loading={isLoading && term ? '' : undefined}
-        >
-          <div className={styles.bodyInner}>
-            {!term ? (
-              <PredictiveEmptyState
-                categories={browse.data?.browseCollections ?? []}
-                onNavigate={onResultClick}
-              />
-            ) : data?.error ? (
-              <PredictiveMessage>
-                Search is unavailable right now. Press Enter to try the full
-                search page.
-              </PredictiveMessage>
-            ) : data ? (
-              <PredictiveResults
-                data={data}
-                term={term}
-                onNavigate={onResultClick}
-                onViewAll={() => go(term)}
-              />
-            ) : (
-              <PredictiveMessage>Searching…</PredictiveMessage>
-            )}
+          <div
+            id={resultsId}
+            className={styles.body}
+            data-loading={isLoading && term ? '' : undefined}
+          >
+            <div className={styles.bodyInner}>
+              {!term ? (
+                <PredictiveEmptyState
+                  categories={browse.data?.browseCollections ?? []}
+                  onNavigate={onResultClick}
+                />
+              ) : data?.error ? (
+                <PredictiveMessage>
+                  Search is unavailable right now. Press Enter to try the full
+                  search page.
+                </PredictiveMessage>
+              ) : data ? (
+                <PredictiveResults
+                  data={data}
+                  term={term}
+                  onNavigate={onResultClick}
+                />
+              ) : (
+                <PredictiveMessage>Searching…</PredictiveMessage>
+              )}
+            </div>
           </div>
-        </div>
 
-        <ResultsAnnouncer data={data} />
-      </div>
-    </dialog>
+          <ResultsAnnouncer data={data} />
+        </div>
+      </dialog>
+    </TrackingScope>
   );
 }
 
@@ -366,21 +377,5 @@ function CloseIcon() {
     >
       <path d="M4 4l8 8M12 4l-8 8" />
     </svg>
-  );
-}
-
-/**
- * True when a keypress is going into a text field, where "/" is a character
- * rather than a shortcut.
- *
- * @param {EventTarget | null} target
- */
-function isTypingTarget(target) {
-  if (!(target instanceof HTMLElement)) return false;
-  return (
-    target.isContentEditable ||
-    target.tagName === 'INPUT' ||
-    target.tagName === 'TEXTAREA' ||
-    target.tagName === 'SELECT'
   );
 }

@@ -179,6 +179,7 @@ export default function OrderRoute() {
       <p>
         <a target="_blank" href={order.statusPageUrl} rel="noreferrer">
           View Order Status →
+          <span className="sr-only"> (opens in a new tab)</span>
         </a>
       </p>
     </div>

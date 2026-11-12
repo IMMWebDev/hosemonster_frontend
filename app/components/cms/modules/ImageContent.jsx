@@ -1,5 +1,6 @@
 import CmsLink from '~/components/cms/CmsLink';
 import {strapiMedia} from '~/lib/strapi-media';
+import {useTrackingRoot} from '~/lib/tracking';
 
 /**
  * ImageContent module — a text lockup beside an image.
@@ -23,12 +24,14 @@ import {strapiMedia} from '~/lib/strapi-media';
  * }} props
  */
 export default function ImageContent({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
   const {colorMode = '', imageSide = 'Left', image, content = {}} = data ?? {};
   const {eyebrow, title, copy, primaryCTA, secondaryCTA} = content;
   const imageUrl = strapiMedia(image?.url, baseUrl);
 
   return (
     <section
+      {...trackingRoot}
       className={`cms-image-content ${colorMode} side-${(imageSide || 'Left').toLowerCase()}`}
     >
       <div className="cms-image-content__inner">
@@ -42,12 +45,17 @@ export default function ImageContent({data, baseUrl}) {
           {primaryCTA || secondaryCTA ? (
             <div className="cms-button-wrapper">
               {primaryCTA ? (
-                <CmsLink link={primaryCTA} className="cms-button cms-button--primary" />
+                <CmsLink
+                  link={primaryCTA}
+                  className="cms-button cms-button--primary"
+                  trackRole="primary-cta"
+                />
               ) : null}
               {secondaryCTA ? (
                 <CmsLink
                   link={secondaryCTA}
                   className="cms-button cms-button--secondary"
+                  trackRole="secondary-cta"
                 />
               ) : null}
             </div>

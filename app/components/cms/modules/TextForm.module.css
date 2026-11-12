@@ -1,0 +1,298 @@
+/*
+ * Text & Form module — sprint-04 hifi_smartmonsterfeature.html,
+ * "Request a demo".
+ *
+ * Heading and copy on the left, an embedded HubSpot form on the right.
+ */
+
+.section {
+  /* Shared section rhythm. Must be stated: reset.css gives a bare <section>
+   * its own `padding: 2rem 0` above 768px. */
+  padding-block: var(--container-block);
+
+  /* Full-bleed always, the same rule the other tinted bands use. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+/* The content width and bleed gutter. */
+.inner {
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+/* Two even columns, as drawn; the copy sits at the top beside the form. A
+ * plain wrapper on white and grey; the dark panel on navy. */
+.panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-two-column);
+  align-items: start;
+}
+
+/* No form to show: the copy keeps its own column rather than stretching. */
+.copyOnly {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/*
+ * NAVY — sprint-05 hifi_hmuhub.html, "Group training". A rounded dark panel
+ * in a white band, the gradient Text & Media's navy uses. Text reverses out.
+ */
+.navy .panel {
+  padding: var(--space-12) clamp(24px, 4vw, 48px); /* 48px, from the design */
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(
+      90deg,
+      rgb(15 31 44 / 97%) 0%,
+      rgb(29 58 84 / 92%) 55%,
+      rgb(29 58 84 / 85%) 100%
+    ),
+    #0f1f2c;
+}
+
+.navy .heading {
+  color: var(--color-text-inverse);
+}
+
+.navy .body {
+  color: var(--color-text-on-navy);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px; /* the house eyebrow-to-heading gap */
+}
+
+/* Styleguide Eyebrow. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0;
+}
+
+/* Styleguide H2. `pre-line` keeps the editor's line break ("See Smart
+ * Monster™ / for yourself"). */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Styleguide Body large. */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: 52ch; /* from the design */
+  margin-top: 7px; /* + the 9px gap = the comp's 16px under the heading */
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3);
+}
+
+.formColumn {
+  min-width: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * HUBSPOT FORM
+ * -----------------------------------------------------------------------------
+ * The comp's look — small labels over 44px fields, two fields to a row, a
+ * full-width orange pill button — for the markup HubSpot injects. :global()
+ * because these are HubSpot's class names; scoped under .formColumn so they
+ * can't leak into the Newsletter's form.
+ *
+ * ⚠ As with the Newsletter: this only reaches the fields if HubSpot renders
+ * the form INLINE. A form built in HubSpot's newer editor renders in an iframe,
+ * and is then styled from that form's Style tab in HubSpot instead.
+ */
+
+/* max-width: reset.css caps every <form> at 400px above 768px (a Hydrogen
+ * starter leftover); this one fills its column, as drawn. */
+.formColumn :global(.hs-form) {
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* HubSpot's two-to-a-row fieldsets, as a grid. */
+.formColumn :global(fieldset) {
+  max-width: none !important; /* HubSpot sets an inline 500px */
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.formColumn :global(fieldset.form-columns-2) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.formColumn :global(fieldset .hs-form-field) {
+  width: auto !important; /* HubSpot floats each column at 50% */
+  float: none !important;
+}
+
+.formColumn :global(fieldset .input) {
+  margin: 0 !important;
+}
+
+/* Styleguide UI label. */
+.formColumn :global(.hs-form-field > label) {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+}
+
+.formColumn :global(.hs-form-required) {
+  color: var(--color-text);
+}
+
+/* On navy, an inline form's labels reverse out. The fields stay white. */
+.navy .formColumn :global(.hs-form-field > label),
+.navy .formColumn :global(.hs-form-required) {
+  color: var(--color-text-inverse);
+}
+
+/* The cart note's field treatment, so the site's inputs match. 16px text so
+ * phones don't zoom in on focus. */
+.formColumn :global(.hs-input) {
+  width: 100% !important;
+  min-height: 44px;
+  padding: 10px var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.formColumn :global(textarea.hs-input) {
+  min-height: 120px; /* from the design */
+  resize: vertical;
+}
+
+/* Safari's default placeholder grey is under AA. */
+.formColumn :global(.hs-input::placeholder) {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.formColumn :global(.hs-input:focus-visible) {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* Navy and bold rather than red: §09 keeps orange off text this small, and
+ * the palette has no separate error colour. */
+.formColumn :global(.hs-error-msg),
+.formColumn :global(.hs-error-msgs label) {
+  margin-top: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+/* On navy: the comp's pale coral error text, which reads on the dark panel
+ * where navy can't. */
+.navy .formColumn :global(.hs-error-msg),
+.navy .formColumn :global(.hs-error-msgs label) {
+  color: #ffd2c8;
+}
+
+/* The house primary button, full width as drawn. */
+.formColumn :global(.hs-button) {
+  width: 100%;
+  min-height: var(--button-height);
+  padding: 0 var(--space-8);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  text-transform: none;
+  color: var(--color-text-inverse);
+  background: var(--color-action);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color var(--duration-control) var(--ease-default);
+}
+
+.formColumn :global(.hs-button:hover) {
+  background: var(--brand-orange-hover);
+}
+
+.formColumn :global(.hs-button:focus-visible) {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * The hifi is desktop-only.
+ */
+
+/* tablet — the form drops under the copy at full width; a half-width form
+ * would squeeze two fields to a row into ~160px each. */
+@media (max-width: 1099px) {
+  .panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .body {
+    max-width: var(--measure);
+  }
+}
+
+/* mobile — one field per row. */
+@media (max-width: 499px) {
+  .navy .panel {
+    padding: var(--space-8) var(--space-5);
+  }
+
+  .formColumn :global(fieldset.form-columns-2) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

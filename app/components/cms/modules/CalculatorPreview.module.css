@@ -1,0 +1,231 @@
+/*
+ * Calculator Preview module — sprint-05 hifi_firepumptesting.html,
+ * "Size the hose for your lines".
+ *
+ * Text lockup on the left, a static calculator card on the right: caption,
+ * sample-input tiles two across, then a navy answer bar.
+ */
+
+.section {
+  /* Shared section rhythm — --container-block is 64px and steps to 48/32, so
+   * there is no responsive override for it in this file. reset.css would
+   * otherwise apply its own `padding: 2rem 0` to a bare <section>. */
+  padding-block: var(--container-block);
+
+  /*
+   * Full-bleed ALWAYS, not only when tinted — the rule Link Cards, Card Grid
+   * and Text & Media use. <main> carries a 16px horizontal margin, so without
+   * this a grey band would stop 16px short of each edge. .inner adds the same
+   * 16px back via --container-gutter-bleed.
+   */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* The `background` field. Null and "white" both mean no class. */
+.grey {
+  background-color: var(--color-surface-alt);
+}
+
+/* Equal columns, as drawn (the comp's auto-fit 1fr / 1fr). */
+.inner {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-12); /* 48px — the comp clamps 28 → 56 */
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter-bleed);
+}
+
+/* No card: the copy runs alone rather than leaving an empty column. */
+.solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.copy {
+  min-width: 0;
+}
+
+/* Styleguide §03: GOPHER at 19px / 700, the only size orange is legal as text. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-3);
+}
+
+/* Figma "H2" */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Styleguide "Body large" — intro copy, held to the house measure. */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: var(--measure);
+  margin-top: var(--space-4); /* 16px in the design */
+}
+
+.body p {
+  margin: 0;
+}
+
+.body p + p {
+  margin-top: var(--space-3);
+}
+
+.actions {
+  margin-top: var(--space-6); /* 24px in the design */
+}
+
+/* The card — the same white, 2px-bordered, 8px-radius chrome as Card Grid. */
+.card {
+  min-width: 0;
+  padding: var(--space-8); /* 32px in the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/*
+ * The comp's 12px tracked caps, at Detail size — the smallest the styleguide
+ * allows — and untracked, since §03 keeps letter spacing for the eyebrow.
+ */
+.previewLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-5); /* 20px in the design */
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4); /* 16px in the design */
+  margin: 0;
+}
+
+.tile {
+  min-width: 0;
+  padding: var(--space-4);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.tileLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-1);
+}
+
+/* The sample numbers: display face at the styleguide's H3 size. */
+.tileValue {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  color: var(--color-text);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The answer bar — navy, label left, answer right; wraps if it has to. */
+.result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: var(--space-4) var(--space-5); /* 16 / 20 in the design */
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inverse);
+}
+
+.tiles + .result {
+  margin-top: var(--space-4);
+}
+
+.resultLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  text-transform: uppercase;
+  color: var(--ink-on-navy);
+  margin: 0;
+}
+
+.resultValue {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  color: var(--color-text-inverse);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced in the comp — desktop-only frame. Same stacking point as
+ * Text & Media.
+ */
+
+/* tablet — the card stacks under the copy */
+@media (max-width: 1099px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .body {
+    max-width: none;
+  }
+}
+
+/* mobile — tighter card, and a long button label wraps inside the button */
+@media (max-width: 499px) {
+  .card {
+    padding: var(--space-5);
+  }
+
+  .tiles {
+    gap: var(--space-3);
+  }
+
+  .tile {
+    padding: var(--space-3);
+  }
+
+  .actions > a {
+    display: flex;
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+}

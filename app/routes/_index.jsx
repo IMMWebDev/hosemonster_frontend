@@ -1,64 +1,76 @@
 import {useLoaderData} from 'react-router';
 import {MockShopNotice} from '~/components/MockShopNotice';
 import BlockManager from '~/components/cms/BlockManager';
+import {getModuleBlogs} from '~/lib/module-blogs';
+import {getModuleVideos, onlyVideoFiltersChanged} from '~/lib/videos';
 import {getModuleProducts} from '~/lib/module-products';
+import {
+  DEFAULT_SHARE_IMAGE,
+  canonicalLink,
+  metaDescription,
+  shareImage,
+  siteOrigin,
+  socialTags,
+} from '~/lib/seo';
 
-const HOME_TITLE = 'Home Page | Hose Monster';
 /*
- * Social share card. 5000x2625 (1.90:1), which sits inside the 1.91:1 that
- * Facebook, LinkedIn and X all expect, so it crops cleanly on every platform.
- *
- * Absolute URL, not a path — scrapers fetch it without a page context, so a
- * relative one resolves against nothing and the card renders blank.
+ * Fallbacks only, for when Strapi can't be reached or the homepage's seo
+ * fields are empty. The real title and description are the homepage entry's
+ * SEO fields in Strapi (Pages → "/").
  */
-const HOME_OG_IMAGE =
-  'https://media.impactmit.com/image/upload/v1789141092/HM_OGI_Home_c1f4da3fb2.png';
+const HOME_TITLE =
+  'Hose Monster® | Fire Hydrant & Fire Pump Flow Testing Equipment';
 
 const HOME_DESCRIPTION =
-  'Hose Monster makes the safest, most accurate and efficient flow testing ' +
-  'equipment in the industry. Contact a sales rep to upgrade your fire ' +
-  'protection today!';
+  'Fire hydrant, fire pump & standpipe flow testing equipment. The gold ' +
+  'standard since 1993. Shop Hose Monster® kits, Smart Monster™ gauges & ' +
+  'FireFlow.';
 
 /**
- * Homepage metadata.
- *
- * ⚠ Hardcoded, unlike every other CMS page. `app/routes/$.jsx` builds its tags
- * from the page's `seo` component in Strapi; this route ignores that entirely.
- *
- * The homepage entry in Strapi still HAS an `seo` component — it is required on
- * the Pages type — so anything typed into it there has no effect on what
- * renders. Edit the constants above instead, or port the meta function from
- * `$.jsx` to make this CMS-driven.
- *
- * Values carried over from the live WordPress site so search results and shared
- * links do not change wording at launch.
+ * Homepage metadata, from the homepage entry's `seo` component in Strapi, as
+ * every other CMS page does it (app/routes/$.jsx). The share image is the
+ * site card (DEFAULT_SHARE_IMAGE, 5000×2625) unless a Meta Image is set.
  *
  * @type {Route.MetaFunction}
  */
-export const meta = () => {
-  return [
-    {title: HOME_TITLE},
-    {name: 'description', content: HOME_DESCRIPTION},
-    {property: 'og:title', content: HOME_TITLE},
-    {property: 'og:description', content: HOME_DESCRIPTION},
-    {property: 'og:type', content: 'website'},
-    {property: 'og:site_name', content: 'HoseMonster'},
-    {property: 'og:image', content: HOME_OG_IMAGE},
-    // Dimensions let a scraper reserve the right space before the image loads,
-    // and stop some platforms falling back to a smaller card layout.
-    {property: 'og:image:width', content: '5000'},
-    {property: 'og:image:height', content: '2625'},
-    {property: 'og:image:alt', content: HOME_TITLE},
-    {name: 'twitter:card', content: 'summary_large_image'},
-    // X reads its own namespace first and does not fall back to og:image in
-    // every case, so it is stated explicitly rather than assumed.
-    {name: 'twitter:image', content: HOME_OG_IMAGE},
-  ];
+export const meta = ({data}) => {
+  const seo = data?.seo ?? {};
+  const title = seo.metaTitle?.trim() || HOME_TITLE;
+  const description = metaDescription(seo.metaDescription) || HOME_DESCRIPTION;
+  const tags = [{title}, {name: 'description', content: description}];
+  const canonical = canonicalLink(data?.canonical);
+  if (canonical) tags.push(canonical);
+  tags.push(
+    ...socialTags({
+      title,
+      description,
+      url: data?.canonical,
+      image: shareImage(seo.metaImage, data?.strapiBaseUrl) ?? DEFAULT_SHARE_IMAGE,
+    }),
+  );
+  return tags;
 };
 
 /**
  * @param {Route.LoaderArgs} args
  */
+/**
+ * A Video Library's filters live in the URL (?section=, ?equipment=) but are
+ * applied in the browser, so changing one doesn't re-run this loader.
+ * @type {import('react-router').ShouldRevalidateFunction}
+ */
+export function shouldRevalidate({
+  currentUrl,
+  nextUrl,
+  formMethod,
+  defaultShouldRevalidate,
+}) {
+  if (!formMethod && onlyVideoFiltersChanged(currentUrl, nextUrl)) {
+    return false;
+  }
+  return defaultShouldRevalidate;
+}
+
 export async function loader(args) {
   return await loadCriticalData(args);
 }
@@ -80,19 +92,27 @@ export async function loader(args) {
  *
  * @param {Route.LoaderArgs}
  */
-async function loadCriticalData({context}) {
+async function loadCriticalData({context, request}) {
   const {page, modules} = await context.strapi.getPage('/');
 
   // See the note in app/routes/$.jsx — module.product-cards needs Shopify data
   // the CMS payload does not carry, and only a loader can fetch it.
-  const products = await getModuleProducts({
-    storefront: context.storefront,
-    modules,
-  });
+  const [products, blogPosts, videoLibrary] = await Promise.all([
+    getModuleProducts({storefront: context.storefront, modules}),
+    // A Post Grid's page of posts (?page=); null without one.
+    getModuleBlogs({strapi: context.strapi, modules, request}),
+    // A Video Library's videos, grouped; null without one.
+    getModuleVideos({strapi: context.strapi, modules}),
+  ]);
 
   return {
     products,
+    blogPosts,
+    videoLibrary,
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
+    canonical: `${siteOrigin(request)}/`,
+    // The homepage's own seo fields, for the meta tags.
+    seo: page?.seo ?? null,
     modules,
     strapiBaseUrl: context.env.STRAPI_API_URL,
     // Read by PageLayout via useMatches to decide whether the newsletter band
@@ -113,6 +133,8 @@ export default function Homepage() {
         blocks={data.modules}
         baseUrl={data.strapiBaseUrl}
         products={data.products}
+        blogPosts={data.blogPosts}
+        videoLibrary={data.videoLibrary}
       />
     </div>
   );

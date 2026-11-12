@@ -6,6 +6,7 @@ import UiIcon from '~/components/icons/UiIcon';
 import {hasUnavailableLine, savedAmount} from '~/lib/cart';
 import {cartActivity, useCartBusy} from '~/lib/cart-activity';
 import {CONTACT_PATH} from '~/lib/search';
+import {useTrackId} from '~/lib/tracking';
 import styles from './CartSummary.module.css';
 
 /*
@@ -31,6 +32,7 @@ import styles from './CartSummary.module.css';
  */
 export function CartTotals({cart, layout, onContinue}) {
   const headingId = useId();
+  const trackId = useTrackId();
   const phone = useRouteLoaderData('root')?.cmsFooter?.phone ?? null;
   const subtotal = cart?.cost?.subtotalAmount;
   const total = cart?.cost?.totalAmount;
@@ -105,6 +107,7 @@ export function CartTotals({cart, layout, onContinue}) {
             href={cart.checkoutUrl}
             target="_self"
             className={`btn btn--primary ${styles.checkout}`}
+            data-track-id={trackId('checkout')}
             aria-busy={checkoutWanted || undefined}
             data-waiting={checkoutWanted || undefined}
             onClick={(event) => {
@@ -120,7 +123,12 @@ export function CartTotals({cart, layout, onContinue}) {
         {/* Close is how you keep shopping; the page is the other way out. */}
         {layout === 'drawer' ? (
           <div className={styles.textActions}>
-            <Link to="/cart" className={styles.textLink} onClick={onContinue}>
+            <Link
+              to="/cart"
+              className={styles.textLink}
+              onClick={onContinue}
+              data-track-id={trackId('view-cart')}
+            >
               View cart
             </Link>
           </div>
@@ -134,7 +142,12 @@ export function CartTotals({cart, layout, onContinue}) {
             Call <PhoneLink phone={phone} className={styles.link} /> or{' '}
           </>
         ) : null}
-        <Link to={CONTACT_PATH} className={styles.link} onClick={onContinue}>
+        <Link
+          to={CONTACT_PATH}
+          className={styles.link}
+          onClick={onContinue}
+          data-track-id={trackId('contact')}
+        >
           talk to our team
         </Link>
         .
@@ -156,6 +169,7 @@ export function CartNote({cart}) {
   const textareaId = useId();
   const panelId = useId();
   const fetcher = useFetcher({key: 'cart-note'});
+  const trackId = useTrackId();
   const [savedAt, setSavedAt] = useState(0);
   const note = cart?.note ?? '';
   // Open from the start when there's already a note to see. A disclosure
@@ -183,6 +197,7 @@ export function CartNote({cart}) {
         className={styles.noteSummary}
         aria-expanded={open}
         aria-controls={panelId}
+        data-track-id={trackId('note-toggle')}
         onClick={() => setOpen((current) => !current)}
       >
         <span>Order notes (optional)</span>
@@ -211,6 +226,7 @@ export function CartNote({cart}) {
               <button
                 type="submit"
                 className={`btn btn--secondary ${styles.noteSave}`}
+                data-track-id={trackId('note-save')}
                 disabled={fetcher.state !== 'idle'}
               >
                 {fetcher.state !== 'idle'

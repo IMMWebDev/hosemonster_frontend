@@ -7,7 +7,9 @@ import {productRefFor} from '~/lib/module-products';
 import {sharpImageProps} from '~/lib/image';
 import {useProductPath} from '~/lib/product-urls';
 import {CONTACT_PATH} from '~/lib/search';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './FeaturedProduct.module.css';
+import {linkDestination} from '~/lib/cms-links';
 
 /**
  * Featured Product module — sprint-04 hifi_dechlorinationcollection.html v2,
@@ -27,7 +29,7 @@ import styles from './FeaturedProduct.module.css';
  *    picking a thread or length for the customer;
  *  - nothing sold online → "Contact us to order", as on the product page.
  *
- * The editor's outlined button (`cta`) is hidden when it goes where the buy
+ * The editor's outlined button (`primaryCTA`) is hidden when it goes where the buy
  * button already goes — "Explore the kit" beside "Choose options", both to the
  * product page, is one destination offered twice.
  *
@@ -37,13 +39,14 @@ import styles from './FeaturedProduct.module.css';
  *     productRef?: string,
  *     heading?: string,
  *     body?: string,
- *     cta?: object,
+ *     primaryCTA?: object,
  *   },
  *   products?: Record<string, object>,
  * }} props
  */
 export default function FeaturedProduct({data, products = {}}) {
-  const {eyebrow, heading, body, cta} = data ?? {};
+  const trackingRoot = useTrackingRoot();
+  const {eyebrow, heading, body, primaryCTA} = data ?? {};
   const pathFor = useProductPath();
 
   // A reference that no longer resolves (renamed, unpublished, deleted)
@@ -63,7 +66,7 @@ export default function FeaturedProduct({data, products = {}}) {
   const productPath = pathFor(product.handle);
 
   const buyTo = buyDestination(product, variants, productPath);
-  const ctaTo = linkPath(cta);
+  const ctaTo = linkPath(primaryCTA);
   const duplicate =
     buyTo != null &&
     ctaTo != null &&
@@ -71,10 +74,10 @@ export default function FeaturedProduct({data, products = {}}) {
     // destination too.
     (ctaTo === buyTo ||
       (buyTo === productPath && ctaTo === `/products/${product.handle}`));
-  const showCta = Boolean(cta?.linkText) && !duplicate;
+  const showCta = Boolean(primaryCTA?.linkText) && !duplicate;
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
         <div className={styles.card} data-reveal>
           <div className={styles.media}>
@@ -110,7 +113,13 @@ export default function FeaturedProduct({data, products = {}}) {
 
             <div className={styles.actions}>
               {showCta ? (
-                <CmsLink link={cta} className="btn btn--secondary" />
+                /* The module's one CMS button, so primary-cta by the naming
+                   rule — though it's drawn outlined beside the buy button. */
+                <CmsLink
+                  link={primaryCTA}
+                  className="btn btn--secondary"
+                  trackRole="primary-cta"
+                />
               ) : null}
               <BuyButton
                 product={product}
@@ -141,11 +150,11 @@ function buyDestination(product, variants, productPath) {
  * The on-site path a CMS link goes to, without query, hash or trailing slash;
  * null for an external or empty link, which can't match an on-site button.
  *
- * @param {{linkUrl?: string, pageLink?: {path?: string}, collectionLink?: {path?: string}} | undefined} link
+ * @param {Parameters<typeof linkDestination>[0]} link
  * @returns {string | null}
  */
 function linkPath(link) {
-  const to = link?.linkUrl || link?.pageLink?.path || link?.collectionLink?.path;
+  const to = linkDestination(link);
   if (!to || !to.startsWith('/') || to.startsWith('//')) return null;
   return to.split(/[?#]/)[0].replace(/\/+$/, '') || '/';
 }
@@ -155,10 +164,15 @@ function linkPath(link) {
  */
 function BuyButton({product, variants, productPath}) {
   const {open} = useAside();
+  const trackId = useTrackId();
 
   if (!product.availableForSale) {
     return (
-      <Link to={CONTACT_PATH} className="btn btn--primary">
+      <Link
+        to={CONTACT_PATH}
+        className="btn btn--primary"
+        data-track-id={trackId('contact-to-order')}
+      >
         Contact us to order
       </Link>
     );
@@ -166,7 +180,12 @@ function BuyButton({product, variants, productPath}) {
 
   if (variants.length !== 1) {
     return (
-      <Link to={productPath} prefetch="intent" className="btn btn--primary">
+      <Link
+        to={productPath}
+        prefetch="intent"
+        className="btn btn--primary"
+        data-track-id={trackId('choose-options')}
+      >
         Choose options
       </Link>
     );
@@ -187,6 +206,7 @@ function BuyButton({product, variants, productPath}) {
           className="btn btn--primary"
           disabled={fetcher.state !== 'idle'}
           onClick={() => open('cart')}
+          data-track-id={trackId('add-to-cart')}
         >
           {fetcher.state !== 'idle' ? 'Adding…' : 'Add to cart'}
         </button>

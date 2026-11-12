@@ -225,6 +225,140 @@
 
 /*
  * -----------------------------------------------------------------------------
+ * CARDS STYLE — sprint-05 hifi_dechlorinationflushing.html, "Choosing an agent"
+ * -----------------------------------------------------------------------------
+ * `.cards` is on the section. Each step becomes a white, 2px-bordered card
+ * (the house card chrome) under a solid orange numeral, with its tags pinned
+ * to the foot so they line up across a row. The selectors restate
+ * :first-child and `+ .step` so they outrank the columns rules above and the
+ * mdTablet rules below.
+ */
+
+.cards .steps {
+  /* 380px, the comp's minimum: two cards across on desktop, three when a
+   * section has three — and it wraps to one well before the copy gets cramped. */
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: var(--space-5); /* 20px — the comp clamps 14 → 20 */
+  border-top: 0;
+}
+
+.cards .step,
+.cards .step:first-child,
+.cards .step + .step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-8); /* 32px in the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* Orange at 32px / 700 clears §09's 19px floor for orange text. */
+.cards .number {
+  font-size: var(--text-h2); /* 32px on desktop, as drawn */
+  line-height: 1;
+  color: var(--color-text-accent);
+  margin-bottom: var(--space-4); /* 16px in the design */
+}
+
+/* The comp's 20px display caps — styleguide H3. */
+.cards .stepTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  text-transform: uppercase;
+  margin-bottom: var(--space-3); /* 12px in the design */
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2); /* 8px in the design */
+  /* Pinned to the card's foot; the padding keeps the comp's 20px from the
+   * copy when the card is no taller than its content. */
+  margin: auto 0 0;
+  padding: var(--space-5) 0 0;
+  list-style: none;
+}
+
+/* The comp's 12.5px pill label at Detail, the smallest size the guide allows.
+ * Outlined in the card's own border so it reads as a label, not a button. */
+.tag {
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  color: var(--color-text);
+}
+
+/* The steps carry no bottom padding in this style, so the bar needs the
+ * full gap of its own. */
+.cards .cta {
+  margin-top: var(--space-8);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * NOTES — shared utilities.note callouts, two across, in either style
+ * -----------------------------------------------------------------------------
+ * The orange-edged white callout every module's note uses. The Heading is the
+ * comp's small caps label ("Which one", "Dosing"), at Detail and untracked —
+ * §03 keeps letter spacing for the eyebrow.
+ */
+
+.notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-5); /* 20px in the design */
+}
+
+.note {
+  min-width: 0;
+  padding: var(--space-5) var(--space-6); /* 20 / 24 in the design */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-left: 4px solid var(--color-action);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* An <h3>: restate the tracking typography.css gives bare h3s. */
+.noteHeading {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.noteBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  max-width: var(--measure-note);
+}
+
+.noteHeading + .noteBody {
+  margin-top: var(--space-1);
+}
+
+/* The bar under notes keeps its full gap too. */
+.notes + .cta {
+  margin-top: var(--space-8);
+}
+
+/*
+ * -----------------------------------------------------------------------------
  * RESPONSIVE — house breakpoints (app/styles/layout.css)
  * -----------------------------------------------------------------------------
  * ⚠ Not specced — the comp is desktop-only. The grid wraps on its own via
@@ -254,5 +388,15 @@
     align-items: stretch;
     gap: var(--space-5);
     padding: var(--space-6);
+  }
+  /* Cards: a tighter pad so the copy keeps its width on phones. */
+  .cards .step,
+  .cards .step:first-child,
+  .cards .step + .step {
+    padding: var(--space-6);
+  }
+
+  .note {
+    padding: var(--space-5) var(--space-4);
   }
 }

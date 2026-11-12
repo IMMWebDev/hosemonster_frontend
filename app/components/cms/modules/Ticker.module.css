@@ -9,8 +9,18 @@
   /* Full-bleed: the strip should run off both edges of the screen, otherwise
    * the fade reads as the text stopping rather than continuing. Cancels the
    * horizontal margin <main> carries — same approach as the Hero. */
+  position: relative; /* anchors the pause button */
   margin-inline: calc(-1 * var(--main-gutter));
   width: calc(100% + 2 * var(--main-gutter));
+  overflow: hidden;
+  /* The strip's 16px above and below lives on .viewport. Zero here, or
+   * reset.css's site-wide `section` padding adds its own on top. */
+  padding-block: 0;
+}
+
+/* The moving part. The fade lives here rather than on .section so it can't
+ * fade out the pause button sitting over the right end. */
+.viewport {
   overflow: hidden;
   padding-block: var(--space-4);
 
@@ -58,10 +68,75 @@
   }
 }
 
-/* Let people stop it to read an item. */
-.section:hover .track,
-.section:focus-within .track {
+/* Let people stop it to read an item — on the strip itself, not the button,
+ * so pressing Play visibly starts it. The pause button's choice holds until
+ * pressed again. */
+.viewport:hover .track,
+.paused .track {
   animation-play-state: paused;
+}
+
+/*
+ * Pause / play. Over the right end of the strip, where the white strip fades
+ * out, centred on the claims; filled with the strip's own ground so they pass
+ * under it cleanly. The outline-button look of the carousel arrows, at a size
+ * that stays out of the way.
+ */
+.toggle {
+  position: absolute;
+  /* 4px above halfway: the claims carry the 8px bottom margin every <li>
+   * gets (reset.css), so their middle sits that much above the strip's. */
+  top: calc(50% - 4px);
+  /* In line with the page's content edge, as full-bleed modules are —
+   * including above their width cap, where the content stops spreading. */
+  right: calc(
+    max(0px, (100% - var(--container-outer-bleed)) / 2) +
+      var(--container-gutter-bleed)
+  );
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--brand-navy);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.toggle svg {
+  display: block;
+}
+
+/* Mouse only, so a tap on a phone doesn't leave it filled. */
+@media (hover: hover) {
+  .toggle:hover {
+    background: var(--brand-navy);
+    color: var(--color-text-inverse);
+  }
+
+  .navy .toggle:hover {
+    background: var(--color-surface);
+    color: var(--brand-navy);
+  }
+}
+
+.toggle:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Nothing moves, so there is nothing to pause. */
+@media (prefers-reduced-motion: reduce) {
+  .toggle {
+    display: none;
+  }
 }
 
 .group {
@@ -92,6 +167,46 @@
   line-height: var(--leading-body);
   color: var(--color-text-accent);
   user-select: none;
+}
+
+/*
+ * Navy — sprint-05 hifi_hydrantflowtesting.html, "Trust marquee". A solid band
+ * edge to edge, so no fade: masking the section would fade the navy out with
+ * the text and leave the band's ends dissolving into the page. White claims,
+ * dividers in faint white rather than orange, as drawn. Type stays the same
+ * as the white strip.
+ */
+.navy {
+  background: var(--color-surface-inverse);
+  /* The orange ring is too faint on navy (2.95:1); white, as on other dark
+   * grounds. */
+  --color-focus-ring: var(--color-text-inverse);
+}
+
+.navy .viewport {
+  mask-image: none;
+}
+
+/* White on the band, as its claims are; centred, as the band's claims have
+ * no margin. */
+.navy .toggle {
+  top: 50%;
+  border-color: rgb(255 255 255 / 35%);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+}
+
+/* The hifi's band is 57px tall. Without the items' own 13px above and below
+ * (and the 8px bottom margin every <li> gets site-wide), the strip's 16px
+ * either side of the 26px line lands on it. */
+.navy .item {
+  padding-block: 0;
+  margin: 0;
+  color: var(--color-text-inverse);
+}
+
+.navy .divider {
+  color: rgb(255 255 255 / 35%);
 }
 
 @media (max-width: 699px) {

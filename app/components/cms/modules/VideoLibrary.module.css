@@ -1,0 +1,282 @@
+/*
+ * Video Library module — sprint-05 hifi_hmuvideos.html, the filters and the
+ * video groups. The cards are VideoCard (../video/VideoCard.module.css).
+ */
+
+.section {
+  /* 32px over the filters, as the comp; the house 64px under the groups. */
+  padding-block: var(--space-8) var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Styleguide H2, for a library under its own heading. */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-6);
+}
+
+/* ---- filters ---- */
+
+.filters {
+  /* "View all" scrolls the filters to the top; clear the sticky header. */
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-7); /* 16 / 28, from the design */
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* from the design */
+}
+
+/*
+ * "Section". The comp's 13px / 0.06em caps: Styleguide "Detail", bold caps,
+ * untracked — tracking is the eyebrow's alone (§03).
+ */
+.label {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+/* The comp's select: 2px border, bold navy text, and the house chevron
+ * (UiIcon's) on the right. 44px tall — the touch-target minimum. */
+.select {
+  appearance: none;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0 40px 0 14px;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='16' height='16' fill='none' stroke='%231d3a54' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E")
+    no-repeat right 14px center;
+  font-family: var(--font-body);
+  font-size: var(--text-ui); /* 16px, so phones don't zoom in on focus */
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.select:hover {
+  border-color: var(--color-border-strong);
+}
+
+.select:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* "3 videos · Clear filters" — only while a filter is on. */
+.result {
+  margin: 0 0 0 auto;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+}
+
+/* The arrow-link colours, underlined — it's a text action, not a card link. */
+.clear {
+  font-weight: var(--weight-bold);
+  color: var(--color-text-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Two classes, to outrank reset.css's a:hover:not(.btn), which would take
+ * the underline away and paint it the brand orange (4:1, too faint at this
+ * size). Hover goes navy instead: the link is already the dark orange and
+ * already underlined, so a colour step is the only cue left. */
+.result .clear:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.clear:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ---- groups ---- */
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12); /* 48px, from the design */
+  margin-top: var(--space-16); /* 64px, the comp's section padding */
+}
+
+/* Every property set: a bare h3 is the orange eyebrow in reset.css. */
+.groupTitle {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.groupTitle sup {
+  font-size: 0.55em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.groupMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) 14px;
+  margin-bottom: 22px; /* from the design */
+}
+
+.groupDescription {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+  color: var(--color-text-soft);
+}
+
+/* "· 4 videos" — muted, not the Faint §01 suggests for counts. Faint is only
+ * 2.1:1 on white and this is text people read, so it needs 4.5:1 (muted
+ * is 5:1). */
+.groupCount {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+/* auto-FILL, as the comp: a short group keeps card widths, not stretched. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-5); /* 20px, from the design */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  margin: 0;
+}
+
+/* "View all 23 videos ›" under a capped section — the site's arrow link. */
+.viewAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body);
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+
+.viewAll:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.viewAllIcon {
+  flex: none;
+  color: var(--color-action);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.viewAll:hover .viewAllIcon {
+  transform: translateX(3px);
+}
+
+/* ---- nothing matches ---- */
+
+.empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-12);
+}
+
+.emptyText {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--color-text-body);
+}
+
+/* A text button in the arrow-link colours. */
+.reset {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Navy, as .clear: the brand orange is 4:1 on white, short of what text this
+ * size needs. */
+.reset:hover {
+  color: var(--color-text);
+}
+
+/* Phones: each filter takes the row, its select filling it; the result line
+ * sits under them. */
+@media (max-width: 499px) {
+  .result {
+    margin-left: 0;
+  }
+
+  .filter {
+    flex: 1 1 100%;
+  }
+
+  /* One width for both labels, so the two selects line up. */
+  .label {
+    flex: 0 0 6.5em;
+  }
+
+  .select {
+    flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select,
+  .viewAllIcon {
+    transition: none;
+  }
+}

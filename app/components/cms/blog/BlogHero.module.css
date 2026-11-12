@@ -1,0 +1,187 @@
+/*
+ * Blog post hero — sprint-05 hifi_blogposttemplate.html.
+ *
+ * The breadcrumb, card, photo and title come from Page Hero's stylesheet (its
+ * Compact card — the same component in the comps). This file holds only what
+ * a post adds: the section spacing, a bottom-up scrim, a full-width copy block
+ * and the byline / share row.
+ */
+
+/* Top 0, as Page Hero; 32px under the card, which the body's first block
+ * tops up to the comp's 64. */
+.section {
+  padding-block: 0 var(--space-8);
+}
+
+/*
+ * The post's own crumb takes whatever room is left on the line and trims to
+ * an ellipsis rather than wrapping — a post title is long, and on a phone it
+ * would otherwise drop to a second line that starts with a stray slash. The
+ * full title is the H1 just below. A flex row so the slash (Page Hero's
+ * li + li::before) stays on the line with the text.
+ */
+.crumbPost {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 6em;
+}
+
+.crumbPostText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bottom-up, so the title and byline at the foot of the card sit on the
+ * darkest navy while the top of the photo stays bright. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    0deg,
+    rgb(29 58 84 / 100%) 0%,
+    rgb(29 58 84 / 70%) 40%,
+    rgb(29 58 84 / 20%) 100%
+  );
+  pointer-events: none;
+}
+
+/*
+ * The copy sits at the foot of the card. The card keeps Page Hero's minimum
+ * height, and a short title used to be centred in it, leaving a band of empty
+ * card under the byline; any spare height now goes above the title, where the
+ * photo shows. (.section for specificity over Page Hero's .card.)
+ */
+.section .card {
+  align-items: flex-end;
+}
+
+/* Full width, unlike Page Hero's copy column: the byline row runs edge to
+ * edge with the share links on the right.
+ *
+ * 22px under the share row, not the 44px on top: in the comp the 34px share
+ * buttons hang into the bottom padding, so the card ends 22px below them
+ * (about 30px below the byline). */
+.copy {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: clamp(28px, 4vw, 44px) clamp(24px, 4vw, 48px) 22px;
+}
+
+/* The title is capped and given room to wrap; line breaks typed in the CMS
+ * are kept (Page Hero's heading has white-space: pre-line). */
+.title {
+  max-width: 800px;
+  line-height: 1.15; /* from the design — two-line titles are the norm here */
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6); /* 16 / 24 in the design */
+  margin-top: 22px; /* from the design */
+  padding-top: 18px; /* from the design */
+  border-top: var(--border-width) solid rgb(255 255 255 / 22%);
+}
+
+.byline {
+  font-family: var(--font-body);
+  font-size: var(--text-detail); /* 13.5px — the comp's 14px is between steps */
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body-sm);
+  color: var(--color-text-on-navy);
+  margin: 0;
+}
+
+.byline sup {
+  font-size: 0.6em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.share {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* The comp's 12px tracked caps, at Detail size — the smallest the styleguide
+ * allows. */
+.shareLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-on-navy);
+}
+
+.shareList {
+  display: flex;
+  gap: 14px; /* from the design */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* reset.css spaces list items 8px apart; in a row of buttons that only made
+ * the row 8px taller. */
+.shareList li {
+  margin: 0;
+}
+
+.shareLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 12%);
+  color: var(--color-text-inverse);
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+/* :not(.btn) in reset.css turns every hovered link orange; the round button
+ * flips to white with a navy icon instead, as drawn. .shareList lifts this to
+ * (0,3,0) so it beats reset.css's a:hover:not(.btn) at (0,2,1). */
+.shareList .shareLink:hover,
+.shareList .shareLink:focus-visible {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* White, from Page Hero's card (--color-focus-ring): the ring sits on the
+ * scrim's navy foot, where orange is 2.95:1. */
+.shareLink:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the comp is a desktop frame. The row wraps on its own: the
+ * share links drop under the byline when they no longer fit beside it.
+ */
+
+/* Page Hero turns its scrim vertical here; this one already is. A touch more
+ * navy at the top keeps a long, wrapping title readable over the photo. */
+@media (max-width: 699px) {
+  .scrim {
+    background: linear-gradient(
+      0deg,
+      rgb(29 58 84 / 100%) 0%,
+      rgb(29 58 84 / 78%) 50%,
+      rgb(29 58 84 / 45%) 100%
+    );
+  }
+}

@@ -100,8 +100,9 @@
   overflow: hidden;
   text-decoration: none;
   transition:
-    border-color var(--duration-fast) var(--ease-default),
-    box-shadow var(--duration-fast) var(--ease-default);
+    border-color var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default),
+    translate var(--duration-control) var(--ease-default);
 }
 
 /*
@@ -111,8 +112,12 @@
  * card red.
  */
 .card:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-dropdown);
+  /* Red, as every card's hover on the site. */
+  border-color: var(--color-action);
+  box-shadow: var(--shadow-card-hover);
+  /* `translate`, not `transform`: motion.css ends every reveal on
+   * `transform: none` at higher specificity, which would cancel the lift. */
+  translate: 0 var(--card-lift);
 }
 
 .card:focus-visible {
@@ -244,5 +249,9 @@
 @media (prefers-reduced-motion: reduce) {
   .card {
     transition: none;
+  }
+
+  .card:hover {
+    translate: none;
   }
 }

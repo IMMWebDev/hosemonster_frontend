@@ -4,28 +4,53 @@ import Search from '~/components/cms/modules/Search';
 import BundleBuilder from '~/components/cms/modules/BundleBuilder';
 import PageHero from '~/components/cms/modules/PageHero';
 import FeatureHero from '~/components/cms/modules/FeatureHero';
+import CalculatorPreview from '~/components/cms/modules/CalculatorPreview';
 import CardGrid from '~/components/cms/modules/CardGrid';
+import CardPicker from '~/components/cms/modules/CardPicker';
 import CtaBar from '~/components/cms/modules/CtaBar';
+import FeaturedBlog from '~/components/cms/modules/FeaturedBlog';
 import FeaturedProduct from '~/components/cms/modules/FeaturedProduct';
+import FeaturedVideos from '~/components/cms/modules/FeaturedVideos';
+import PostGrid from '~/components/cms/modules/PostGrid';
 import ProductCards from '~/components/cms/modules/ProductCards';
 import ProductFeed from '~/components/cms/modules/ProductFeed';
 import LinkCards from '~/components/cms/modules/LinkCards';
 import TabbedCards from '~/components/cms/modules/TabbedCards';
 import TextMedia from '~/components/cms/modules/TextMedia';
+import TextForm from '~/components/cms/modules/TextForm';
+import TextTable from '~/components/cms/modules/TextTable';
 import TextHighlights from '~/components/cms/modules/TextHighlights';
+import TextBadge from '~/components/cms/modules/TextBadge';
 import TextChecklist from '~/components/cms/modules/TextChecklist';
+import NumberedBenefits from '~/components/cms/modules/NumberedBenefits';
+import NumberedLinkCards from '~/components/cms/modules/NumberedLinkCards';
 import NumberedSteps from '~/components/cms/modules/NumberedSteps';
 import ReferenceGuide from '~/components/cms/modules/ReferenceGuide';
 import DocumentCards from '~/components/cms/modules/DocumentCards';
 import Pricing from '~/components/cms/modules/Pricing';
 import Faq from '~/components/cms/modules/Faq';
 import CategoryGrid from '~/components/cms/modules/CategoryGrid';
+import CourseCards from '~/components/cms/modules/CourseCards';
 import CtaBanner from '~/components/cms/modules/CtaBanner';
+import SpecSheet from '~/components/cms/modules/SpecSheet';
+import StatBanner from '~/components/cms/modules/StatBanner';
+import StatsComparison from '~/components/cms/modules/StatsComparison';
+import StepGuide from '~/components/cms/modules/StepGuide';
 import FeatureCards from '~/components/cms/modules/FeatureCards';
+import TestimonialStrip from '~/components/cms/modules/TestimonialStrip';
 import Testimonials from '~/components/cms/modules/Testimonials';
 import Ticker from '~/components/cms/modules/Ticker';
+import VideoLibrary from '~/components/cms/modules/VideoLibrary';
 import Wysiwyg from '~/components/cms/modules/Wysiwyg';
+import BlogCtaCard from '~/components/cms/blog-modules/BlogCtaCard';
+import BlogImage from '~/components/cms/blog-modules/BlogImage';
+import BlogImageRow from '~/components/cms/blog-modules/BlogImageRow';
+import BlogNote from '~/components/cms/blog-modules/BlogNote';
+import BlogVideo from '~/components/cms/blog-modules/BlogVideo';
 import ImageContent from '~/components/cms/modules/ImageContent';
+import {LINK_POPULATE} from '~/lib/cms-links';
+import {BLOG_CARD_QUERY} from '~/lib/module-blogs';
+import {VIDEO_CARD_QUERY} from '~/lib/videos';
 
 /**
  * Single source of truth for Strapi dynamic-zone modules — ported from
@@ -52,8 +77,19 @@ export const MODULE_REGISTRY = {
       populate: {
         backgroundImage: true,
         trustItems: true,
-        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
-        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
+        secondaryCTA: {populate: LINK_POPULATE},
+      },
+    },
+  },
+  'module.featured-videos': {
+    Component: FeaturedVideos,
+    // The picked videos with what a card reads (lib/videos); the link needs
+    // its relations.
+    options: {
+      populate: {
+        videos: VIDEO_CARD_QUERY,
+        link: {populate: LINK_POPULATE},
       },
     },
   },
@@ -75,23 +111,38 @@ export const MODULE_REGISTRY = {
       populate: {
         backgroundImage: true,
         badge: true,
+        breadcrumbs: {populate: {breadcrumbLinks: {populate: LINK_POPULATE}}},
         trustItems: true,
         infoColumns: true,
-        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
-        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
+        secondaryCTA: {populate: LINK_POPULATE},
       },
     },
   },
   'module.page-hero': {
     Component: PageHero,
     // Every component field must be named. populate: '*' stops one level down
-    // and would return breadcrumbParent without its pageLink relation, so the
-    // crumb would resolve to '#'.
+    // and would return the breadcrumbs without their pageLink relations, so
+    // every crumb would resolve to '#'.
     options: {
       populate: {
         backgroundImage: true,
-        breadcrumbParent: {populate: {pageLink: true, collectionLink: true}},
+        badge: true,
+        breadcrumbs: {populate: {breadcrumbLinks: {populate: LINK_POPULATE}}},
+        primaryCTA: {populate: LINK_POPULATE},
+        secondaryCTA: {populate: LINK_POPULATE},
         infoColumns: true,
+      },
+    },
+  },
+  'module.calculator-preview': {
+    Component: CalculatorPreview,
+    // The sample inputs are a repeatable component and the button a link with
+    // its own page relation — both need naming or Strapi returns them empty.
+    options: {
+      populate: {
+        inputs: true,
+        primaryCTA: {populate: LINK_POPULATE},
       },
     },
   },
@@ -104,9 +155,11 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true, collectionLink: true}},
+            link: {populate: LINK_POPULATE},
           },
         },
+        note: true,
+        primaryCTA: {populate: LINK_POPULATE},
       },
     },
   },
@@ -116,8 +169,17 @@ export const MODULE_REGISTRY = {
       populate: {
         backgroundImage: true,
         bullets: true,
-        cta: {populate: {pageLink: true, collectionLink: true}},
-        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
+        secondaryCTA: {populate: LINK_POPULATE},
+      },
+    },
+  },
+  'module.featured-blog': {
+    Component: FeaturedBlog,
+    // The picked post, with what its card shows (lib/module-blogs).
+    options: {
+      populate: {
+        blog: BLOG_CARD_QUERY,
       },
     },
   },
@@ -127,8 +189,16 @@ export const MODULE_REGISTRY = {
     // button's link relations need naming here.
     options: {
       populate: {
-        cta: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
       },
+    },
+  },
+  'module.post-grid': {
+    Component: PostGrid,
+    // Scalars only: the posts themselves come from the route loader
+    // (lib/module-blogs.js → the blogPosts prop).
+    options: {
+      populate: '*',
     },
   },
   'module.product-cards': {
@@ -138,7 +208,7 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         items: true,
-        viewAllLink: {populate: {pageLink: true, collectionLink: true}},
+        viewAllLink: {populate: LINK_POPULATE},
         // Pick a collection and the cards come from it; its path is the
         // default view-all link.
         collection: {fields: ['name', 'shopifyCollectionHandle', 'path']},
@@ -153,9 +223,10 @@ export const MODULE_REGISTRY = {
       populate: {
         items: {
           populate: {
-            link: {populate: {pageLink: true, collectionLink: true}},
+            link: {populate: LINK_POPULATE},
           },
         },
+        note: true,
       },
     },
   },
@@ -185,12 +256,12 @@ export const MODULE_REGISTRY = {
         builder: {
           populate: {
             lineRows: true,
-            overMaxLink: {populate: {pageLink: true, collectionLink: true}},
+            overMaxLink: {populate: LINK_POPULATE},
             steps: {
               populate: {
                 questions: {
                   populate: {
-                    helpLink: {populate: {pageLink: true, collectionLink: true}},
+                    helpLink: {populate: LINK_POPULATE},
                     choices: {populate: {products: true}},
                   },
                 },
@@ -213,6 +284,21 @@ export const MODULE_REGISTRY = {
      */
     options: {populate: '*'},
   },
+  'module.card-picker': {
+    Component: CardPicker,
+    // Three levels: items -> image / link -> its relations. populate: '*'
+    // stops at `items` and would return each card with no photo or link.
+    options: {
+      populate: {
+        items: {
+          populate: {
+            image: true,
+            link: {populate: LINK_POPULATE},
+          },
+        },
+      },
+    },
+  },
   'module.tabbed-cards': {
     Component: TabbedCards,
     // Three levels: items -> image / CTAs -> pageLink. populate: '*' stops at
@@ -222,8 +308,8 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            primaryCTA: {populate: {pageLink: true, collectionLink: true}},
-            secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+            primaryCTA: {populate: LINK_POPULATE},
+            secondaryCTA: {populate: LINK_POPULATE},
           },
         },
       },
@@ -235,10 +321,32 @@ export const MODULE_REGISTRY = {
       populate: {
         image: true,
         bullets: true,
-        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
-        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
+        secondaryCTA: {populate: LINK_POPULATE},
       },
     },
+  },
+  'module.text-table': {
+    Component: TextTable,
+    // Rows nest their values one level down (comparison-row -> planValues), and
+    // the header link needs its relations, so neither is reached by '*'.
+    options: {
+      populate: {
+        headerLink: {populate: LINK_POPULATE},
+        columns: true,
+        rows: {populate: {planValues: true}},
+        note: true,
+      },
+    },
+  },
+  'module.text-form': {
+    Component: TextForm,
+    /*
+     * Scalars only. populate: '*' because an empty `populate: {}` serialises
+     * to nothing and the module would drop out of the query entirely — see
+     * module.product-feed.
+     */
+    options: {populate: '*'},
   },
   'module.text-highlights': {
     Component: TextHighlights,
@@ -261,24 +369,61 @@ export const MODULE_REGISTRY = {
       },
     },
   },
+  'module.text-badge': {
+    Component: TextBadge,
+    // The badge is the one media field; the link needs its relations.
+    options: {
+      populate: {
+        badge: true,
+        link: {populate: LINK_POPULATE},
+      },
+    },
+  },
   'module.text-checklist': {
     Component: TextChecklist,
     options: {
       populate: {
         checklist: true,
-        primaryCTA: {populate: {pageLink: true, collectionLink: true}},
-        secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
+        secondaryCTA: {populate: LINK_POPULATE},
+      },
+    },
+  },
+  'module.numbered-benefits': {
+    Component: NumberedBenefits,
+    // Both repeatables hold only scalars, so `true` is enough; the photo is
+    // the one relation to name.
+    options: {
+      populate: {
+        backgroundImage: true,
+        items: true,
+        cardChecklist: true,
+      },
+    },
+  },
+  'module.numbered-link-cards': {
+    Component: NumberedLinkCards,
+    // cards -> links: a list link has the same relations as utilities.link,
+    // so LINK_POPULATE reaches them. Product links carry only productRef,
+    // resolved in the route loader (lib/module-products).
+    options: {
+      populate: {
+        backgroundImage: true,
+        cards: {populate: {links: {populate: LINK_POPULATE}}},
+        primaryCTA: {populate: LINK_POPULATE},
       },
     },
   },
   'module.numbered-steps': {
     Component: NumberedSteps,
-    // The steps hold nothing but scalars, so `true` is enough. The closing
-    // CTA's button is a link, so its relations are named.
+    // Each step's tags are a nested repeatable, so the steps need their own
+    // populate. Notes hold only scalars. The closing CTA's button is a link,
+    // so its relations are named.
     options: {
       populate: {
-        steps: true,
-        cta: {populate: {pageLink: true, collectionLink: true}},
+        steps: {populate: {tags: true}},
+        notes: true,
+        primaryCTA: {populate: LINK_POPULATE},
       },
     },
   },
@@ -288,7 +433,7 @@ export const MODULE_REGISTRY = {
       populate: {
         columns: true,
         image: true,
-        cta: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
       },
     },
   },
@@ -299,9 +444,10 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true, collectionLink: true}},
+            link: {populate: LINK_POPULATE},
           },
         },
+        note: true,
       },
     },
   },
@@ -313,7 +459,7 @@ export const MODULE_REGISTRY = {
           populate: {
             prices: true,
             features: true,
-            cta: {populate: {pageLink: true, collectionLink: true}},
+            primaryCTA: {populate: LINK_POPULATE},
           },
         },
         comparisonRows: {populate: {planValues: true}},
@@ -325,13 +471,24 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         bannerImage: true,
-        bannerCta: {populate: {pageLink: true, collectionLink: true}},
+        bannerCta: {populate: LINK_POPULATE},
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true, collectionLink: true}},
+            link: {populate: LINK_POPULATE},
           },
         },
+      },
+    },
+  },
+  'module.course-cards': {
+    Component: CourseCards,
+    // Each course's registration link reaches pages/collections/uses, so it
+    // needs LINK_POPULATE; the photo is the module's one media field.
+    options: {
+      populate: {
+        backgroundImage: true,
+        courses: {populate: {registerLink: {populate: LINK_POPULATE}}},
       },
     },
   },
@@ -340,8 +497,49 @@ export const MODULE_REGISTRY = {
     options: {
       populate: {
         backgroundImage: true,
-        primaryCta: {populate: {pageLink: true, collectionLink: true}},
-        secondaryCta: {populate: {pageLink: true, collectionLink: true}},
+        primaryCTA: {populate: LINK_POPULATE},
+        secondaryCTA: {populate: LINK_POPULATE},
+      },
+    },
+  },
+  'module.spec-sheet': {
+    Component: SpecSheet,
+    // The spec rows and the note are scalars only, so `true` is enough.
+    options: {
+      populate: {
+        specs: true,
+        note: true,
+      },
+    },
+  },
+  'module.stat-banner': {
+    Component: StatBanner,
+    // Scalars plus the photo — no buttons, so no link relations to name.
+    options: {
+      populate: {
+        backgroundImage: true,
+      },
+    },
+  },
+  'module.stats-comparison': {
+    Component: StatsComparison,
+    // Scalars all the way down, but the table's rows nest their values one
+    // level deeper, so that level is named — as in module.pricing.
+    options: {
+      populate: {
+        stats: true,
+        comparisonColumns: true,
+        comparisonRows: {populate: {planValues: true}},
+      },
+    },
+  },
+  'module.step-guide': {
+    Component: StepGuide,
+    options: {
+      populate: {
+        steps: {populate: {image: true}},
+        primaryCTA: {populate: LINK_POPULATE},
+        note: true,
       },
     },
   },
@@ -352,9 +550,18 @@ export const MODULE_REGISTRY = {
         items: {
           populate: {
             image: true,
-            link: {populate: {pageLink: true, collectionLink: true}},
+            link: {populate: LINK_POPULATE},
           },
         },
+      },
+    },
+  },
+  'module.testimonial-strip': {
+    Component: TestimonialStrip,
+    // Scalars plus the photo — no links to name.
+    options: {
+      populate: {
+        backgroundImage: true,
       },
     },
   },
@@ -370,8 +577,52 @@ export const MODULE_REGISTRY = {
       populate: {items: true},
     },
   },
+  'module.video-library': {
+    Component: VideoLibrary,
+    // Scalars only; the videos come from the route loader (lib/videos).
+    options: {populate: '*'},
+  },
   'module.wysiwyg': {
     Component: Wysiwyg,
+    options: {
+      populate: '*',
+    },
+  },
+  /*
+   * Blog Modules (Strapi category "blog-modules") — the body blocks of a blog
+   * post, offered only in the Blogs collection type's modules zone.
+   */
+  'blog-modules.cta-card': {
+    Component: BlogCtaCard,
+    options: {
+      populate: {
+        image: true,
+        link: {populate: LINK_POPULATE},
+      },
+    },
+  },
+  'blog-modules.image': {
+    Component: BlogImage,
+    options: {
+      populate: {image: true},
+    },
+  },
+  'blog-modules.image-row': {
+    Component: BlogImageRow,
+    options: {
+      populate: {images: true},
+    },
+  },
+  'blog-modules.note': {
+    Component: BlogNote,
+    // Scalars only — the heading and the body's HTML.
+    options: {
+      populate: '*',
+    },
+  },
+  'blog-modules.video': {
+    Component: BlogVideo,
+    // Scalars only — the YouTube link.
     options: {
       populate: '*',
     },

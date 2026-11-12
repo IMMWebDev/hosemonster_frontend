@@ -7,6 +7,7 @@ import {CartLines, CartLinesSkeleton, CartNotices} from './CartLines';
 import {CartNote, CartTotals} from './CartSummary';
 import CartEmpty from './CartEmpty';
 import {countLabel} from '~/lib/cart';
+import {TrackingScope} from '~/lib/tracking';
 import styles from './CartDrawer.module.css';
 
 export const CART_DRAWER_ID = 'cart-drawer';
@@ -28,14 +29,17 @@ export default function CartDrawer() {
 
   if (location.pathname === '/cart') return null;
 
+  // Outside the Drawer, so its own close button is named too: cart-drawer__close.
   return (
-    <Drawer type="cart" id={CART_DRAWER_ID} label="Your cart">
-      <Suspense fallback={<Shell loading />}>
-        <Await resolve={root?.cart} errorElement={<Shell error />}>
-          {(cart) => <Shell cart={cart} />}
-        </Await>
-      </Suspense>
-    </Drawer>
+    <TrackingScope id="cart-drawer">
+      <Drawer type="cart" id={CART_DRAWER_ID} label="Your cart">
+        <Suspense fallback={<Shell loading />}>
+          <Await resolve={root?.cart} errorElement={<Shell error />}>
+            {(cart) => <Shell cart={cart} />}
+          </Await>
+        </Suspense>
+      </Drawer>
+    </TrackingScope>
   );
 }
 

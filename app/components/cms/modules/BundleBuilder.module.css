@@ -102,6 +102,13 @@
   background: var(--brand-navy);
 }
 
+/* The line leaving a completed step turns green with its marker, so the
+ * finished stretch reads as one run. Lines leaving the current step stay
+ * navy. */
+.progressList li:has(> [data-state='done']) + li[data-reached]::before {
+  background: var(--color-success);
+}
+
 .progressStep {
   position: relative;
   z-index: 1;
@@ -175,9 +182,13 @@
   color: var(--color-text);
 }
 
+/* Completed: a solid green box with a white check, at the client's request —
+ * the navy outline alone was too close to the untouched steps to read as
+ * done. */
 .progressStep[data-state='done'] .progressNumber {
-  border-color: var(--brand-navy);
-  color: var(--brand-navy);
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: var(--color-text-inverse);
 }
 
 /* Narrow screens only (the stepper doesn't fit): how far through the steps. */
@@ -545,7 +556,9 @@
   margin: 0;
 }
 
-/* The tick in the corner: an empty ring until checked, then filled orange. */
+/* The tick in the corner: an empty ring until checked, then filled orange.
+ * The empty ring is the muted ink, not the #e8e8e8 card stroke: that grey is
+ * 1.2:1 on white and the ring disappeared. Muted is 5:1, past a control's 3:1. */
 .check {
   position: absolute;
   top: var(--space-4);
@@ -555,7 +568,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  border: var(--border-width-thick) solid var(--color-border);
+  border: var(--border-width-thick) solid var(--color-text-muted);
   border-radius: var(--radius-pill);
   color: transparent;
   background: var(--color-surface);
@@ -565,6 +578,13 @@
   border-color: var(--color-action);
   background: var(--color-action);
   color: var(--color-action-text);
+}
+
+/* A card that can't be picked keeps a paler ring, so it reads as unavailable
+ * beside the dimmed copy but is still visibly a choice. Disabled controls are
+ * exempt from the 3:1 rule. */
+.card[data-disabled]:not([data-selected]) .check {
+  border-color: var(--color-text-faint);
 }
 
 /* ---- variant chips (thread, length) ---- */

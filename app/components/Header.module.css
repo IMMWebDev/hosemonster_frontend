@@ -252,12 +252,28 @@
   transition: color var(--duration-fast) var(--ease-default);
 }
 
-/* Hover comes from the global a:hover in reset.css — red plus the underline.
- * Only the current-page state needs stating here, and it gets the same
- * treatment so "you are here" and "you are hovering" read alike. */
-.navLink[aria-current='page'] {
-  color: var(--color-action);
+/* Hover and the current page share a colour so "you are here" and "you are
+ * hovering" read alike; only the current page gets the underline. The colour
+ * is the darker link orange: 16px bold is not large text, and the brand
+ * orange is 3.99:1 on white where 4.5:1 is needed (#c62f14 is 5.5:1). The
+ * underline is a mark, not text, so it keeps the brand orange.
+ * data-active (CmsLink's markSection) covers the whole section — Uses stays
+ * marked on /uses/hydrant-flow-testing — while aria-current is the exact page
+ * only, because that is what a screen reader announces.
+ *
+ * ⚠ `.nav a` on the hover selector is for specificity: reset.css's
+ * `a:hover:not(.btn)` is (0,2,1) and would paint a plain `.navLink:hover` in
+ * the brand orange. The `a` leaves the button trigger's hover as it was. */
+.nav a.navLink:hover,
+.navLink[aria-current='page'],
+.navLink[data-active] {
+  color: var(--color-text-link);
+}
+
+.navLink[aria-current='page'],
+.navLink[data-active] {
   text-decoration: underline;
+  text-decoration-color: var(--color-action);
   text-decoration-thickness: var(--underline-thickness);
   text-underline-offset: var(--underline-offset);
 }
@@ -274,7 +290,6 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
 }
 
 /* The button variant, used when the CMS gives the parent no destination, has to
@@ -292,8 +307,17 @@
 .navCaretButton {
   display: inline-flex;
   align-items: center;
-  padding: 4px;
-  margin: -4px; /* keeps the hit area without shifting the row */
+  /*
+   * A 24px target (WCAG 2.5.8) that starts where the link ends, so the two
+   * never overlap. The left padding puts the caret 4px after the label, as it
+   * always sat; the negative margins keep the row's height and width as they
+   * were, spilling the extra into the gap before the next item, not the link.
+   */
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 10px 0 4px;
+  margin-block: -4px;
+  margin-inline-end: -10px;
   background: none;
   border: 0;
   color: var(--nav-ink);
@@ -301,9 +325,20 @@
   transition: color var(--duration-fast) var(--ease-default);
 }
 
+/* The caret is a mark, so the brand orange would pass here, but it takes the
+ * label's link orange so a hovered item reads as one colour. */
 .navCaretButton:hover,
 .navItem:hover .navCaretButton {
-  color: var(--color-action);
+  color: var(--color-text-link);
+}
+
+/* The 24px target hangs 4px below the row, into the open panel's transparent
+ * bridge, which would otherwise sit on top and swallow clicks there. Lifted
+ * only while open: a neighbour's closed caret stays under this panel, so the
+ * diagonal path down into it can't brush that caret and open its menu. */
+.navCaretButton[aria-expanded='true'] {
+  position: relative;
+  z-index: 21;
 }
 
 .navCaret {
@@ -393,11 +428,16 @@
     background-color var(--duration-fast) var(--ease-default);
 }
 
-/* Menu rows get a background fill on hover as well as the colour change. */
-.dropdownLink:hover,
-.dropdownLink:focus-visible {
-  color: var(--color-action);
-  background: var(--color-surface-subtle);
+/* Menu rows get a background fill on hover as well as the colour change.
+ * The text is 15.5px, so it needs 4.5:1: the darker link orange on Light
+ * Surface is 5.1:1. The brand orange on the old #e8e8e8 fill was 3.26:1, and
+ * even the darker orange only reaches 4.49:1 there.
+ * ⚠ `.dropdownList` in front for specificity — reset.css's a:hover (0,2,1)
+ * would otherwise put the brand orange back on hover. */
+.dropdownList .dropdownLink:hover,
+.dropdownList .dropdownLink:focus-visible {
+  color: var(--color-text-link);
+  background: var(--color-surface-alt);
   text-decoration: none;
 }
 

@@ -1,0 +1,147 @@
+/*
+ * Blog post body — sprint-05 hifi_blogposttemplate.html, "Body".
+ *
+ * The layout only: the sidebar ("On this page" and the author card) beside the
+ * article column. What's inside the column — paragraphs, headings, lists,
+ * quotes — is .cms-post-body in app.css, because it styles editor HTML.
+ */
+
+/* 32 on top of the hero's 32 makes the design's 64 under the card. */
+.section {
+  padding-block: var(--space-8) var(--space-16);
+}
+
+/* A 260px sidebar and an article column up to 760px, left-aligned beside it,
+ * as drawn. The rest of the row stays empty on a wide screen. */
+.layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 760px);
+  gap: var(--gap-two-column); /* the design's clamp(32px, 4vw, 56px) */
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Stretches to the article's height, so the column inside has room to stick. */
+.aside {
+  min-width: 0;
+}
+
+/*
+ * Sticky below the site nav while the nav is on screen, and up into its space
+ * when it slides away, in step with it — the same as the product listing's
+ * filter rail (ProductListing.module.css). --header-nav-h is the nav's
+ * measured height (Header.jsx); the fallback covers the first frame.
+ */
+.sticky {
+  position: sticky;
+  top: calc(var(--header-nav-h, 81px) + var(--space-6));
+  transition: top var(--duration-slide) var(--ease-default);
+}
+
+:global(html:has([data-site-header][data-hidden]:not(:focus-within))) .sticky {
+  top: var(--space-6);
+}
+
+.article {
+  min-width: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * ON THIS PAGE
+ * -----------------------------------------------------------------------------
+ */
+
+.toc {
+  margin-bottom: var(--space-8);
+}
+
+/* The comp's 12px tracked caps, at Detail size — the smallest the styleguide
+ * allows. */
+.tocLabel {
+  margin: 0 0 14px; /* from the design */
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.tocList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* from the design */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* reset.css turns a hovered link orange, as drawn. */
+.tocLink {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-detail); /* 13.5px — the comp's 14px is between steps */
+  font-weight: var(--weight-bold);
+  line-height: 1.4; /* from the design */
+  color: var(--color-text-body);
+}
+
+.tocLink:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* The author card (AuthorCard.jsx) styles itself; these classes only pick
+ * which of its two copies shows (BlogBody.jsx): .author in the sidebar on
+ * desktop, .authorEnd after the article below that. */
+.authorEnd {
+  display: none;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * ⚠ Not specced — the comp is a desktop frame.
+ */
+
+/*
+ * tablet and down — one column, centred at the article's width. The sidebar's
+ * wrappers drop out of the layout so "On this page" becomes an item of this
+ * grid, above the article, as a box. The author card closes the post rather
+ * than standing between the hero and the first paragraph — the copy that
+ * comes after the article in the markup, not the sidebar's moved with
+ * `order`, so keyboard and screen reader order follow the page.
+ */
+@media (max-width: 1099px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+    max-width: calc(760px + 2 * var(--container-gutter));
+  }
+
+  .aside,
+  .sticky {
+    display: contents;
+  }
+
+  .toc {
+    margin-bottom: 0;
+    padding: 20px 22px; /* the author card's padding */
+    border: var(--border-width-thick) solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .author {
+    display: none;
+  }
+
+  .authorEnd {
+    display: block;
+  }
+}

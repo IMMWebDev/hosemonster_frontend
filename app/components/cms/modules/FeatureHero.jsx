@@ -1,5 +1,9 @@
+import {useState} from 'react';
+import Breadcrumbs from '~/components/cms/Breadcrumbs';
 import CmsLink from '~/components/cms/CmsLink';
-import {strapiMedia} from '~/lib/strapi-media';
+import {strapiMedia, warnMissingAlt} from '~/lib/strapi-media';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
+import pageHero from './PageHero.module.css';
 import styles from './FeatureHero.module.css';
 
 /**
@@ -21,8 +25,13 @@ import styles from './FeatureHero.module.css';
  * the meta bar and no body, the Smart Monster feature page has a body and no
  * meta bar.
  *
+ * An optional breadcrumb trail sits above the photo (sprint-05
+ * hifi_hmuhub.html) — Page Hero's trail exactly, its markup and its classes,
+ * so every hero's breadcrumbs read the same.
+ *
  * @param {{
  *   data: {
+ *     breadcrumbs?: {breadcrumbLabel?: string, breadcrumbLinks?: Array<object>} | null,
  *     eyebrow?: string,
  *     heading?: string,
  *     body?: string,
@@ -37,9 +46,13 @@ import styles from './FeatureHero.module.css';
  * }} props
  */
 export default function FeatureHero({data, baseUrl}) {
+  const trackingRoot = useTrackingRoot();
+  const trackId = useTrackId();
+  const [badgePaused, setBadgePaused] = useState(false);
   if (!data?.heading) return null;
 
   const {
+    breadcrumbs,
     eyebrow,
     heading,
     body,
@@ -52,6 +65,8 @@ export default function FeatureHero({data, baseUrl}) {
 
   const bgUrl = strapiMedia(data.backgroundImage?.url, baseUrl);
   const badgeUrl = strapiMedia(data.badge?.url, baseUrl);
+  // The seal's words are content (see its <img> below).
+  if (badgeUrl) warnMissingAlt(data.badge, 'Feature Hero badge');
 
   /*
    * Only "tall" gets a class. Strapi applies an enum default on CREATE only, so
@@ -59,10 +74,26 @@ export default function FeatureHero({data, baseUrl}) {
    * "standard" — treating anything that is not "tall" as standard covers both.
    */
   const sizeClass = size === 'tall' ? styles.tall : '';
+  // Only wrap the trail in its column when there's a trail to show.
+  const hasCrumbs = Boolean(
+    breadcrumbs?.breadcrumbLabel?.trim() ||
+    breadcrumbs?.breadcrumbLinks?.some((crumb) => crumb?.linkText),
+  );
 
   return (
     <>
-      <section className={`${styles.hero} ${sizeClass}`.trim()}>
+      {/* Page Hero's breadcrumb trail, in the page column above the
+          full-bleed photo. */}
+      {hasCrumbs ? (
+        <div className={pageHero.inner}>
+          <Breadcrumbs breadcrumbs={breadcrumbs} />
+        </div>
+      ) : null}
+
+      <section
+        {...trackingRoot}
+        className={`${styles.hero} ${sizeClass}`.trim()}
+      >
         {bgUrl ? (
           <div className={styles.background} data-parallax>
             <img
@@ -137,7 +168,11 @@ export default function FeatureHero({data, baseUrl}) {
                 style={{'--reveal-i': 4}}
               >
                 {primaryCTA?.linkText ? (
-                  <CmsLink link={primaryCTA} className="btn btn--primary" />
+                  <CmsLink
+                    link={primaryCTA}
+                    className="btn btn--primary"
+                    trackRole="primary-cta"
+                  />
                 ) : null}
                 {/*
                 The outlined-white fill, not .btn--secondary. Secondary is navy
@@ -149,6 +184,7 @@ export default function FeatureHero({data, baseUrl}) {
                   <CmsLink
                     link={secondaryCTA}
                     className="btn btn--secondary-on-orange"
+                    trackRole="secondary-cta"
                   />
                 ) : null}
               </div>
@@ -163,7 +199,13 @@ export default function FeatureHero({data, baseUrl}) {
              * to it. Plain CSS animations, not data-reveal — the hero is above
              * the fold, so it plays on load.
              */
-            <div className={styles.badge}>
+            <div
+              className={
+                badgePaused
+                  ? `${styles.badge} ${styles.badgePaused}`
+                  : styles.badge
+              }
+            >
               <div className={styles.badgeIn}>
                 <img
                   src={badgeUrl}
@@ -180,6 +222,38 @@ export default function FeatureHero({data, baseUrl}) {
             </div>
           ) : null}
         </div>
+
+        {badgeUrl ? (
+          /* The spin never ends, so it gets a pause (WCAG 2.2.2) — the
+             Ticker's toggle: the label stays put and aria-pressed carries the
+             state. On the section, not .inner, so it can sit in the bottom
+             padding. Hidden by CSS when reduced motion stills the seal. */
+          <button
+            type="button"
+            className={styles.badgeToggle}
+            aria-pressed={badgePaused}
+            aria-label="Pause badge animation"
+            onClick={() => setBadgePaused((p) => !p)}
+            data-track-id={trackId('badge-pause-toggle')}
+          >
+            <svg
+              viewBox="0 0 16 16"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {/* What a press will do: pause while it turns, play once
+                  stopped. */}
+              <path d={badgePaused ? 'M5.5 3.5v9l7-4.5z' : 'M6 4v8M10 4v8'} />
+            </svg>
+          </button>
+        ) : null}
       </section>
 
       {/*

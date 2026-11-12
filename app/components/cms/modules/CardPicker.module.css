@@ -1,0 +1,339 @@
+/*
+ * Card Picker module — sprint-05 hifi_useshub.html, "Start from the
+ * situation".
+ *
+ * Intro copy over a list of options beside one white card; picking an option
+ * swaps the card. Same behaviour as Tabbed Cards, different look.
+ */
+
+.section {
+  /*
+   * One shared section rhythm. --container-block is 64px and already steps to
+   * 48px at 1099 and 32px at 499, which is why there is no responsive override
+   * for it further down this file. Symmetric top and bottom, matching the comp
+   * (its content sections are padding: 64px).
+   *
+   * Must be stated, not omitted: reset.css gives every bare <section> a
+   * `padding: 2rem 0` above 768px, so leaving this out inherits that instead.
+   */
+  padding-block: var(--container-block);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-outer);
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}
+
+/* Styleguide Eyebrow */
+.eyebrow {
+  /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
+   * 700 is what §09 requires before orange is legal as text. */
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-accent);
+  margin: 0 0 var(--space-2);
+}
+
+/* Styleguide H2 */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h2);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2);
+}
+
+/* Body large — intro copy */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  max-width: var(--measure); /* the comp caps it at 80ch */
+  margin: 0 0 var(--space-4);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * LIST
+ * -----------------------------------------------------------------------------
+ * The list and the card share the row while each can keep ~420px, and stack
+ * when they can't — the comp's own flex rule. Stretched, so the card is as
+ * tall as the list beside it.
+ */
+
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-8); /* 24–32px in the design */
+  margin-top: var(--space-3); /* with .body's 16px, the comp's 28px */
+}
+
+.list {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* exact value from the design */
+}
+
+/* Styleguide "UI label" — 16px bold; the comp's 15px is a hair under it. */
+.option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--space-3) 18px; /* 18px is the design's exact inline padding */
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  text-align: left;
+  color: var(--color-text-body);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+/* Hover — the orange is the stroke, not the text, so §09 doesn't apply. */
+.option:hover:not([aria-selected='true']) {
+  border-color: var(--color-action);
+  color: var(--color-text);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.option[aria-selected='true'] {
+  background: var(--color-surface-inverse);
+  border-color: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+}
+
+.option:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.optionLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* UiIcon's chevron points down; turned to point right. It nudges toward the
+ * card on hover, and goes white on the navy fill. */
+.optionChevron {
+  flex: none;
+  margin-left: var(--space-3);
+  color: var(--color-action);
+  transform: rotate(-90deg);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.option:hover:not([aria-selected='true']) .optionChevron {
+  transform: translateX(4px) rotate(-90deg);
+}
+
+.option[aria-selected='true'] .optionChevron {
+  color: var(--color-text-inverse);
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * CARD
+ * -----------------------------------------------------------------------------
+ * Card Grid's chrome — 2px border, 8px radius, white — with the photo filling
+ * the left 40%. The link's ::after covers the card, so the whole card is the
+ * link; hover is Card Grid's, since both sit on the Uses hub.
+ */
+
+.card {
+  position: relative;
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default),
+    translate var(--duration-control) var(--ease-default);
+}
+
+/* Every option's card is in the HTML; `hidden` has to beat display: flex. */
+.card[hidden] {
+  display: none;
+}
+
+.card:has(.cardAction):hover {
+  /* Red, as every card's hover on the site. */
+  border-color: var(--color-action);
+  box-shadow: var(--shadow-card-hover);
+  /* `translate`, not `transform`: motion.css ends every reveal on
+   * `transform: none` at higher specificity, which would cancel the lift. */
+  translate: 0 var(--card-lift);
+}
+
+/* The photo eases in a touch, as in the hifi (sprint-05 hifi_useshub.html):
+ * 1.06× inside its own frame, so it never spills over the copy. */
+.card:has(.cardAction):hover .cardImage {
+  transform: scale(var(--card-image-scale));
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.cardMedia {
+  flex: 0 0 40%;
+  overflow: hidden; /* clips the photo's hover zoom */
+  background: var(--color-surface-inverse); /* shows before the photo loads */
+}
+
+.cardImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-image) var(--ease-default);
+}
+
+.cardCopy {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px; /* exact value from the design */
+  padding: var(--space-8) var(--space-7); /* ~30 / 28 in the design */
+}
+
+/* "You need" — Detail size, bold caps, muted; the same call as Card Grid's
+ * badge (the comp's 12px tracked caps are below the guide). */
+.cardEyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-body-sm);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Styleguide H3. An <h3>, so the tracking typography.css gives bare h3s is
+ * restated. */
+.cardHeading {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Styleguide "Body". */
+.cardBody {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+/* Card Grid's link label: Button text, orange — 19px / 700, which §09 needs
+ * for orange text (the comp's 16px isn't). */
+.cardAction {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  color: var(--color-action);
+}
+
+/* The comp's trailing chevron, turned to point right like the options'. It
+ * nudges forward while the card is hovered. */
+.cardActionIcon {
+  flex: none;
+  transform: rotate(-90deg);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.card:hover .cardActionIcon {
+  transform: translateX(4px) rotate(-90deg);
+}
+
+/* The stretched link: the whole card is the primary CTA's hit area. */
+.cardAction::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * The hifi is desktop-only. The list and card stack on their own once they
+ * can't each keep ~420px (tablet and below) — see .picker.
+ */
+
+/* mobile — the card stacks: photo on top at Card Grid's 16:10, copy below. */
+@media (max-width: 499px) {
+  .card {
+    flex-direction: column;
+  }
+
+  .cardMedia {
+    flex: none;
+    aspect-ratio: 16 / 10;
+  }
+
+  .cardCopy {
+    padding: var(--space-6) var(--space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option,
+  .optionChevron,
+  .cardActionIcon,
+  .card,
+  .cardImage {
+    transition: none;
+  }
+
+  .card:has(.cardAction):hover {
+    translate: none;
+  }
+
+  .card:has(.cardAction):hover .cardImage {
+    transform: none;
+  }
+}

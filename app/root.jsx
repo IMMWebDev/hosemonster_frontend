@@ -21,6 +21,9 @@ import motionStyles from '~/styles/motion.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from './components/PageLayout';
 import NotFound from '~/components/cms/NotFound';
+import {LINK_POPULATE} from '~/lib/cms-links';
+import {JsonLd} from '~/components/JsonLd';
+import {siteJsonLd, siteOrigin} from '~/lib/seo';
 
 /**
  * Adobe Fonts (Typekit) kit serving the brand families, nimbus-sans-extended
@@ -49,6 +52,22 @@ const TYPEKIT_KIT_ID = 'zny1qeh';
  * `Layout` on an env flag rather than deleting this constant.
  */
 const BUGHERD_API_KEY = 'qemlu54olb83vppojknrka';
+
+/**
+ * The fallback title. Every page route sets its own, so this shows on the 404
+ * and error pages, and on any route that has no meta of its own — which would
+ * otherwise have no <title> at all.
+ *
+ * @type {Route.MetaFunction}
+ */
+export const meta = ({error}) => {
+  if (!error) return [{title: 'Hose Monster'}];
+  const notFound = isRouteErrorResponse(error) && error.status === 404;
+  return [
+    {title: notFound ? 'Page Not Found | Hose Monster®' : 'Error | Hose Monster®'},
+    {name: 'robots', content: 'noindex, follow'},
+  ];
+};
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -129,7 +148,7 @@ export async function loader(args) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  * @param {Route.LoaderArgs}
  */
-async function loadCriticalData({context}) {
+async function loadCriticalData({context, request}) {
   const {storefront, strapi} = context;
 
   // ⚠ This destructuring is positional — each name must line up with the same
@@ -153,15 +172,15 @@ async function loadCriticalData({context}) {
     strapi.getSingle('header', {
       populate: {
         logo: true,
-        utilityLinks: {populate: {pageLink: true, collectionLink: true}},
+        utilityLinks: {populate: LINK_POPULATE},
         // Three levels: mainNav -> link / dropdownLinks -> pageLink. A nav item
         // WRAPS a utilities.link rather than redeclaring its fields, so adding
         // a relation to that one component (a new collection type, say) reaches
         // both the top-level item and every dropdown entry at once.
         mainNav: {
           populate: {
-            link: {populate: {pageLink: true, collectionLink: true}},
-            dropdownLinks: {populate: {pageLink: true, collectionLink: true}},
+            link: {populate: LINK_POPULATE},
+            dropdownLinks: {populate: LINK_POPULATE},
           },
         },
       },
@@ -175,10 +194,13 @@ async function loadCriticalData({context}) {
         // The empty cart's copy and buttons (drawer and /cart page).
         emptyCart: {
           populate: {
-            primaryCTA: {populate: {pageLink: true, collectionLink: true}},
-            secondaryCTA: {populate: {pageLink: true, collectionLink: true}},
+            primaryCTA: {populate: LINK_POPULATE},
+            secondaryCTA: {populate: LINK_POPULATE},
           },
         },
+        // The site-wide ticker claims; a Ticker module with no items of its
+        // own shows these.
+        tickerItems: true,
       },
     }),
     // Three levels deep: footer → linkColumns → links → pageLink. `populate: '*'`
@@ -187,8 +209,8 @@ async function loadCriticalData({context}) {
       populate: {
         logo: true,
         socialLinks: true,
-        legalLinks: {populate: {pageLink: true, collectionLink: true}},
-        linkColumns: {populate: {links: {populate: {pageLink: true, collectionLink: true}}}},
+        legalLinks: {populate: LINK_POPULATE},
+        linkColumns: {populate: {links: {populate: LINK_POPULATE}}},
       },
     }),
     // Where each product lives (/collections/{c}/{p} or /products/{p}), for
@@ -214,6 +236,9 @@ async function loadCriticalData({context}) {
     // the Cloudinary provider (absolute URLs pass through untouched), but
     // required if the upload provider is ever switched back to local.
     strapiBaseUrl: context.env.STRAPI_API_URL,
+    // For absolute URLs in JSON-LD (breadcrumbs, the Organization). The
+    // request's own origin, so each environment points at itself.
+    siteOrigin: siteOrigin(request),
   };
 }
 
@@ -288,8 +313,18 @@ export function Layout({children}) {
             the attribute alone.
           */
           suppressHydrationWarning
+          /*
+            The second half notes the visitor's first scroll, tap or keypress
+            before React hydrates, so useHashScroll (app/lib/use-hash-scroll.js)
+            doesn't drag someone who has already scrolled away from a #section
+            back to it once hydration finishes.
+          */
           dangerouslySetInnerHTML={{
-            __html: "document.documentElement.classList.add('js')",
+            __html:
+              "document.documentElement.classList.add('js');" +
+              "['wheel','touchstart','pointerdown','keydown'].forEach(function(t){" +
+              "addEventListener(t,function f(){window.__earlyUserInput=true;" +
+              "removeEventListener(t,f,true)},{capture:true,passive:true})})",
           }}
         />
         {/*
@@ -364,6 +399,15 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
+      {/* The Organization and WebSite, once per page. */}
+      <JsonLd
+        data={siteJsonLd({
+          origin: data.siteOrigin,
+          cmsHeader: data.cmsHeader,
+          cmsFooter: data.cmsFooter,
+          strapiBaseUrl: data.strapiBaseUrl,
+        })}
+      />
       <PageLayout {...data}>
         <Outlet />
       </PageLayout>

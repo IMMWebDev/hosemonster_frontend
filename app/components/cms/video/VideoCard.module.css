@@ -1,0 +1,158 @@
+/*
+ * Video card — shared by Featured Videos and Video Library.
+ * sprint-05 hifi_hmuhub.html / hifi_hmuvideos.html.
+ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-control) var(--ease-default),
+    box-shadow var(--duration-control) var(--ease-default),
+    translate var(--duration-control) var(--ease-default);
+}
+
+/*
+ * The house card hover (Styleguide §05): border to orange, a 4px lift, the
+ * soft shadow, the thumbnail scaling. `translate`, not `transform`, so the
+ * scroll-in reveal can't cancel it. Two classes to outrank reset.css's
+ * a:hover:not(.btn), which would turn the card's text orange.
+ */
+.card.card:hover {
+  border-color: var(--color-action);
+  box-shadow: var(--shadow-card-hover);
+  translate: 0 var(--card-lift);
+  color: var(--color-text);
+}
+
+.card:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* 16:9, on the comp's near-black so a slow thumbnail doesn't flash white. */
+.media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0e1a25; /* from the design */
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-image) var(--ease-default);
+}
+
+.card:hover .image {
+  transform: scale(var(--card-image-scale));
+}
+
+/* The comp's white disc with a dark ring, the triangle nudged right so it
+ * looks centred. */
+.play {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 2px #2f2f2f; /* from the design */
+  color: var(--color-text);
+}
+
+.play svg {
+  margin-left: 3px;
+}
+
+/* "2:26", bottom right. */
+.duration {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: rgb(15 31 44 / 85%); /* from the design */
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-inverse);
+}
+
+.body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px; /* from the design */
+  padding: 18px 20px 20px; /* from the design */
+}
+
+/*
+ * The tag. The comp's 12px / 0.08em caps sit under the guide's smallest size
+ * and tracking is the eyebrow's alone (§03), so it's Styleguide "Detail",
+ * bold caps, untracked — the same call as Link Cards' badge.
+ */
+.tag {
+  font-family: var(--font-body);
+  font-size: var(--text-detail);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-card-title);
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+/* The library's title: bold Gopher, sentence case — long names read better
+ * that way. */
+.title {
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--color-text);
+}
+
+/* Featured Videos' title: the display face in caps, as the hub comp. */
+.titleDisplay {
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  text-transform: uppercase;
+}
+
+.tag sup,
+.title sup {
+  font-size: 0.55em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .image {
+    transition: none;
+  }
+
+  .card.card:hover {
+    translate: none;
+  }
+
+  .card:hover .image {
+    transform: none;
+  }
+}

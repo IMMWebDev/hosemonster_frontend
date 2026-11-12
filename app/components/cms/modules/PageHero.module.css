@@ -64,6 +64,10 @@
 }
 
 .card {
+  /* The copy's side padding, so the badge sits the same distance in from the
+   * card's right edge as the copy does from its left. */
+  --pad-x: 48px;
+
   position: relative;
   isolation: isolate; /* keeps the scrim's z-index local to this card */
   display: flex;
@@ -71,6 +75,11 @@
   min-height: 320px; /* card height in the design */
   border-radius: var(--radius-md); /* 8px in the design */
   background-color: var(--brand-navy); /* shows before the image loads */
+
+  /* White keyboard focus rings over the scrim — orange is 2.95:1 on navy.
+   * On the card, not .section, so the breadcrumb above on white stays
+   * orange. The blog post hero borrows this card and its rings too. */
+  --color-focus-ring: var(--color-text-inverse);
 
   /* `clip`, not `hidden`: hidden creates a scroll container, which would become
    * the nearest scrollport for the parallax inside and measure the image
@@ -134,6 +143,131 @@
   padding: 56px 48px; /* exact values from the design */
 }
 
+/*
+ * BADGE — the optional seal on the right (sprint-05 hifi_hmuvideos.html),
+ * Feature Hero's: it settles in, then turns slowly. Pushed right by
+ * margin-left: auto; the copy shrinks first if they meet.
+ */
+.badge {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  /* The shadow sits on this still wrapper, not the spinning image: a filter
+   * is drawn before its element's own transform, so on the image the 12px
+   * drop would turn with the seal. `drop-shadow`, not box-shadow, so it
+   * follows the circle. From the design. */
+  filter: drop-shadow(0 12px 24px rgb(0 0 0 / 35%));
+  width: clamp(160px, 19vw, 240px); /* from the design */
+  margin: 0 var(--pad-x) 0 auto;
+}
+
+.badgeIn {
+  opacity: 0;
+  animation: badge-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+}
+
+.badgeImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Starts as the entrance finishes (0.25s delay + 0.9s). */
+  animation: badge-spin 22s linear 1.15s infinite;
+}
+
+@keyframes badge-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.82) rotate(-14deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes badge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Motion off: the badge is simply there, still. */
+@media (prefers-reduced-motion: reduce) {
+  .badgeIn,
+  .badgeImage {
+    animation: none;
+  }
+
+  .badgeIn {
+    opacity: 1;
+  }
+}
+
+/* Stopped by the toggle below. Only the spin: the entrance still finishes. */
+.badgePaused .badgeImage {
+  animation-play-state: paused;
+}
+
+/*
+ * Pause / play for the spin — it runs for as long as the page is open, and
+ * WCAG 2.2.2 wants a way to stop that. The Ticker's toggle (size, icons,
+ * labelling) in its on-navy dress. Bottom-right of the card, 16px in. Above
+ * 699px that is the corner under and beside the centred seal, outside its
+ * circle (near 1099px it can touch only the image's empty square corner);
+ * below 699px the seal drops to the bottom-left and this sits across from it.
+ */
+.badgeToggle {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 3; /* above the scrim and the copy */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: var(--border-width) solid
+    color-mix(in srgb, var(--white) 35%, transparent);
+  border-radius: var(--radius-pill);
+  /* Translucent navy, so it holds where the scrim has cleared: the white icon
+   * is 6.4:1 or better on it even over a white patch of photo. */
+  background: color-mix(in srgb, var(--brand-navy) 80%, transparent);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default);
+}
+
+.badgeToggle svg {
+  display: block;
+}
+
+/* Mouse only, so a tap on a phone doesn't leave it filled. */
+@media (hover: hover) {
+  .badgeToggle:hover {
+    background: var(--color-surface);
+    color: var(--brand-navy);
+  }
+}
+
+/* White ring (the card's --color-focus-ring). The navy shadow fills the gap
+ * inside it, so the ring has a dark edge even over a bright photo. */
+.badgeToggle:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--brand-navy);
+}
+
+/* Nothing moves, so there is nothing to pause. */
+@media (prefers-reduced-motion: reduce) {
+  .badgeToggle {
+    display: none;
+  }
+}
+
 /* Figma "H3" / Eyebrow — matches every other module */
 .eyebrow {
   /* Styleguide §03: the eyebrow is GOPHER, not the display face, and 19px /
@@ -144,7 +278,9 @@
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-text-accent);
+  /* The lighter orange made for navy grounds: the brand orange is 2.95:1 on
+   * the scrim's solid navy, this one 4.6:1. */
+  color: var(--color-text-accent-on-dark);
   margin: 0;
 }
 
@@ -164,6 +300,67 @@
   color: var(--color-text-inverse);
   white-space: pre-line;
   margin: 0;
+}
+
+/*
+ * Optional intro under the heading (sprint-05 hifi_blog.html): Body large,
+ * 12px below the H1, held to 56ch. The blog comp draws it #dbe4ec; every other
+ * sprint-05 hifi sets body copy on navy in #c3d0dc, which is the house token,
+ * so the token wins. Line breaks typed in the CMS are kept, as in the heading.
+ */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-on-navy);
+  max-width: 56ch;
+  white-space: pre-line;
+  margin: -2px 0 0; /* .copy's 14px gap less 2px = the comp's 12px */
+}
+
+/* 16px under the heading in the design: .copy's 14px gap plus 2px. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3); /* 12px in the design */
+  margin-top: 2px;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * COMPACT — the blog post's automatic hero (blog/BlogHero.jsx adds the class;
+ * Page Hero itself no longer offers it)
+ * -----------------------------------------------------------------------------
+ * sprint-05 hifi_blogposttemplate.html. A
+ * shorter, text-led card. Height and padding use the comp's own clamps, so it
+ * scales down by itself and the tablet step below doesn't apply. The compound
+ * selectors are deliberate: they outrank the single-class media-query rules.
+ */
+.compact .card {
+  --pad-x: clamp(24px, 4vw, 48px);
+
+  min-height: clamp(220px, 22vw, 300px);
+}
+
+/* A veil over the whole photo, rather than clearing it on the right. */
+.compact .scrim {
+  background: linear-gradient(
+    90deg,
+    rgb(29 58 84 / 100%) 0%,
+    rgb(29 58 84 / 85%) 34%,
+    rgb(29 58 84 / 35%) 100%
+  );
+}
+
+/* The comp crops from the centre; 70% 45% was framed for one product photo. */
+.compact .backgroundImage {
+  object-position: center;
+}
+
+.compact .copy {
+  max-width: 720px;
+  padding: clamp(28px, 4vw, 44px) clamp(24px, 4vw, 48px);
 }
 
 /*
@@ -248,6 +445,8 @@
 /* tablet */
 @media (max-width: 1099px) {
   .card {
+    --pad-x: var(--space-8);
+
     min-height: 280px;
   }
 
@@ -263,7 +462,26 @@
     min-height: 240px;
   }
 
-  .scrim {
+  /* No room beside the copy: the badge drops under it, smaller — Feature
+   * Hero's phone layout. */
+  .card:has(.badge) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card:has(.badge) .copy {
+    width: 100%;
+  }
+
+  .badge {
+    width: 128px;
+    margin: 0 0 var(--pad-x) var(--pad-x);
+  }
+
+  /* Compact too: the copy spans the card here, so the side-to-side veil
+   * would leave its right end on a barely tinted photo. */
+  .scrim,
+  .compact .scrim {
     background: linear-gradient(
       to bottom,
       rgb(28 58 85 / 88%) 0%,
@@ -292,5 +510,22 @@
     padding-top: var(--space-6);
     border-left: 0;
     border-top: var(--border-width) solid rgb(255 255 255 / 18%);
+  }
+}
+
+/* mobile — buttons stack full width. A label longer than the card ("See The
+ * Equipment You'll Need") wraps inside the button rather than running off the
+ * card; min-height still holds the 56px. */
+@media (max-width: 499px) {
+  .actions {
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  /* `a`, not `*`: outranks the global .btn's nowrap whatever order the
+   * stylesheets load in. */
+  .actions > a {
+    white-space: normal;
+    text-align: center;
   }
 }

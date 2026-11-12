@@ -11,24 +11,65 @@ import {PRODUCT_CARD_FRAGMENT} from '~/lib/module-products';
 import {plainText} from '~/lib/product-description';
 import {loadProductUrls, productPath} from '~/lib/product-urls';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {JsonLd} from '~/components/JsonLd';
+import {
+  absoluteUrl,
+  canonicalLink,
+  metaDescription,
+  siteOrigin,
+  socialTags,
+  withBrand,
+} from '~/lib/seo';
 
 /**
+ * Shopify's SEO title and description first, the product's own second. The
+ * canonical is the one URL the loader redirects every other form to.
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
   const product = data?.product;
-  return [
-    {title: `${product?.seo?.title || product?.title || 'Product'} | Hose Monster`},
-    {
-      name: 'description',
-      content: product?.seo?.description || plainText(product?.description),
-    },
-    {
-      rel: 'canonical',
-      href: data?.canonical ?? `/products/${product?.handle}`,
-    },
-  ];
+  if (!product) return [{title: 'Hose Monster'}];
+  const title = withBrand(product.seo?.title || product.title);
+  const description =
+    metaDescription(product.seo?.description) ||
+    metaDescription(descriptionText(product.descriptionHtml, 160));
+  const image = product.selectedOrFirstAvailableVariant?.image ??
+    product.images?.nodes?.[0] ?? null;
+
+  const tags = [{title}];
+  if (description) tags.push({name: 'description', content: description});
+  const canonical = canonicalLink(data.canonicalUrl);
+  if (canonical) tags.push(canonical);
+  tags.push(
+    ...socialTags({
+      title,
+      description,
+      url: data.canonicalUrl,
+      type: 'product',
+      image: image?.url
+        ? {
+            url: image.url,
+            width: image.width,
+            height: image.height,
+            alt: image.altText || product.title,
+          }
+        : null,
+    }),
+  );
+  return tags;
 };
+
+/**
+ * Plain text from Shopify's descriptionHtml. Tags become spaces, so a heading
+ * and the paragraph after it don't run together ("Insert™The 1¾″…"), which
+ * Shopify's own plain `description` does.
+ *
+ * @param {string | null | undefined} html
+ * @param {number} [max]
+ */
+function descriptionText(html, max) {
+  return plainText(String(html ?? '').replace(/<[^>]+>/g, ' '), max);
+}
 
 /**
  * @param {Route.LoaderArgs} args
@@ -87,6 +128,7 @@ async function loadCriticalData({context, params, request, url}) {
   return {
     product,
     canonical,
+    canonicalUrl: absoluteUrl(canonical, siteOrigin(request)),
     category: home
       ? {
           handle: home.handle,
@@ -131,7 +173,7 @@ function loadDeferredData({context}, {product, category}) {
 
 export default function Product() {
   /** @type {LoaderReturnData} */
-  const {product, category, recommended} = useLoaderData();
+  const {product, category, recommended, canonicalUrl} = useLoaderData();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -155,12 +197,7 @@ export default function Product() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(productJsonLd(product, selectedVariant)),
-        }}
-      />
+      <JsonLd data={productJsonLd(product, selectedVariant, canonicalUrl)} />
       <ProductPage
         product={product}
         selectedVariant={selectedVariant}
@@ -193,14 +230,16 @@ export default function Product() {
  *
  * @param {object} product
  * @param {object} variant
+ * @param {string | null} url - the absolute canonical
  */
-function productJsonLd(product, variant) {
+function productJsonLd(product, variant, url) {
   const image = variant?.image?.url ?? product.images?.nodes?.[0]?.url;
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
-    description: plainText(product.description, 500),
+    description: descriptionText(product.descriptionHtml, 500),
+    ...(url ? {url} : {}),
     ...(image ? {image} : {}),
     ...(variant?.sku ? {sku: variant.sku} : {}),
     brand: {'@type': 'Brand', name: product.vendor || 'Hose Monster'},
@@ -208,6 +247,7 @@ function productJsonLd(product, variant) {
       ? {
           offers: {
             '@type': 'Offer',
+            ...(url ? {url} : {}),
             price: variant.price.amount,
             priceCurrency: variant.price.currencyCode,
             availability: variant.availableForSale

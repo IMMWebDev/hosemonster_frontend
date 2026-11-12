@@ -15,6 +15,7 @@ import {
 } from '~/lib/cart';
 import {sharpImageProps} from '~/lib/image';
 import {CONTACT_PATH} from '~/lib/search';
+import {useTrackId} from '~/lib/tracking';
 import {useVariantUrl} from '~/lib/variants';
 import styles from './CartLines.module.css';
 
@@ -66,9 +67,20 @@ export function CartLines({cart, layout, onNavigate}) {
 
   const addedId = useAddedLine(lines, layout === 'drawer');
 
+  // Each line's place in the list as shown, from 1 — loose lines, then each
+  // bundle's, a line's add-ons right after it — for its tracking roles
+  // (line-3-remove).
+  const positions = new Map();
+  const place = (line) => {
+    positions.set(line.id, positions.size + 1);
+    (childrenMap[line.id] ?? []).forEach(place);
+  };
+  [...loose, ...bundles.flatMap((b) => b.lines)].forEach(place);
+
   const lineProps = {
     layout,
     childrenMap,
+    positions,
     onNavigate,
     registerRemove: (id, el) => {
       if (el) removeRefs.current.set(id, el);
@@ -89,8 +101,14 @@ export function CartLines({cart, layout, onNavigate}) {
         {loose.map((line) => (
           <CartLineItem key={line.id} line={line} added={line.id === addedId} {...lineProps} />
         ))}
-        {bundles.map((bundle) => (
-          <BundleGroup key={bundle.label} bundle={bundle} lineProps={lineProps} addedId={addedId} />
+        {bundles.map((bundle, i) => (
+          <BundleGroup
+            key={bundle.label}
+            bundle={bundle}
+            position={i + 1}
+            lineProps={lineProps}
+            addedId={addedId}
+          />
         ))}
       </ul>
       <p className="sr-only" role="status" aria-live="polite">
@@ -134,8 +152,9 @@ function useAddedLine(lines, enabled) {
  * A bundle from the bundle builder: its lines, under a header that names it
  * and can remove the whole set.
  */
-function BundleGroup({bundle, lineProps, addedId}) {
+function BundleGroup({bundle, position, lineProps, addedId}) {
   const headingId = useId();
+  const trackId = useTrackId();
   const removable = bundle.lines.filter((l) => !isPendingLine(l)).map((l) => l.id);
 
   return (
@@ -156,6 +175,7 @@ function BundleGroup({bundle, lineProps, addedId}) {
               type="submit"
               className={styles.textButton}
               disabled={removable.length === 0 || fetcher.state !== 'idle'}
+              data-track-id={trackId(`bundle-${position}-remove`)}
               // Starts with the visible words, so "Remove bundle" spoken
               // aloud activates it (WCAG 2.5.3).
               aria-label={`Remove bundle: ${bundle.label}`}
@@ -182,6 +202,7 @@ function BundleGroup({bundle, lineProps, addedId}) {
  *   line: object,
  *   layout: 'drawer' | 'page',
  *   childrenMap: Record<string, Array<object>>,
+ *   positions: Map<string, number>,
  *   nested?: boolean,
  *   added?: boolean,
  *   onNavigate?: () => void,
@@ -193,6 +214,7 @@ function CartLineItem({
   line,
   layout,
   childrenMap,
+  positions,
   nested = false,
   added = false,
   onNavigate,
@@ -200,6 +222,8 @@ function CartLineItem({
   onRemove,
 }) {
   const {id, quantity, merchandise} = line;
+  const trackId = useTrackId();
+  const role = `line-${positions.get(id)}`;
   const product = merchandise?.product;
   const title = product?.title ?? merchandise?.title ?? 'Item';
   const image = merchandise?.image;
@@ -290,7 +314,13 @@ function CartLineItem({
 
       <div className={styles.copy}>
         {product?.handle ? (
-          <Link to={url} prefetch="intent" className={styles.title} onClick={onNavigate}>
+          <Link
+            to={url}
+            prefetch="intent"
+            className={styles.title}
+            onClick={onNavigate}
+            data-track-id={trackId(`${role}-product`)}
+          >
             {title}
           </Link>
         ) : (
@@ -317,7 +347,12 @@ function CartLineItem({
             <UiIcon name="alert" />
             <span>
               Not available to order online. Remove it, or{' '}
-              <Link to={CONTACT_PATH} className={styles.noticeLink} onClick={onNavigate}>
+              <Link
+                to={CONTACT_PATH}
+                className={styles.noticeLink}
+                onClick={onNavigate}
+                data-track-id={trackId(`${role}-contact`)}
+              >
                 contact us
               </Link>{' '}
               to order.
@@ -345,6 +380,7 @@ function CartLineItem({
           line={line}
           title={title}
           disabled={placeholder || unavailable}
+          trackRole={`${role}-quantity`}
           onCommit={(q) => submit(CartForm.ACTIONS.LinesUpdate, {lines: [{id, quantity: q}]})}
         />
         <button
@@ -352,6 +388,7 @@ function CartLineItem({
           className={styles.textButton}
           disabled={placeholder}
           aria-label={`Remove ${title} from cart`}
+          data-track-id={trackId(`${role}-remove`)}
           ref={(el) => registerRemove(id, el)}
           onClick={() => {
             onRemove(line);
@@ -381,6 +418,7 @@ function CartLineItem({
                 line={child}
                 layout={layout}
                 childrenMap={childrenMap}
+                positions={positions}
                 nested
                 onNavigate={onNavigate}
                 registerRemove={registerRemove}
@@ -400,7 +438,7 @@ function CartLineItem({
  * request settles and the field isn't being edited. Nothing is sent for a
  * value that equals what the line already has.
  */
-function LineQuantity({line, title, disabled, onCommit}) {
+function LineQuantity({line, title, disabled, trackRole, onCommit}) {
   const [draft, setDraft] = useState(line.quantity);
   const lastSent = useRef(line.quantity);
   const fetcher = useFetcher({key: `cart-line-${line.id}`});
@@ -425,6 +463,7 @@ function LineQuantity({line, title, disabled, onCommit}) {
       value={draft}
       label={`Quantity of ${title}`}
       disabled={disabled}
+      trackRole={trackRole}
       onChange={setDraft}
       onCommit={(q) => {
         if (q === lastSent.current) return;
@@ -463,6 +502,7 @@ export function CartLinesSkeleton({rows = 2}) {
  */
 export function CartNotices() {
   const fetchers = useFetchers();
+  const trackId = useTrackId();
   const [dismissed, setDismissed] = useState(() => new Set());
   const problems = fetchers
     .filter(
@@ -495,6 +535,7 @@ export function CartNotices() {
         type="button"
         className={styles.noticesClose}
         aria-label="Dismiss"
+        data-track-id={trackId('notices-close')}
         onClick={() => setDismissed((s) => new Set([...s, ...problems.map((p) => p.key)]))}
       >
         <UiIcon name="close" />

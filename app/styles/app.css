@@ -81,6 +81,60 @@ img {
   border-width: 0;
 }
 
+/*
+* --------------------------------------------------
+* Skip link — components/PageLayout
+* --------------------------------------------------
+* The page's first Tab stop. Hidden the .sr-only way until it takes focus,
+* then shown over the top-left of the header: white with a navy rule, so it
+* reads against the navy utility bar beneath it.
+*/
+.skip-link {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100; /* above the sticky header (10) and its dropdowns (20) */
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width-thick) solid var(--brand-navy);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-dropdown);
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-button);
+  color: var(--brand-navy);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.skip-link:not(:focus) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border-width: 0;
+}
+
+/* reset.css turns hovered links orange; the label stays navy on white. Same
+ * specificity as that rule, and this sheet loads later. */
+a.skip-link:hover {
+  color: var(--brand-navy);
+}
+
+.skip-link:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* <main> takes focus from the skip link only so the next Tab starts there;
+ * an outline round the whole page would just be noise. */
+main[tabindex='-1']:focus {
+  outline: none;
+}
+
 button.reset {
   border: 0;
   background: inherit;
@@ -99,6 +153,16 @@ button.reset:not(:has(> *)) {
 button.reset:hover:not(:has(> *)) {
   text-decoration: underline;
   cursor: pointer;
+}
+
+/*
+ * Every CMS module carries data-track-module and an HTML id (its Tracking ID),
+ * so "#request-a-virtual-tour" links jump to it. The site header is sticky; this
+ * stops it covering the module's top. 96px is Product Feed's figure: the
+ * condensed nav plus a little air.
+ */
+[data-track-module] {
+  scroll-margin-top: 96px;
 }
 
 /*
@@ -290,37 +354,6 @@ button.reset:hover:not(:has(> *)) {
 
 /*
 * --------------------------------------------------
-* routes/blog._index.tsx
-* --------------------------------------------------
-*/
-.blog-grid {
-  display: grid;
-  grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width), 1fr));
-  margin-bottom: 2rem;
-}
-
-.blog-article-image {
-  aspect-ratio: 3/2;
-  display: block;
-}
-
-.blog-article-image img {
-  height: 100%;
-}
-
-/*
-* --------------------------------------------------
-* routes/blog.$articlehandle.tsx
-* --------------------------------------------------
-*/
-.article img {
-  height: auto;
-  width: 100%;
-}
-
-/*
-* --------------------------------------------------
 * routes/account
 * --------------------------------------------------
 */
@@ -397,6 +430,281 @@ button.reset:hover:not(:has(> *)) {
   img {
     max-width: 100%;
     height: auto;
+  }
+
+  /*
+   * Links as in a blog post body (.cms-post-body): bold, the darker link
+   * orange, underlined on hover. Without this they inherited reset.css's navy
+   * with no underline — the same as the text around them.
+   */
+  a {
+    color: var(--color-text-link);
+    font-weight: var(--weight-bold);
+    text-decoration: none;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  a:focus-visible {
+    outline: var(--border-width-thick) solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/*
+ * utilities.note — the Body of the shared Note component, wherever a module
+ * shows one. It is HTML from the "noteHtml" editor (bold, italic, links). The
+ * module sets the size and colour; this only handles the rich-text parts.
+ * Links follow the sprint-05 hifis: bold, the darker link orange
+ * (--color-text-link, which clears AA at this size where the brand orange
+ * doesn't), no underline until hover.
+ */
+.cms-note-body {
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-top: var(--space-2);
+  }
+
+  strong {
+    font-weight: var(--weight-bold);
+  }
+
+  a {
+    color: var(--color-text-link);
+    font-weight: var(--weight-bold);
+    text-decoration: none;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  a:focus-visible {
+    outline: var(--border-width-thick) solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/*
+ * The article column of a blog post (BlogBody) — the typography of the post's
+ * WYSIWYG modules, from sprint-05 hifi_blogposttemplate.html. Here rather than
+ * in the component's module because it styles editor HTML, like .cms-note-body.
+ *
+ * Paragraphs 16px at 1.7, the long-form measure; Heading 2s as the comp's
+ * section heads; Heading 3s a step down; quotes as the comp's callout box.
+ * Blank paragraphs are dropped before render (prepareBlogBody), so spacing
+ * comes from here, not from empty lines typed in the editor.
+ */
+.cms-post-body {
+  /* The column sets the width; the module's own 48rem column and padding
+   * would inset it. */
+  .cms-wysiwyg {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    font-weight: var(--weight-regular);
+    line-height: 1.7; /* from the design — long-form copy */
+    color: var(--color-text-body);
+  }
+
+  /* Nothing hangs below the post's last line, or above its first block. */
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child,
+  > :last-child .cms-wysiwyg > :last-child {
+    margin-bottom: 0;
+  }
+
+  /*
+   * The editor's HTML. Scoped to the WYSIWYG module so these element rules
+   * never reach the Blog Modules' own figures, images and captions.
+   */
+  .cms-wysiwyg {
+    > :first-child {
+      margin-top: 0;
+    }
+
+    p {
+      max-width: var(--measure-note); /* 80ch */
+      margin: 0 0 var(--space-5); /* 20px */
+    }
+
+    /* 32 above (the paragraph's 20 collapses into it), 16 below, as drawn.
+     * scroll-margin keeps the heading clear of the sticky nav when a link
+     * jumps to an id an editor gave it. */
+    h2 {
+      margin: var(--space-8) 0 var(--space-4);
+      font-size: 1.375rem; /* 22px, from the design — between the H3 and H2 steps */
+      line-height: var(--leading-h3);
+      scroll-margin-top: 96px;
+    }
+
+    /*
+     * Not in the comp. A bare h3 is the orange eyebrow site-wide
+     * (typography.css), which would read as a label here, not a heading — so in
+     * a post it's a smaller section head instead.
+     */
+    h3 {
+      margin: var(--space-6) 0 var(--space-3);
+      font-family: var(--font-display);
+      font-size: 1.0625rem; /* 17px, the Read Next card title */
+      font-weight: var(--weight-bold);
+      line-height: 1.25;
+      letter-spacing: var(--tracking-normal);
+      text-transform: uppercase;
+      color: var(--color-text);
+      scroll-margin-top: 96px;
+    }
+
+    h4,
+    h5,
+    h6 {
+      margin: var(--space-5) 0 var(--space-2);
+      font-family: var(--font-body);
+      font-size: var(--text-body);
+      font-weight: var(--weight-bold);
+      line-height: var(--leading-body-sm);
+      color: var(--color-text);
+    }
+
+    strong,
+    b {
+      font-weight: var(--weight-bold);
+    }
+
+    ul,
+    ol {
+      max-width: var(--measure-note);
+      margin: 0 0 var(--space-5);
+      padding-left: 1.25em;
+    }
+
+    /* reset.css takes the bullets off every list (for nav and card lists);
+     * an editor's list gets them back — discs, then circles one level in. */
+    ul {
+      list-style: disc;
+    }
+
+    ul ul {
+      list-style: circle;
+    }
+
+    ol {
+      list-style: decimal;
+    }
+
+    li + li,
+    li > ul,
+    li > ol {
+      margin-top: var(--space-2);
+    }
+
+    li > ul,
+    li > ol {
+      margin-bottom: 0;
+    }
+
+    /* A mark, not text — the accent orange is fine at this size. */
+    li::marker {
+      color: var(--color-action);
+    }
+
+    /* Links: bold, the darker link orange, underlined on hover — as in a Note. */
+    a {
+      color: var(--color-text-link);
+      font-weight: var(--weight-bold);
+      text-decoration: none;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    a:focus-visible {
+      outline: var(--border-width-thick) solid var(--color-action);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    /* The comp's callout: light grey, an orange rule on the left. CKEditor's
+     * Block Quote button makes one. */
+    blockquote {
+      margin: var(--space-2) 0 var(--space-9); /* 36px below, as drawn */
+      padding: 18px 22px; /* from the design */
+      border-left: 4px solid var(--color-action); /* from the design */
+      border-radius: var(--radius-md);
+      background-color: var(--color-surface-alt);
+      font-size: var(
+        --text-body-sm
+      ); /* 15.5px — the comp's 14.5px is between steps */
+      line-height: var(--leading-body);
+    }
+
+    blockquote > :last-child {
+      margin-bottom: 0;
+    }
+
+    /* An image placed in the editor rather than with an Image module. */
+    figure {
+      margin: var(--space-8) 0;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius-md);
+    }
+
+    figcaption {
+      margin-top: 10px; /* from the design */
+      font-size: var(--text-detail);
+      line-height: var(--leading-body-sm);
+      color: var(--color-text-muted);
+    }
+
+    hr {
+      margin: var(--space-8) 0;
+      border: 0;
+      border-top: var(--border-width-thick) solid var(--color-border);
+    }
+
+    table {
+      width: 100%;
+      margin: 0 0 var(--space-6);
+      border-collapse: collapse;
+      font-size: var(--text-body-sm);
+      line-height: var(--leading-body-sm);
+    }
+
+    th,
+    td {
+      padding: var(--space-3);
+      border-bottom: var(--border-width) solid var(--color-border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: var(--weight-bold);
+      color: var(--color-text);
+    }
   }
 }
 
@@ -475,7 +783,8 @@ button.reset:hover:not(:has(> *)) {
   white-space: nowrap;
   border: var(--border-width-thick) solid transparent;
   border-radius: var(--radius-pill);
-  transition: background-color var(--duration-control) var(--ease-default),
+  transition:
+    background-color var(--duration-control) var(--ease-default),
     color var(--duration-control) var(--ease-default),
     border-color var(--duration-control) var(--ease-default);
 }
@@ -524,4 +833,3 @@ button.reset:hover:not(:has(> *)) {
     margin-bottom: 2rem;
   }
 }
-

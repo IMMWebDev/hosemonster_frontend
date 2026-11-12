@@ -1,0 +1,122 @@
+/*
+ * Stat Banner module — sprint-04 hifi_smartmonsterfeature.html, "70% less
+ * water banner".
+ *
+ * Full-bleed deep-navy band: optional faint photo, the lighter-in-the-middle
+ * navy sweep over it, then a centred heading and one line of copy.
+ */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #0f1f2c; /* the deep navy Feature Hero's callout uses */
+
+  /* Zero — reset.css gives a bare <section> `padding: 2rem 0`, which would
+   * stack outside .inner's padding and make the band 64px taller than drawn. */
+  padding-block: 0;
+
+  /* Full-bleed: cancel <main>'s margin exactly, as CTA Banner does. Not 100vw,
+   * which includes the scrollbar and overflows. */
+  margin-inline: calc(-1 * var(--main-gutter));
+  width: calc(100% + 2 * var(--main-gutter));
+}
+
+/* Positive stack: image 0, wash 1, content 2. */
+.backgroundImage {
+  position: absolute;
+
+  /* Overscan so the slow parallax drift never uncovers an edge. */
+  inset: -5% 0;
+  z-index: 0;
+  width: 100%;
+  height: 110%;
+  object-fit: cover;
+  object-position: center 30%; /* from the design */
+  opacity: 0.28; /* from the design */
+}
+
+/* The navy sweep from the design — darker at the edges, lighter in the middle.
+ * Same pair as Feature Hero's callout and Page Hero's info band, a touch more
+ * opaque in the middle so the photo stays a texture. */
+.wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgb(15 31 44 / 95%) 0%,
+    rgb(29 58 84 / 90%) 50%,
+    rgb(15 31 44 / 95%) 100%
+  );
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4); /* 16px in the design */
+  width: 100%;
+  max-width: var(--container-outer-bleed);
+  margin-inline: auto;
+  /* The section rhythm (64/48/32 via the token) and the bleed gutter, so the
+   * content lines up with non-bleed sections. */
+  padding: var(--container-block) var(--container-gutter-bleed);
+  text-align: center;
+}
+
+/*
+ * Styleguide H1, reversed out. The design draws this at 50px, above anything
+ * on the type scale; H1 is the largest role there is, so it gets H1. Still an
+ * <h2> in the document — it's a section, not the page title.
+ */
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Orange is legal as text here: display type, well over §09's 19px / 700. */
+.highlight {
+  color: var(--color-text-accent);
+}
+
+/* Styleguide Body large on navy. */
+.body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--ink-on-navy);
+  white-space: pre-line;
+  text-wrap: balance;
+  max-width: var(--measure);
+  margin: 0;
+}
+
+/*
+ * -----------------------------------------------------------------------------
+ * RESPONSIVE — house breakpoints (app/styles/layout.css)
+ * -----------------------------------------------------------------------------
+ * The hifi is desktop-only. The band's padding already steps 64 → 48 → 32 and
+ * its gutter 48 → 40 → 32 through the container tokens, and the H1 clamp takes
+ * the heading from 40px down to 26px on its own (one line on tablet, two on a
+ * phone) — so tablet needs nothing of its own.
+ */
+
+/* mobile — the padding has dropped to 32px, so the heading and its copy close
+ * up to match and still read as one block. */
+@media (max-width: 499px) {
+  .inner {
+    gap: var(--space-3);
+  }
+}

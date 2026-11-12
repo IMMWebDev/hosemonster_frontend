@@ -4,6 +4,7 @@ import {collectionSourceFor, productRefFor} from '~/lib/module-products';
 import {sharpImageProps} from '~/lib/image';
 import {Link} from 'react-router';
 import {useProductPath} from '~/lib/product-urls';
+import {useTrackId, useTrackingRoot} from '~/lib/tracking';
 import styles from './ProductCards.module.css';
 
 /**
@@ -39,6 +40,7 @@ import styles from './ProductCards.module.css';
  * }} props
  */
 export default function ProductCards({data, products = {}}) {
+  const trackingRoot = useTrackingRoot();
   const {eyebrow, heading, body, viewAllLink, cardCtaLabel, items = []} =
     data ?? {};
 
@@ -74,9 +76,16 @@ export default function ProductCards({data, products = {}}) {
     : source && data.collection?.path
       ? {linkText: 'View all', collectionLink: data.collection}
       : null;
+  /*
+   * That generated "View all" says nothing out of context (a links list, voice
+   * control), so it carries the collection's name, unseen — the comp's label
+   * stays as drawn. An editor's own link text is left as typed.
+   */
+  const collectionName =
+    viewAll && viewAll !== viewAllLink ? data.collection?.name?.trim() : '';
 
   return (
-    <section className={styles.section}>
+    <section {...trackingRoot} className={styles.section}>
       <div className={styles.inner}>
         <div className={styles.head}>
           <div className={styles.headCopy}>
@@ -95,7 +104,20 @@ export default function ProductCards({data, products = {}}) {
             ) : null}
           </div>
 
-          {viewAll ? <CmsLink link={viewAll} className={styles.viewAll} /> : null}
+          {viewAll ? (
+            <CmsLink
+              link={viewAll}
+              className={styles.viewAll}
+              trackRole="view-all"
+            >
+              {collectionName ? (
+                <>
+                  {viewAll.linkText}
+                  <span className="sr-only"> {collectionName}</span>
+                </>
+              ) : undefined}
+            </CmsLink>
+          ) : null}
         </div>
 
         <div className={styles.grid}>
@@ -119,6 +141,7 @@ export default function ProductCards({data, products = {}}) {
  */
 function ProductCard({item, product, ctaLabel, index = 0}) {
   const pathFor = useProductPath();
+  const trackId = useTrackId();
   // `label` (the type, or Strapi's per-item label) is no longer shown: the
   // card is image, name, blurb, price, button.
   const {spec} = item;
@@ -143,6 +166,7 @@ function ProductCard({item, product, ctaLabel, index = 0}) {
       className={styles.card}
       data-reveal
       style={{'--reveal-i': index + 3}}
+      data-track-id={trackId(`product-${handle}`)}
     >
       {featuredImage ? (
         /* Hydrogen's Image, not a raw <img>: it emits width/height and a
